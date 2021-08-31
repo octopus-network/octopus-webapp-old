@@ -26,9 +26,8 @@ import {
   Flex
 } from '@chakra-ui/react';
 
-import { MinusIcon } from '@chakra-ui/icons';
+import { MinusIcon, TriangleDownIcon, TriangleUpIcon } from '@chakra-ui/icons';
 import { RiDeleteBin6Line } from 'react-icons/ri';
-import { BiLike, BiDislike } from 'react-icons/bi';
 import { AiOutlineEdit } from 'react-icons/ai';
 
 import { toDecimals, fromDecimals, BOATLOAD_OF_GAS } from 'utils';
@@ -38,10 +37,12 @@ import { useNavigate } from 'react-router-dom';
 const Permissions = ({ status }) => {
   const toast = useToast();
 
-  const isAdmin = new RegExp(`\.${window.accountId}`).test(octopusConfig.registryContractId) ||
-    window.accountId === octopusConfig.registryContractId;
+  const isAdmin = window.accountId && (
+    new RegExp(`\.${window.accountId}`).test(octopusConfig.registryContractId) ||
+    window.accountId === octopusConfig.registryContractId
+  );
 
-  const isOwner = status?.appchain_owner === window.accountId;
+  const isOwner = window.accountId && status?.appchain_owner === window.accountId;
 
   const navigate = useNavigate();
   const [loadingType, setLoadingType] = useState('');
@@ -429,7 +430,7 @@ const Permissions = ({ status }) => {
                 <Button mr="-px" 
                   disabled={upvotePopoverOpen}
                   onClick={() => onUpvoteAction('deposit')}>
-                  <Icon as={BiLike} />
+                  <TriangleUpIcon />
                   <Text fontSize="xs" ml="1">{fromDecimals(status.upvote_deposit)}</Text>
                 </Button>
                 <IconButton aria-label="withdraw downvote" icon={<MinusIcon />} 
@@ -475,7 +476,7 @@ const Permissions = ({ status }) => {
                 <Button mr="-px" 
                   disabled={downvotePopoverOpen}
                   onClick={() => onDownvoteAction('deposit')}>
-                  <Icon as={BiDislike} />
+                  <TriangleDownIcon />
                   <Text fontSize="xs" ml="1">{fromDecimals(status.downvote_deposit)}</Text>
                 </Button>
                 <IconButton aria-label="withdraw upvote" icon={<MinusIcon />} 

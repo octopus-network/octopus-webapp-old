@@ -13,23 +13,43 @@ import {
 } from '@chakra-ui/react';
 
 import { fromDecimals } from 'utils';
-import { BiLike, BiDislike } from 'react-icons/bi';
+import { TriangleDownIcon, TriangleUpIcon } from '@chakra-ui/icons';
 
+// const StyledProgress = styled(Progress)<{ value: number }>`
+//   border-radius: 3px;
+//   [role=progressbar] {
+//     position: relative;
+//   }
+//   [role=progressbar]:after {
+//     content: '';
+//     position: absolute;
+//     width: 6px;
+//     background: #fff;
+//     top: -5px;
+//     right: -3px;
+//     bottom: -5px;
+//     transform: rotate(35deg);
+//     display: ${({ value }) => ( value > 5 && value < 95 ? 'block' : 'none' )};
+//   }
+// `;
 const StyledProgress = styled(Progress)<{ value: number }>`
-  border-radius: 3px;
+  background: transparent;
+  border-bottom: 2px solid #333;
+  overflow: visible;
   [role=progressbar] {
+    background: transparent;
     position: relative;
   }
   [role=progressbar]:after {
     content: '';
     position: absolute;
-    width: 6px;
+    height: 12px;
+    width: 12px;
+    border-radius: 6px;
     background: #fff;
-    top: -5px;
-    right: -3px;
-    bottom: -5px;
-    transform: rotate(35deg);
-    display: ${({ value }) => ( value > 5 && value < 95 ? 'block' : 'none' )};
+    border: 2px solid #333;
+    top: 1px;
+    right: 0;
   }
 `;
 
@@ -49,21 +69,19 @@ const Votes = ({
     100 :
     0;
 
-  console.log(value, upvotes, upvotes+downvotes);
-
   return (
     <Flex w="100%" flexDirection="column">
       <Flex justifyContent="space-between">
-        <HStack spacing={1} color="gray">
-          <Icon as={BiLike} />
+        <HStack spacing={1}>
+          <TriangleUpIcon />
           <Text fontSize="sm">{fromDecimals(upvotes)}</Text>
         </HStack>
-        <HStack spacing={1} color="gray">
-          <Icon as={BiDislike} />
+        <HStack spacing={1}>
+          <TriangleDownIcon />
           <Text fontSize="sm">{fromDecimals(downvotes)}</Text>
         </HStack>
       </Flex>
-      <StyledProgress mt="1" value={value} size="sm" bg={ downvotes > 0 ? 'red' : 'gray.200' } colorScheme="blue" />
+      <StyledProgress mt="1" value={value} size="sm" colorScheme="blue" />
     </Flex>
   );
 }
