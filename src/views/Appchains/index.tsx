@@ -113,8 +113,10 @@ const Appchains = () => {
     state = location.pathname.split('/').pop();
   }
 
-  const isAdmin = new RegExp(`\.${window.accountId}`).test(octopusConfig.registryContractId) ||
-    window.accountId === octopusConfig.registryContractId;
+  const isAdmin = window.accountId && (
+    new RegExp(`\.${window.accountId}`).test(octopusConfig.registryContractId) ||
+    window.accountId === octopusConfig.registryContractId
+  );
 
   const [numRegistered, setNumRegistered] = useState<string|number>('');
   const [numInQueue, setNumInQueue] = useState<string|number>('');
@@ -134,7 +136,7 @@ const Appchains = () => {
     const promises = [
       'Registered', 'Auditing', 'Dead', 'InQueue', 'Staging', 'Booting'
     ].map(state => window.registryContract.get_appchains_count_of({
-      appchain_state: 'Dead'
+      appchain_state: state
     }));
 
     Promise.all(promises).then(([
@@ -224,9 +226,7 @@ const Appchains = () => {
     window
       .registryContract
       .conclude_voting_score(
-        {
-          voting_result_reduction_percent: votingResultReductionPercent.toString()
-        },
+        {},
         BOATLOAD_OF_GAS
       ).then(() => {
         window.location.reload();
@@ -297,7 +297,11 @@ const Appchains = () => {
             <Button size="sm" disabled={isCounting || isConcluding} isLoading={isCounting} onClick={onCount}>
               <Icon as={BiBadgeCheck} mr="1" /> Count score
             </Button>
-            <Popover
+            <Button size="sm" colorScheme="red" disabled={isCounting || isConcluding || concludePopoverOpen} isLoading={isConcluding} 
+              onClick={onConclude}>
+              <Icon as={BsFillStopFill} mr="1" /> Conclude score
+            </Button>
+            {/* <Popover
               initialFocusRef={initialFocusRef}
               placement="bottom"
               isOpen={concludePopoverOpen}
@@ -332,7 +336,7 @@ const Appchains = () => {
                   <Button colorScheme="red" size="sm" onClick={onConclude}>Confirm</Button>
                 </PopoverFooter>
               </PopoverContent>
-            </Popover>
+            </Popover> */}
           </HStack>
           </Fade>
         </Flex>
