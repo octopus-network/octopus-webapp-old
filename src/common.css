@@ -1,0 +1,12 @@
+html {
+  height: 100%;
+}
+
+
+.chakra-progress__indicator {
+  stroke-linecap: round;
+}
+
+.chakra-toast__inner {
+  min-width: 0!important;
+}
