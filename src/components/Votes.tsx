@@ -9,10 +9,12 @@ import {
   Flex,
   Text,
   HStack,
-  Icon
+  Icon,
+  Tooltip
 } from '@chakra-ui/react';
 
 import { fromDecimals } from 'utils';
+import { HiArrowNarrowUp, HiArrowNarrowDown } from 'react-icons/hi';
 import { TriangleDownIcon, TriangleUpIcon } from '@chakra-ui/icons';
 
 // const StyledProgress = styled(Progress)<{ value: number }>`
@@ -34,7 +36,7 @@ import { TriangleDownIcon, TriangleUpIcon } from '@chakra-ui/icons';
 // `;
 const StyledProgress = styled(Progress)<{ value: number }>`
   background: transparent;
-  border-bottom: 2px solid #333;
+  border-bottom: 2px solid #eee;
   overflow: visible;
   [role=progressbar] {
     background: transparent;
@@ -46,8 +48,9 @@ const StyledProgress = styled(Progress)<{ value: number }>`
     height: 12px;
     width: 12px;
     border-radius: 6px;
+    transform: scale(.8);
     background: #fff;
-    border: 2px solid #333;
+    border: 2px solid #0845A5;
     top: 1px;
     right: 0;
   }
@@ -71,17 +74,22 @@ const Votes = ({
 
   return (
     <Flex w="100%" flexDirection="column">
-      <Flex justifyContent="space-between">
-        <HStack spacing={1}>
-          <TriangleUpIcon />
-          <Text fontSize="sm">{fromDecimals(upvotes)}</Text>
+      
+      <StyledProgress value={value} size="sm" />
+      <Flex mt="1" justifyContent="space-between">
+        <Tooltip label={`Upvotes ${fromDecimals(upvotes)}`}>
+        <HStack spacing={1} color="#0845A5" fontSize="sm">
+          <Icon as={HiArrowNarrowUp} />
+          <Text>{fromDecimals(upvotes)}</Text>
         </HStack>
-        <HStack spacing={1}>
-          <TriangleDownIcon />
-          <Text fontSize="sm">{fromDecimals(downvotes)}</Text>
+        </Tooltip>
+        <Tooltip label={`Downvotes ${fromDecimals(downvotes)}`}>
+        <HStack spacing={1} color="#0845A5" fontSize="sm">
+          <Icon as={HiArrowNarrowDown} />
+          <Text>{fromDecimals(downvotes)}</Text>
         </HStack>
+        </Tooltip>
       </Flex>
-      <StyledProgress mt="1" value={value} size="sm" colorScheme="blue" />
     </Flex>
   );
 }

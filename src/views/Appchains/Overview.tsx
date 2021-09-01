@@ -47,7 +47,7 @@ const Overview = ({ appchainId }) => {
 
     <DrawerBody>
       <Flex justifyContent="space-between" alignItems="center">
-        <VStack alignItems="flex-start">
+        <VStack alignItems="flex-start" spacing="3">
           <HStack>
             <Skeleton isLoaded={!!appchainStatus}>
               <Heading fontSize="3xl">{appchainStatus?.appchain_id || 'loading...'}</Heading>
@@ -55,7 +55,7 @@ const Overview = ({ appchainId }) => {
             <StateBadge state={appchainStatus?.appchain_state} />
           </HStack>
           <Skeleton isLoaded={!!appchainStatus}>
-            <HStack color="gray" spacing={5}>
+            <HStack color="gray" spacing={5} fontSize="sm">
               <Link isExternal href={`${octopusConfig.explorerUrl}/accounts/${appchainStatus?.appchain_owner}`}>
                 <HStack>
                   <Icon as={AiOutlineUser} />
@@ -68,7 +68,7 @@ const Overview = ({ appchainId }) => {
                   {
                     appchainStatus ? dayjs(
                       appchainStatus.registered_time.substr(0, 13) * 1
-                    ).format('YYYY-MM-DD HH:mm:ss') : 'loading...'
+                    ).format('YYYY-MM-DD HH:mm') : 'loading...'
                   }
                 </Text>
               </HStack>

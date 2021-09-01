@@ -240,6 +240,13 @@ const Permissions = ({ status }) => {
         BOATLOAD_OF_GAS,
         1,
       ).catch(err => {
+        toast({
+          position: 'top-right',
+          title: 'Error',
+          description: err.toString(),
+          status: 'error'
+        });
+        setLoadingType('');
         console.log(err);
       });
   }
@@ -430,8 +437,9 @@ const Permissions = ({ status }) => {
                 <Button mr="-px" 
                   disabled={upvotePopoverOpen}
                   onClick={() => onUpvoteAction('deposit')}>
-                  <TriangleUpIcon />
-                  <Text fontSize="xs" ml="1">{fromDecimals(status.upvote_deposit)}</Text>
+                  
+                  {/* <TriangleUpIcon /> */}
+                  <Text fontSize="sm" ml="1">Upvote</Text>
                 </Button>
                 <IconButton aria-label="withdraw downvote" icon={<MinusIcon />} 
                   disabled={upvotePopoverOpen}
@@ -476,8 +484,8 @@ const Permissions = ({ status }) => {
                 <Button mr="-px" 
                   disabled={downvotePopoverOpen}
                   onClick={() => onDownvoteAction('deposit')}>
-                  <TriangleDownIcon />
-                  <Text fontSize="xs" ml="1">{fromDecimals(status.downvote_deposit)}</Text>
+                  {/* <TriangleDownIcon /> */}
+                  <Text fontSize="sm" ml="1">Downvote</Text>
                 </Button>
                 <IconButton aria-label="withdraw upvote" icon={<MinusIcon />} 
                   disabled={downvotePopoverOpen}

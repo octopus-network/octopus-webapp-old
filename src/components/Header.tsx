@@ -49,7 +49,7 @@ const Header = () => {
 
   return (
     <>
-      <Box>
+      <Box position="relative" zIndex="2">
         <Container maxW="full" pt="4" pb="4">
           <Flex justify="space-between" alignItems="center">
             <HStack spacing="12">
@@ -91,8 +91,8 @@ const Header = () => {
                 <Button variant="outline" onClick={loginNear}>{t('Login')}</Button>
               }
             </HStack>
-            <IconButton aria-label="menu" display={{ base: 'block', lg: 'none' }}>
-              <Icon as={FiMenu} />
+            <IconButton aria-label="menu" variant="unstyled" display={{ base: 'block', lg: 'none' }}>
+              <Icon w="6" h="6" as={FiMenu} />
             </IconButton>
           </Flex>
         </Container>

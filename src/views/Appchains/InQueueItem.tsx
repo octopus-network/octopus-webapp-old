@@ -6,6 +6,7 @@ import {
   Box,
   Heading,
   Text,
+  Tag,
   Icon,
   SimpleGrid
 } from '@chakra-ui/react';
@@ -48,7 +49,9 @@ const InQueueItem = ({
       </GridItem>
       <GridItem colSpan={1}  display={{ base: 'none', md: 'block' }} />
       <GridItem colSpan={3}>
-        <Text>{fromDecimals(voting_score)}</Text>
+        <Tag borderRadius="full" variant="outline" colorScheme="octoColor">
+          {fromDecimals(voting_score)}
+        </Tag>
       </GridItem>
       <GridItem colSpan={1} textAlign="right">
         <Icon as={MdKeyboardArrowRight} color="rgba(0, 0, 0, .3)" w={6} h={6} />

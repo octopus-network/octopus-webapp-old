@@ -170,7 +170,7 @@ const Appchains = () => {
         appchain_state: states,
         page_number: 1,
         page_size: 20,
-        sorting_field: 'RegisteredTime',
+        sorting_field: tabIndex === 1 ? 'VotingScore' : 'RegisteredTime',
         sorting_order: 'Descending'
       }).then((arr: any) => {
         setAppchains([].concat(...arr));
@@ -355,7 +355,7 @@ const Appchains = () => {
               <GridItem colSpan={4}>{t('ID')}</GridItem>
               <GridItem colSpan={6} 
                 display={{ base: 'none', md: 'block' }}>{t('Votes')}</GridItem>
-              <GridItem colSpan={3}>{t('Score')}</GridItem>
+              <GridItem colSpan={3}>{t('Voting Score')}</GridItem>
               <GridItem colSpan={1} />
             </SimpleGrid> :
             tabIndex === 2 ?
