@@ -14,7 +14,7 @@ import {
 } from '@chakra-ui/react';
 
 import { fromDecimals } from 'utils';
-import { HiArrowNarrowUp, HiArrowNarrowDown } from 'react-icons/hi';
+import { BiUpArrow, BiDownArrow } from 'react-icons/bi';
 import { TriangleDownIcon, TriangleUpIcon } from '@chakra-ui/icons';
 
 // const StyledProgress = styled(Progress)<{ value: number }>`
@@ -53,6 +53,7 @@ const StyledProgress = styled(Progress)<{ value: number }>`
     border: 2px solid #0845A5;
     top: 1px;
     right: 0;
+    display: ${({ value }) => ( value > 0 ? 'block' : 'none' )};
   }
 `;
 
@@ -79,13 +80,13 @@ const Votes = ({
       <Flex mt="1" justifyContent="space-between">
         <Tooltip label={`Upvotes ${fromDecimals(upvotes)}`}>
         <HStack spacing={1} color="#0845A5" fontSize="sm">
-          <Icon as={HiArrowNarrowUp} />
+          <Icon as={BiUpArrow} />
           <Text>{fromDecimals(upvotes)}</Text>
         </HStack>
         </Tooltip>
         <Tooltip label={`Downvotes ${fromDecimals(downvotes)}`}>
         <HStack spacing={1} color="#0845A5" fontSize="sm">
-          <Icon as={HiArrowNarrowDown} />
+          <Icon as={BiDownArrow} />
           <Text>{fromDecimals(downvotes)}</Text>
         </HStack>
         </Tooltip>

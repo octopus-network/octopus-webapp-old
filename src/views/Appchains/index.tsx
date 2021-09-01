@@ -293,11 +293,13 @@ const Appchains = () => {
             </TabList>
           </Tabs>
           <Fade in={tabIndex === 1 && isAdmin && appchains?.length > 0}>
-          <HStack display={{ base: 'none', md: 'block' }} spacing={3}>
-            <Button size="sm" disabled={isCounting || isConcluding} isLoading={isCounting} onClick={onCount}>
+          <HStack spacing={3}>
+            <Button size="sm" disabled={isCounting || isConcluding} 
+              display={{ base: 'none!important', md: 'block!important' }} isLoading={isCounting} onClick={onCount}>
               <Icon as={BiBadgeCheck} mr="1" /> Count score
             </Button>
-            <Button size="sm" colorScheme="red" disabled={isCounting || isConcluding || concludePopoverOpen} isLoading={isConcluding} 
+            <Button size="sm" colorScheme="red" display={{ base: 'none!important', md: 'block!important' }} 
+              disabled={isCounting || isConcluding || concludePopoverOpen} isLoading={isConcluding} 
               onClick={onConclude}>
               <Icon as={BsFillStopFill} mr="1" /> Conclude score
             </Button>
