@@ -85,7 +85,7 @@ const Header = () => {
                       <MenuItem>{t('Dashboard')}</MenuItem>
                     </RouterLink>
                     <MenuDivider />
-                    <MenuItem onClick={logoutNear}>{t('Logout')}</MenuItem>
+                    <MenuItem onClick={logoutNear}>{t('Sign out')}</MenuItem>
                   </MenuList>
                 </Menu> :
                 <Button variant="outline" onClick={loginNear}>{t('Login')}</Button>

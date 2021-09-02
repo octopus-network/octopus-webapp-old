@@ -295,13 +295,13 @@ const Appchains = () => {
           <Fade in={tabIndex === 1 && isAdmin && appchains?.length > 0}>
           <HStack spacing={3}>
             <Button size="sm" disabled={isCounting || isConcluding} 
-              display={{ base: 'none!important', md: 'block!important' }} isLoading={isCounting} onClick={onCount}>
-              <Icon as={BiBadgeCheck} mr="1" /> Count score
+              display={tabIndex === 1 && isAdmin ? { base: 'none', md: 'block' } : 'none'} isLoading={isCounting} onClick={onCount}>
+              <Icon as={BiBadgeCheck} mr="1" /> {t('Count score')}
             </Button>
-            <Button size="sm" colorScheme="red" display={{ base: 'none!important', md: 'block!important' }} 
+            <Button size="sm" colorScheme="red" display={ tabIndex === 1 && isAdmin ? { base: 'none', md: 'block' } : 'none' } 
               disabled={isCounting || isConcluding || concludePopoverOpen} isLoading={isConcluding} 
               onClick={onConclude}>
-              <Icon as={BsFillStopFill} mr="1" /> Conclude score
+              <Icon as={BsFillStopFill} mr="1" /> {t('Conclude score')}
             </Button>
             {/* <Popover
               initialFocusRef={initialFocusRef}

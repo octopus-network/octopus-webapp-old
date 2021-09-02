@@ -107,7 +107,9 @@ const Root = () => {
   return (
     <div style={{ 
       background: colorMode === 'light' ? 
-        'linear-gradient(to bottom, #f5f6f9, #fff 30%)' : '' 
+        'linear-gradient(to bottom, #f5f6f9, #fff 30%)' : '',
+      backgroundSize: '100% 100vh',
+      backgroundRepeat: 'no-repeat'
     }}>
       <Header />
       <Outlet />

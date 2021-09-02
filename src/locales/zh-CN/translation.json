@@ -17,11 +17,11 @@
     "Staked OCT": "质押 OCT",
     "Block Height": "区块高度",
     "Dashboard": "总览",
-    "Logout": "退出",
+    "Sign out": "退出",
     "Booting Appchains": "应用链",
     "ID": "ID",
     "Votes": "票数",
-    "Score": "计分",
+    "Voting Score": "得分",
     "Founder": "创建人",
     "Validators": "验证人",
     "Staked": "已质押",
@@ -37,5 +37,7 @@
     "Github Release": "Release",
     "Commit ID": "Commit ID",
     "Email": "邮箱",
-    "Submit": "提交"
+    "Submit": "提交",
+    "Count score": "计分",
+    "Conclude score": "结束计分"
 }

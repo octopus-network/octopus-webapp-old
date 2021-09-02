@@ -17,11 +17,11 @@
     "Staked OCT": "Staked OCT",
     "Block Height": "Block Height",
     "Dashboard": "Dashboard",
-    "Logout": "Logout",
+    "Sign out": "Sign out",
     "Booting Appchains": "Booting Appchains",
     "ID": "ID",
     "Votes": "Votes",
-    "Score": "Score",
+    "Voting Score": "Score",
     "Founder": "Founder",
     "Validators": "Validators",
     "Staked": "Staked",
@@ -37,5 +37,7 @@
     "Github Release": "Github Release",
     "Commit ID": "Commit ID",
     "Email": "Email",
-    "Submit": "Submit"
+    "Submit": "Submit",
+    "Count score": "Count score",
+    "Conclude score": "Conclude score"
 }
