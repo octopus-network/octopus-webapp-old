@@ -11,7 +11,6 @@ class Ball extends React.Component<Props> {
   til = 1;
   cnt = 0;
   num = 4;
-  rad = 230;
 
   xMid = 0;
   yMid = 0;
@@ -69,17 +68,19 @@ class Ball extends React.Component<Props> {
     let p: any;
     let width = c.width;
     let height = c.height;
+
+    let rad = width;
     let $ = c.getContext('2d');
     let midX = width / 2, midY = height / 2;
-    let zMid = -3 - this.rad;
+    let zMid = -3 - rad;
     if (this.cnt >= this.til) {
       this.cnt = 0;
       for (let i = 0; i < this.num; i++) {
         let theta  = Math.random() * 2 * Math.PI;
         let phi = Math.acos(Math.random() * 2 - 1);
-        let _x = this.rad * Math.sin(phi) * Math.cos(theta);
-        let _y = this.rad * Math.sin(phi) * Math.sin(theta);
-        let _z = this.rad * Math.cos(phi);
+        let _x = rad * Math.sin(phi) * Math.cos(theta);
+        let _y = rad * Math.sin(phi) * Math.sin(theta);
+        let _z = rad * Math.cos(phi);
 
         p = this.add(_x, this.yMid + _y, zMid + _z, 0.005 * _x, 0.002 * _y, 0.002 * _z);
 

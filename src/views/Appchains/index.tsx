@@ -37,7 +37,7 @@ import {
   useBoolean
 } from '@chakra-ui/react';
 
-import { BOATLOAD_OF_GAS } from 'utils';
+import { BOATLOAD_OF_GAS } from 'config/constants';
 import { FiPlus } from 'react-icons/fi';
 import { BiBadgeCheck } from 'react-icons/bi';
 import { BsFillStopFill, BsPeople } from 'react-icons/bs';

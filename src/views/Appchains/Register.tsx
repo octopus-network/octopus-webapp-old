@@ -17,9 +17,11 @@ import {
   useToast
 } from '@chakra-ui/react';
 
+import { } from 'near-api-js';
 import { Formik, Form, Field, useField } from 'formik';
 import { useTranslation } from 'react-i18next';
-import { fromDecimals, toDecimals, BOATLOAD_OF_GAS } from 'utils';
+import { fromDecimals, toDecimals } from 'utils';
+import { FAILED_TO_REDIRECT_MESSAGE, BOATLOAD_OF_GAS } from 'config/constants';
 import octopusConfig from 'config/octopus';
 
 const Register = () => {
@@ -44,8 +46,18 @@ const Register = () => {
       });
   }, []);
 
-  const validator = () => {
+  const validateAppchainId = (value) => {
+    const reg = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
+    if (!reg.test(value)) {
+      return 'Consists of lowercase letters and `-`';
+    }
+  }
 
+  const validateEmail = (value) => {
+    const reg = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/;
+    if (!reg.test(value)) {
+      return 'Invalid email';
+    }
   }
 
   const onSubmit = (values, actions) => {
@@ -56,13 +68,15 @@ const Register = () => {
       .ft_transfer_call(
         {
           receiver_id: octopusConfig.registryContractId,
-          amount: toDecimals(minimumRegisterDeposit, 18),
+          amount: toDecimals(minimumRegisterDeposit),
           msg: `register_appchain,${appchainId},${websiteUrl},${githubAddress},${githubRelease},${commitId},${email}`
         },
         BOATLOAD_OF_GAS,
         1,
       ).catch((err) => {
-        console.log(err);
+        if (err.message === FAILED_TO_REDIRECT_MESSAGE) {
+          return;
+        }
         actions.setSubmitting(false);
         toast({
           position: 'top-right',
@@ -89,7 +103,6 @@ const Register = () => {
           email: ''
         }}
         onSubmit={onSubmit}
-        validate={validator}
       >
         {(props) => (
           
@@ -97,7 +110,7 @@ const Register = () => {
             <List spacing={5}>
               <Grid templateColumns="repeat(5, 1fr)" gap="6">
                 <GridItem colSpan={2}>
-                  <Field name="appchainId">
+                  <Field name="appchainId" validate={validateAppchainId}>
                     {({ field, form }) => (
                       <FormControl isInvalid={form.errors.appchainId && form.touched.appchainId} isRequired>
                         <FormLabel htmlFor="appchainId">{t('Appchain ID')}</FormLabel>
@@ -112,7 +125,7 @@ const Register = () => {
                     {({ field, form }) => (
                       <FormControl isInvalid={form.errors.websiteUrl && form.touched.websiteUrl}>
                         <FormLabel htmlFor="websiteUrl">{t('Website')}</FormLabel>
-                        <Input {...field} id="websiteUrl" placeholder="websiteUrl" size="lg" />
+                        <Input {...field} id="websiteUrl" placeholder="Website Url" size="lg" />
                         <FormErrorMessage>{form.errors.websiteUrl}</FormErrorMessage>
                       </FormControl>
                     )}
@@ -123,7 +136,7 @@ const Register = () => {
                 {({ field, form }) => (
                   <FormControl isInvalid={form.errors.githubAddress && form.touched.githubAddress} isRequired>
                     <FormLabel htmlFor="githubAddress">{t('Github Address')}</FormLabel>
-                    <Input {...field} id="githubAddress" placeholder="githubAddress" size="lg" />
+                    <Input {...field} id="githubAddress" placeholder="eg. https://github.com/octopus-network/barnacle" size="lg" />
                     <FormErrorMessage>{form.errors.githubAddress}</FormErrorMessage>
                   </FormControl>
                 )}
@@ -134,7 +147,7 @@ const Register = () => {
                     {({ field, form }) => (
                       <FormControl isInvalid={form.errors.githubRelease && form.touched.githubRelease} isRequired>
                         <FormLabel htmlFor="githubRelease">{t('Github Release')}</FormLabel>
-                        <Input {...field} id="githubRelease" placeholder="githubRelease" size="lg" />
+                        <Input {...field} id="githubRelease" placeholder="eg. https://github.com/octopus-network/barnacle/releases/tag/v0.2-alpha.1" size="lg" />
                         <FormErrorMessage>{form.errors.githubRelease}</FormErrorMessage>
                       </FormControl>
                     )}
@@ -145,7 +158,7 @@ const Register = () => {
                     {({ field, form }) => (
                       <FormControl isInvalid={form.errors.commitId && form.touched.commitId} isRequired>
                         <FormLabel htmlFor="commitId">{t('Commit ID')}</FormLabel>
-                        <Input {...field} id="commitId" placeholder="commitId" size="lg" />
+                        <Input {...field} id="commitId" placeholder="eg. a49ca413ab9862149676d9579333e24c64613e3a" size="lg" />
                         <FormErrorMessage>{form.errors.commitId}</FormErrorMessage>
                       </FormControl>
                     )}
@@ -154,7 +167,7 @@ const Register = () => {
               </Grid>
               <Grid templateColumns="repeat(5, 1fr)" gap="6">
                 <GridItem colSpan={3}>
-                  <Field name="email">
+                  <Field name="email" validate={validateEmail}>
                     {({ field, form }) => (
                       <FormControl isInvalid={form.errors.email && form.touched.email} isRequired>
                         <FormLabel htmlFor="email">{t('Email')}</FormLabel>

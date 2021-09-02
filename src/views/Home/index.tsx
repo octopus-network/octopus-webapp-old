@@ -152,22 +152,22 @@ const Home = () => {
 
   return (
     <>
-      <Container position="relative"
-        pt={{ base: '12', md: '16', lg: '20' }} 
-        pb={{ base: '12', md: '16', lg: '20' }}>
-        <Box position="absolute" left="0" top="0" bottom="0" right="0" 
-          zIndex="0">
-          <Center mt={{ base: '-10',  lg: '-6' }}>
-            <Ball />
-          </Center>
-        </Box>
+      <Container
+        pt={{ base: '36px', md: '48px', lg: '80px' }} 
+        pb={{ base: '36px', md: '48px', lg: '80px' }}>
         <Center position="relative" zIndex="1">
           <VStack spacing="3" textAlign="center">
             <Heading fontSize={{ base: '3xl', md: '4xl', lg: '5xl' }}>{t('Where Web3.0 Happens')}</Heading>
             <Text fontSize={{ base: 'lg', md: 'xl', lg: '2xl' }}>{t('A cryptonetwork for launching and running Web3.0 Appchains')}</Text>
           </VStack>
+          <Box position="absolute" left="0" top="50%" bottom="0" right="0" 
+            zIndex="0">
+            <Center transform="translateY(-50%)">
+              <Ball width={isDesktop ? 220 : 180} height={isDesktop ? 220 : 180} />
+            </Center>
+          </Box>
         </Center>
-        <Box mt="20" position="relative" zIndex="1">
+        <Box mt="60px" position="relative" zIndex="1">
           <Center>
             <RouterLink to="/appchains/join">
               <JoinButton colorScheme="octoColor">

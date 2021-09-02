@@ -30,8 +30,9 @@ import { MinusIcon, TriangleDownIcon, TriangleUpIcon } from '@chakra-ui/icons';
 import { RiDeleteBin6Line } from 'react-icons/ri';
 import { AiOutlineEdit } from 'react-icons/ai';
 
-import { toDecimals, fromDecimals, BOATLOAD_OF_GAS } from 'utils';
+import { toDecimals, fromDecimals } from 'utils';
 import octopusConfig from 'config/octopus';
+import { FAILED_TO_REDIRECT_MESSAGE, BOATLOAD_OF_GAS } from 'config/constants';
 import { useNavigate } from 'react-router-dom';
 
 const Permissions = ({ status }) => {
@@ -46,7 +47,7 @@ const Permissions = ({ status }) => {
 
   const navigate = useNavigate();
   const [loadingType, setLoadingType] = useState('');
-  const [refundPercent, setRefundPercent] = useState(60);
+  const [refundPercent, setRefundPercent] = useState(100);
   const [refundPopoverOpen, setRefundPopoverOpen] = useBoolean(false);
   const [passAuditingPopoverOpen, setPassAuditingPopoverOpen] = useBoolean(false);
   const [upvotePopoverOpen, setUpvotePopoverOpen] = useBoolean(false);
@@ -160,35 +161,27 @@ const Permissions = ({ status }) => {
     setLoadingType('passAuditing');
     setPassAuditingPopoverOpen.off();
 
-    const reader = new FileReader();
-    reader.onloadend = (e) => {
-      if (e.target.readyState === FileReader.DONE) {
-        const u8a = new Uint8Array(e.target.result as any);
-      
-        window
-          .registryContract
-          .pass_auditing_appchain(
-            {
-              appchain_id: status.appchain_id,
-              appchain_anchor_code: Array.from(u8a)
-            },
-            BOATLOAD_OF_GAS
-          ).then(() => {
-            navigate('/appchains/inqueue');
-            window.location.reload();
-          }).catch(err => {
-            setLoadingType('');
-            toast({
-              position: 'top-right',
-              title: 'Error',
-              description: err.toString(),
-              status: 'error'
-            });
-          });
-      }
-    }
-    reader.readAsArrayBuffer(anchorCodeFile);
-    
+    window
+      .registryContract
+      .pass_auditing_appchain(
+        {
+          appchain_id: status.appchain_id,
+          // appchain_anchor_code: Array.from(u8a)
+        },
+        BOATLOAD_OF_GAS
+      ).then(() => {
+        navigate('/appchains/inqueue');
+        window.location.reload();
+      }).catch(err => {
+        setLoadingType('');
+        toast({
+          position: 'top-right',
+          title: 'Error',
+          description: err.toString(),
+          status: 'error'
+        });
+      });
+
   }
 
   const onChooseAnchorCode = (e) => {
@@ -240,6 +233,9 @@ const Permissions = ({ status }) => {
         BOATLOAD_OF_GAS,
         1,
       ).catch(err => {
+        if (err.message === FAILED_TO_REDIRECT_MESSAGE) {
+          return;
+        }
         toast({
           position: 'top-right',
           title: 'Error',
@@ -323,7 +319,7 @@ const Permissions = ({ status }) => {
               </PopoverBody>
               <PopoverFooter d="flex" justifyContent="space-between" alignItems="center">
                 <Text color="gray" fontSize="sm">
-                  Refund {refundPercent}% of {fromDecimals(status.register_deposit, 18)}OCT
+                  Refund {refundPercent}% of {fromDecimals(status.register_deposit)}OCT
                 </Text>
                 <Button colorScheme="red" size="sm" onClick={onReject}>Confirm</Button>
               </PopoverFooter>
@@ -341,8 +337,9 @@ const Permissions = ({ status }) => {
       (
         isAdmin ?
         <>
-       
-        <Popover
+        <Button colorScheme="octoColor" isLoading={loadingType === 'passAuditing'}
+          isDisabled={!!loadingType || passAuditingPopoverOpen} onClick={onPassAuditing}>Pass Auditing</Button>
+        {/* <Popover
           initialFocusRef={initialFocusRef}
           placement="bottom"
           isOpen={passAuditingPopoverOpen}
@@ -377,7 +374,7 @@ const Permissions = ({ status }) => {
                 disabled={!anchorCodeFile || anchorCodeFile?.size > 1024 * 1024}>Confirm</Button>
             </PopoverFooter>
           </PopoverContent>
-        </Popover>
+        </Popover> */}
 
         <Popover
           initialFocusRef={initialFocusRef}
@@ -406,7 +403,7 @@ const Permissions = ({ status }) => {
             </PopoverBody>
             <PopoverFooter d="flex" justifyContent="space-between" alignItems="center">
               <Text color="gray" fontSize="sm">
-                Refund {refundPercent}% of {fromDecimals(status.register_deposit, 18)}OCT
+                Refund {refundPercent}% of {fromDecimals(status.register_deposit)}OCT
               </Text>
               <Button colorScheme="red" size="sm" onClick={onReject}>Confirm</Button>
             </PopoverFooter>
