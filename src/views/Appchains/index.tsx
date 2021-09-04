@@ -37,7 +37,7 @@ import {
   useBoolean
 } from '@chakra-ui/react';
 
-import { BOATLOAD_OF_GAS } from 'config/constants';
+import { COMPLEX_CALL_GAS } from 'config/constants';
 import { FiPlus } from 'react-icons/fi';
 import { BiBadgeCheck } from 'react-icons/bi';
 import { BsFillStopFill, BsPeople } from 'react-icons/bs';
@@ -207,7 +207,10 @@ const Appchains = () => {
     setIsCounting(true);
     window
       .registryContract
-      .count_voting_score().then(() => {
+      .count_voting_score(
+        {}, 
+        COMPLEX_CALL_GAS
+      ).then(() => {
         window.location.reload();
       }).catch(err => {
         setIsCounting(false);
@@ -227,7 +230,7 @@ const Appchains = () => {
       .registryContract
       .conclude_voting_score(
         {},
-        BOATLOAD_OF_GAS
+        COMPLEX_CALL_GAS
       ).then(() => {
         window.location.reload();
       }).catch(err => {
@@ -355,9 +358,9 @@ const Appchains = () => {
             <SimpleGrid columns={{ base: 9, md: 15 }} color="gray" pl="6" pr="6" pb="2" fontSize="sm">
               <GridItem colSpan={1} />
               <GridItem colSpan={4}>{t('ID')}</GridItem>
-              <GridItem colSpan={6} 
+              <GridItem colSpan={6} textAlign="center"
                 display={{ base: 'none', md: 'block' }}>{t('Votes')}</GridItem>
-              <GridItem colSpan={3}>{t('Voting Score')}</GridItem>
+              <GridItem colSpan={3} textAlign="center">{t('Total Score')}</GridItem>
               <GridItem colSpan={1} />
             </SimpleGrid> :
             tabIndex === 2 ?

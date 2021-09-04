@@ -26,13 +26,13 @@ import {
   Flex
 } from '@chakra-ui/react';
 
-import { MinusIcon, TriangleDownIcon, TriangleUpIcon } from '@chakra-ui/icons';
+import { MinusIcon } from '@chakra-ui/icons';
 import { RiDeleteBin6Line } from 'react-icons/ri';
 import { AiOutlineEdit } from 'react-icons/ai';
 
 import { toDecimals, fromDecimals } from 'utils';
 import octopusConfig from 'config/octopus';
-import { FAILED_TO_REDIRECT_MESSAGE, BOATLOAD_OF_GAS } from 'config/constants';
+import { FAILED_TO_REDIRECT_MESSAGE, SIMPLE_CALL_GAS } from 'config/constants';
 import { useNavigate } from 'react-router-dom';
 
 const Permissions = ({ status }) => {
@@ -95,7 +95,7 @@ const Permissions = ({ status }) => {
         {
           appchain_id: status.appchain_id
         },
-        BOATLOAD_OF_GAS
+        SIMPLE_CALL_GAS
       ).then(() => {
         window.location.reload();
       }).catch(err => {
@@ -119,7 +119,7 @@ const Permissions = ({ status }) => {
           appchain_id: status.appchain_id,
           refund_percent: refundPercent.toString()
         },
-        BOATLOAD_OF_GAS
+        SIMPLE_CALL_GAS
       ).then(() => {
         window.location.reload();
       }).catch(err => {
@@ -142,7 +142,7 @@ const Permissions = ({ status }) => {
         {
           appchain_id: status.appchain_id
         },
-        BOATLOAD_OF_GAS
+        SIMPLE_CALL_GAS
       ).then(() => {
         navigate('/appchains/registered');
         window.location.reload();
@@ -168,7 +168,7 @@ const Permissions = ({ status }) => {
           appchain_id: status.appchain_id,
           // appchain_anchor_code: Array.from(u8a)
         },
-        BOATLOAD_OF_GAS
+        SIMPLE_CALL_GAS
       ).then(() => {
         navigate('/appchains/inqueue');
         window.location.reload();
@@ -182,16 +182,6 @@ const Permissions = ({ status }) => {
         });
       });
 
-  }
-
-  const onChooseAnchorCode = (e) => {
-    const input = e.target;
-    const files = input.files;
-    if (files.length) {
-      setAnchorCodeFile(files[0]);
-    } else {
-      setAnchorCodeFile(null);
-    }
   }
 
   if (!window.accountId) {
@@ -230,7 +220,7 @@ const Permissions = ({ status }) => {
           amount: toDecimals(voteAmount),
           msg: `${voteType}_appchain,${status.appchain_id}`
         },
-        BOATLOAD_OF_GAS,
+        SIMPLE_CALL_GAS,
         1,
       ).catch(err => {
         if (err.message === FAILED_TO_REDIRECT_MESSAGE) {
@@ -260,7 +250,7 @@ const Permissions = ({ status }) => {
           appchain_id: status.appchain_id,
           amount: toDecimals(voteAmount)
         },
-        BOATLOAD_OF_GAS
+        SIMPLE_CALL_GAS
       ).then(() => {
         window.location.reload();
       }).catch(err => {

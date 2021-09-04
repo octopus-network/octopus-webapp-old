@@ -10,12 +10,14 @@ import {
   Text,
   HStack,
   Icon,
-  Tooltip
+  Tooltip,
+  Tag
 } from '@chakra-ui/react';
 
 import { fromDecimals } from 'utils';
 import { BiUpArrow, BiDownArrow } from 'react-icons/bi';
 import { TriangleDownIcon, TriangleUpIcon } from '@chakra-ui/icons';
+import { useTranslation } from 'react-i18next';
 
 // const StyledProgress = styled(Progress)<{ value: number }>`
 //   border-radius: 3px;
@@ -41,6 +43,8 @@ const StyledProgress = styled(Progress)<{ value: number }>`
   [role=progressbar] {
     background: transparent;
     position: relative;
+    width: 0%;
+    transition: width .3s ease;
   }
   [role=progressbar]:after {
     content: '';
@@ -65,6 +69,7 @@ const Votes = ({
   downvotes: number;
 }) => {
 
+  const { t } = useTranslation();
   const value = upvotes > 0 ? 
     downvotes > 0 ?
     new BigNumber(upvotes).times(100).dividedBy(
@@ -77,13 +82,16 @@ const Votes = ({
     <Flex w="100%" flexDirection="column">
       
       <StyledProgress value={value} size="sm" />
-      <Flex mt="1" justifyContent="space-between">
+      <Flex mt="2" justifyContent="space-between">
         <Tooltip label={`Upvotes ${fromDecimals(upvotes)}`}>
         <HStack spacing={1} color="#0845A5" fontSize="sm">
           <Icon as={BiUpArrow} />
           <Text>{fromDecimals(upvotes)}</Text>
         </HStack>
         </Tooltip>
+        <Tag size="sm" variant="outline" colorScheme="octoColor">
+          {t('Score')}: {fromDecimals(upvotes - downvotes)}
+        </Tag>
         <Tooltip label={`Downvotes ${fromDecimals(downvotes)}`}>
         <HStack spacing={1} color="#0845A5" fontSize="sm">
           <Icon as={BiDownArrow} />

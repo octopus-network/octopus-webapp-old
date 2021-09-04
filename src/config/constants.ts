@@ -2,4 +2,6 @@ import { BigNumber } from 'bignumber.js';
 
 export const FAILED_TO_REDIRECT_MESSAGE = 'Failed to redirect to sign transaction';
 
-export const BOATLOAD_OF_GAS = new BigNumber(3).times(10 ** 14).toFixed();
+export const T_GAS: BigNumber = new BigNumber(1).times(10 ** 12);
+export const SIMPLE_CALL_GAS = T_GAS.times(50).toFixed();
+export const COMPLEX_CALL_GAS = T_GAS.times(150).toFixed();

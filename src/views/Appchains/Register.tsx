@@ -21,7 +21,7 @@ import { } from 'near-api-js';
 import { Formik, Form, Field, useField } from 'formik';
 import { useTranslation } from 'react-i18next';
 import { fromDecimals, toDecimals } from 'utils';
-import { FAILED_TO_REDIRECT_MESSAGE, BOATLOAD_OF_GAS } from 'config/constants';
+import { FAILED_TO_REDIRECT_MESSAGE, COMPLEX_CALL_GAS } from 'config/constants';
 import octopusConfig from 'config/octopus';
 
 const Register = () => {
@@ -71,7 +71,7 @@ const Register = () => {
           amount: toDecimals(minimumRegisterDeposit),
           msg: `register_appchain,${appchainId},${websiteUrl},${githubAddress},${githubRelease},${commitId},${email}`
         },
-        BOATLOAD_OF_GAS,
+        COMPLEX_CALL_GAS,
         1,
       ).catch((err) => {
         if (err.message === FAILED_TO_REDIRECT_MESSAGE) {

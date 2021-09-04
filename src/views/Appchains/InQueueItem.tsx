@@ -44,12 +44,11 @@ const InQueueItem = ({
       <GridItem colSpan={4}>
         <Heading fontSize="xl">{appchain_id}</Heading>
       </GridItem>
-      <GridItem colSpan={5}  display={{ base: 'none', md: 'block' }}>
+      <GridItem colSpan={6}  display={{ base: 'none', md: 'block' }}>
         <Votes upvotes={upvote_deposit} downvotes={downvote_deposit} />
       </GridItem>
-      <GridItem colSpan={1}  display={{ base: 'none', md: 'block' }} />
-      <GridItem colSpan={3}>
-        <Tag borderRadius="full" variant="outline" colorScheme="octoColor">
+      <GridItem colSpan={3} textAlign="center">
+        <Tag variant="outline" colorScheme="octoColor">
           {fromDecimals(voting_score)}
         </Tag>
       </GridItem>
