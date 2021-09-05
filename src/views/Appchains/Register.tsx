@@ -49,12 +49,12 @@ const Register = () => {
   const validateAppchainId = (value) => {
     const reg = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
     if (!reg.test(value)) {
-      return 'Consists of lowercase letters and `-`';
+      return 'Consists of [a-z|0-9] or `-`';
     }
   }
 
   const validateEmail = (value) => {
-    const reg = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/;
+    const reg = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,15})$/;
     if (!reg.test(value)) {
       return 'Invalid email';
     }
