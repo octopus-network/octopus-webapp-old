@@ -29,7 +29,7 @@ import {
 import { MinusIcon } from '@chakra-ui/icons';
 import { RiDeleteBin6Line } from 'react-icons/ri';
 import { AiOutlineEdit } from 'react-icons/ai';
-
+import { loginNear } from 'utils';
 import { toDecimals, fromDecimals } from 'utils';
 import octopusConfig from 'config/octopus';
 import { FAILED_TO_REDIRECT_MESSAGE, SIMPLE_CALL_GAS } from 'config/constants';
@@ -185,7 +185,12 @@ const Permissions = ({ status }) => {
   }
 
   if (!window.accountId) {
-    return null;
+    return (
+      status?.appchain_state === 'InQueue' ?
+      (
+        <Button colorScheme="octoColor" onClick={loginNear}>Login to Vote</Button>
+      ) : null
+    );
   }
 
   const onUpvoteAction = (a: 'deposit' | 'withdraw') => {
@@ -329,43 +334,7 @@ const Permissions = ({ status }) => {
         <>
         <Button colorScheme="octoColor" isLoading={loadingType === 'passAuditing'}
           isDisabled={!!loadingType || passAuditingPopoverOpen} onClick={onPassAuditing}>Pass Auditing</Button>
-        {/* <Popover
-          initialFocusRef={initialFocusRef}
-          placement="bottom"
-          isOpen={passAuditingPopoverOpen}
-          onClose={setPassAuditingPopoverOpen.off}
-        >
-          <PopoverTrigger>
-            <Button colorScheme="octoColor" isLoading={loadingType === 'passAuditing'}
-              isDisabled={!!loadingType || passAuditingPopoverOpen} onClick={setPassAuditingPopoverOpen.toggle}>Pass Auditing</Button>
-          </PopoverTrigger>
-          <PopoverContent>
-            <PopoverCloseButton />
-            <PopoverBody>
-              <VStack alignItems="flex-start">
-                <Heading fontSize="md">Anchor code</Heading>
-                <Box p="2" w="100%">
-                  <Input type="file" placeholder="Choose file" onChange={onChooseAnchorCode} />
-                </Box>
-              </VStack>
-            </PopoverBody>
-            <PopoverFooter d="flex" justifyContent="space-between" alignItems="center">
-              {
-                anchorCodeFile ?
-                anchorCodeFile.size > 1024 * 1024 ?
-                <Text color="red" fontSize="sm">
-                  File size limit!
-                </Text> :
-                <Text color="gray" fontSize="sm">
-                  Code file size: {(anchorCodeFile.size/1024).toFixed(2)} kb
-                </Text> : <Text>&nbsp;</Text>
-              }
-              <Button colorScheme="octoColor" size="sm" onClick={onPassAuditing}
-                disabled={!anchorCodeFile || anchorCodeFile?.size > 1024 * 1024}>Confirm</Button>
-            </PopoverFooter>
-          </PopoverContent>
-        </Popover> */}
-
+        
         <Popover
           initialFocusRef={initialFocusRef}
           placement="bottom"
