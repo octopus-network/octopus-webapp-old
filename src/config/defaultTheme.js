@@ -16,7 +16,7 @@ const defaultTheme = {
     }
   },
   shadows: {
-    octoShadow: '0px 6px 14px rgb(0 0 0 / 10%)'
+    octoShadow: '0px 4px 12px rgb(0 0 0 / 10%)'
   },
   components: {
    

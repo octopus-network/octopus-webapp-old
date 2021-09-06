@@ -1,4 +1,5 @@
 import React from 'react';
+
 import {
   Container,
   Box,
@@ -7,20 +8,35 @@ import {
   HStack,
   Link,
   Icon,
-  Divider
+  Divider,
+  Text
 } from '@chakra-ui/react';
 
 import { useTranslation } from 'react-i18next';
-
+import octopusConfig from 'config/octopus';
 import { FaDiscord, FaTwitter, FaGithub } from 'react-icons/fa';
 
 const Footer = () => {
   const { t } = useTranslation();
 
   return (
-    <Container>
-      <Divider />
-      <Box pt="10" pb="10">
+    <Container mt="16">
+      <Box>
+        <Box p="4" bg="rgba(120, 120, 155, .06)" borderRadius="5">
+          <Center>
+            <HStack spacing={4}>
+              <Link href="#">Term of service</Link>
+              <Text color="gray.300">|</Text>
+              <Link href="#">Privacy policy</Link>
+              <Text color="gray.300">|</Text>
+              <Link href={`${octopusConfig.explorerUrl}/account/${octopusConfig.registryContractId}`}>Registry Contract</Link>
+              <Text color="gray.300">|</Text>
+              <Link href={`${octopusConfig.explorerUrl}/account/${octopusConfig.tokenContractId}`}>Token Contract</Link>
+            </HStack>
+          </Center>
+        </Box>
+      </Box>
+      <Box pb="10" mt="10">
         <Center >
           <Heading fontSize="md">@ 2021 {t('Octopus Network')}</Heading>
         </Center>

@@ -23,16 +23,7 @@ import {
   DrawerHeader,
   CloseButton,
   Fade,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-  PopoverCloseButton,
-  PopoverBody,
-  PopoverFooter,
-  Slider,
-  SliderTrack,
-  SliderFilledTrack,
-  SliderThumb,
+  Center,
   useToast,
   useBoolean
 } from '@chakra-ui/react';
@@ -47,7 +38,7 @@ import { VscServerProcess } from 'react-icons/vsc';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Link as RouterLink } from 'react-router-dom';
-import { QuestionOutlineIcon } from '@chakra-ui/icons';
+import { QuestionOutlineIcon, InfoOutlineIcon } from '@chakra-ui/icons';
 import BootingItem from './BootingItem';
 import InQueueItem from './InQueueItem';
 import StagingItem from './StagingItem';
@@ -98,7 +89,7 @@ const StatBox = ({
   );
 }
 
-const appchainStates = ['registered', 'inqueue', 'staging', 'booting'];
+const appchainStates = ['registered', 'inqueue', 'booting'];
 
 const Appchains = () => {
   
@@ -120,7 +111,6 @@ const Appchains = () => {
 
   const [numRegistered, setNumRegistered] = useState<string|number>('');
   const [numInQueue, setNumInQueue] = useState<string|number>('');
-  const [numStaging, setNumStaging] = useState<string|number>('');
   const [numBooting, setNumBooting] = useState<string|number>('');
   const [isCounting, setIsCounting] = useState(false);
   const [isConcluding, setIsConcluding] = useState(false);
@@ -128,25 +118,38 @@ const Appchains = () => {
 
   const [appchains, setAppchains] = useState<any[]|null>();
   const [tabIndex, setTabIndex] = useState(appchainStates[state]);
-  const [votingResultReductionPercent, setVotingResultReductionPercent] = useState(Math.ceil(Math.random()*100));
-
-  const initialFocusRef = React.useRef();
+  const [stagingAppchainLoading, setStagingAppchainLoading] = useState(true);
+  const [stagingAppchain, setStagingAppchain] = useState<any>();
 
   useEffect(() => {
     const promises = [
-      'Registered', 'Auditing', 'Dead', 'InQueue', 'Staging', 'Booting'
+      'Registered', 'Auditing', 'Dead', 'InQueue', 'Booting'
     ].map(state => window.registryContract.get_appchains_count_of({
       appchain_state: state
     }));
 
     Promise.all(promises).then(([
-      registeredCount, auditingCount, deadCount, inQueueCount, stagingCount, bootingCount
+      registeredCount, auditingCount, deadCount, inQueueCount, bootingCount
     ]) => {
       setNumRegistered((registeredCount*1 + auditingCount*1 + deadCount*1));
       setNumInQueue(inQueueCount);
-      setNumStaging(stagingCount);
       setNumBooting(bootingCount);
     });
+
+    window
+      .registryContract
+      .get_appchains_with_state_of({ 
+        appchain_state: ['Staging'],
+        page_number: 1,
+        page_size: 10,
+        sorting_field: 'RegisteredTime',
+        sorting_order: 'Descending'
+      }).then(([appchain]) => {
+        setStagingAppchainLoading(false);
+        setStagingAppchain(appchain);
+      }).catch(err => {
+        console.log(err);
+      });
     
   }, []);
 
@@ -159,8 +162,6 @@ const Appchains = () => {
     } else if (tabIndex === 1) {
       states = ['InQueue'];
     } else if (tabIndex === 2) {
-      states = ['Staging'];
-    } else if (tabIndex === 3) {
       states = ['Booting'];
     }
 
@@ -169,7 +170,7 @@ const Appchains = () => {
       .get_appchains_with_state_of({ 
         appchain_state: states,
         page_number: 1,
-        page_size: 20,
+        page_size: 10,
         sorting_field: tabIndex === 1 ? 'VotingScore' : 'RegisteredTime',
         sorting_order: 'Descending'
       }).then((arr: any) => {
@@ -183,12 +184,6 @@ const Appchains = () => {
     setTabIndex(idx >= 0 ? idx : 1);
    
   }, [state]);
-
-  useEffect(() => {
-    if (concludePopoverOpen) {
-      setVotingResultReductionPercent(Math.ceil(Math.random()*100));
-    }
-  }, [concludePopoverOpen]);
 
   const onTabChange = (idx) => {
     setAppchains(null);
@@ -258,29 +253,35 @@ const Appchains = () => {
       <Flex mt="6">
         <Box boxShadow="octoShadow" p="6" borderRadius="10" flex={1}
           position="relative" overflow="hidden">
-          <SimpleGrid columns={{ base: 2, md: 4 }}>
+          <SimpleGrid columns={{ base: 2, md: 3 }}>
             <StatBox title={t('registered')} value={numRegistered} icon={FaRegEdit} color="green"
               tooltip="The appchains have registered, or in auditing/dead state." />
             <StatBox title={t('inqueue')} value={numInQueue} icon={GoTasklist} color="teal"
               tooltip="Audited applications. It's up to the community to decide whether they move to the next stage by voting." />
-            <StatBox title={t('staging')} value={numStaging} icon={BsPeople} color="orange"
-              tooltip="Validators can stake on the appchains in this state." />
             <StatBox title={t('booting')} value={numBooting} icon={VscServerProcess} color="blue" />
           </SimpleGrid>
         </Box>
-        {/* <Box boxShadow="octoShadow" p="6" borderRadius="10" ml="6">
-          <Flex>
-            <Box display="flex" alignItems="flex-end" flexDirection="column" mr="2">
-              <Text color="gray" fontSize="sm">Next Epoch</Text>
-              <Heading fontSize="xl" mt="1">2 days</Heading>
-            </Box>
-            <CircularProgress value={40} color="green.400" size="14">
-              <CircularProgressLabel>40%</CircularProgressLabel>
-            </CircularProgress>
-          </Flex>
-        </Box> */}
       </Flex>
-      <Box mt="8" minH="50vh">
+      <Box mt="8">
+        <Heading fontSize="2xl">{t('Staging')}</Heading>
+        <Box mt="6">
+          <Skeleton isLoaded={!stagingAppchainLoading}>
+          {
+            stagingAppchain ?
+            <RouterLink to={`/appchains/staging/${stagingAppchain?.appchain_id}`}>
+              <StagingItem appchain={stagingAppchain} />
+            </RouterLink> :
+            <Box boxShadow="octoShadow" p="6" borderRadius="10" flex={1}>
+              <Center color="gray">
+                <InfoOutlineIcon w="6" h="6" />
+                <Text ml="2">No staging appchain</Text>
+              </Center>
+            </Box>
+          }
+          </Skeleton>
+        </Box>
+      </Box>
+      <Box mt="8" minH="40vh">
         <Flex alignItems="center" justifyContent="space-between" minH="35px">
           <Tabs index={tabIndex} variant="soft-rounded" colorScheme="cyan" size="sm" onChange={onTabChange}>
             <TabList border="none">
@@ -306,42 +307,6 @@ const Appchains = () => {
               onClick={onConclude}>
               <Icon as={BsFillStopFill} mr="1" /> {t('Conclude score')}
             </Button>
-            {/* <Popover
-              initialFocusRef={initialFocusRef}
-              placement="bottom"
-              isOpen={concludePopoverOpen}
-              onClose={setConcludePopoverOpen.off}
-            >
-              <PopoverTrigger>
-                <Button size="sm" colorScheme="red" disabled={isCounting || isConcluding || concludePopoverOpen} isLoading={isConcluding} 
-                  onClick={setConcludePopoverOpen.toggle}>
-                  <Icon as={BsFillStopFill} mr="1" /> Conclude score
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent>
-                <PopoverCloseButton />
-                <PopoverBody>
-                  <VStack alignItems="flex-start">
-                    <Heading fontSize="md">Vote result reduction percent</Heading>
-                    <Box p="2" w="100%">
-                      <Slider value={votingResultReductionPercent} min={0} max={100} step={1} 
-                        onChange={value => setVotingResultReductionPercent(value)}>
-                        <SliderTrack>
-                          <SliderFilledTrack />
-                        </SliderTrack>
-                        <SliderThumb />
-                      </Slider>
-                    </Box>
-                  </VStack>
-                </PopoverBody>
-                <PopoverFooter d="flex" justifyContent="space-between" alignItems="center">
-                  <Text color="gray" fontSize="sm">
-                    Reduction percent {votingResultReductionPercent}%
-                  </Text>
-                  <Button colorScheme="red" size="sm" onClick={onConclude}>Confirm</Button>
-                </PopoverFooter>
-              </PopoverContent>
-            </Popover> */}
           </HStack>
           </Fade>
         </Flex>
@@ -363,13 +328,6 @@ const Appchains = () => {
               <GridItem colSpan={3} textAlign="center">{t('Total Score')}</GridItem>
               <GridItem colSpan={1} />
             </SimpleGrid> :
-            tabIndex === 2 ?
-            <SimpleGrid columns={{ base: 14, md: 14 }} color="gray" pl="6" pr="6" pb="2" fontSize="sm">
-              <GridItem colSpan={5}>{t('ID')}</GridItem>
-              <GridItem colSpan={4}>{t('Validators')}</GridItem>
-              <GridItem colSpan={4}>{t('Staked')}</GridItem>
-              <GridItem colSpan={1} display={{ base: 'none', md: 'block' }} />
-            </SimpleGrid> :
             <SimpleGrid columns={{ base: 13, md: 17 }} color="gray" pl="6" pr="6" pb="2" fontSize="sm">
               <GridItem colSpan={5}>{t('ID')}</GridItem>
               <GridItem colSpan={4}>{t('Validators')}</GridItem>
@@ -389,10 +347,6 @@ const Appchains = () => {
               tabIndex === 1 ?
               <RouterLink to={`/appchains/${state}/${appchain.appchain_id}`}>
                 <InQueueItem index={idx} appchain={appchain} key={`appchain-${idx}`} />
-              </RouterLink> :
-              tabIndex === 2 ?
-              <RouterLink to={`/appchains/${state}/${appchain.appchain_id}`}>
-                <StagingItem appchain={appchain} key={`appchain-${idx}`} />
               </RouterLink> :
               <BootingItem appchain={appchain} key={`appchain-${idx}`} />
             )) :
