@@ -274,13 +274,18 @@ const Appchains = () => {
         </Box>
       </Flex>
       <Box mt="8">
-        <Heading fontSize="2xl">{t('Staging')}</Heading>
+        <Flex justifyContent="space-between">
+          <Heading fontSize="2xl">{t('Staging')}</Heading>
+          <Tooltip label="Validators and Delegators can deposit OCT for the appchain in this state. (There can be only one appchain in this state)">
+            <QuestionOutlineIcon color="gray" cursor="pointer" />
+          </Tooltip>
+        </Flex>
         <Box mt="4">
           <Skeleton isLoaded={!stagingAppchainLoading}>
             {
               stagingAppchain ?
               <>
-                <SimpleGrid columns={{ base: 10, md: 14 }} color="gray" pl="6" pr="6" mt="4" pb="2" fontSize="sm">
+                <SimpleGrid columns={{ base: 10, md: 14 }} color="gray" pl="6" pr="6" mt="3" pb="2" fontSize="sm">
                   <GridItem colSpan={5}>{t('ID')}</GridItem>
                   <GridItem colSpan={4} display={{ base: 'none', md: 'block' }}>{t('Validators')}</GridItem>
                   <GridItem colSpan={4}>{t('Staked')}</GridItem>
