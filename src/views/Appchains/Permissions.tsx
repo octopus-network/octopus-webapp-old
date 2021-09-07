@@ -207,7 +207,7 @@ const Permissions = ({ status }) => {
     return (
       status?.appchain_state === 'InQueue' ?
       (
-        <Button colorScheme="octoColor" onClick={loginNear}>Login to Vote</Button>
+        <Button colorScheme="octoColor" variant="outline" onClick={loginNear}>Login to Vote</Button>
       ) : null
     );
   }

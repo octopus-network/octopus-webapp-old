@@ -381,7 +381,7 @@ const Appchains = () => {
             </HStack> :
             <Popover trigger="hover" placement="top">
               <PopoverTrigger>
-                <Flex alignItems="center" color="gray" fontSize="sm" cursor="pointer">
+                <Flex alignItems="center" color="octoColor.500" fontSize="sm" cursor="pointer">
                   <QuestionOutlineIcon />
                   <Text ml="1">Voting rules</Text>
                 </Flex>
