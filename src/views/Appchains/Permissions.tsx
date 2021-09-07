@@ -20,19 +20,21 @@ import {
   Input,
   Icon,
   Box,
-  ButtonGroup,
-  IconButton,
+  RadioGroup,
+  Radio,
   useBoolean,
-  Flex
+  InputRightElement,
+  Flex,
+  InputGroup
 } from '@chakra-ui/react';
 
-import { MinusIcon } from '@chakra-ui/icons';
+import { TriangleUpIcon } from '@chakra-ui/icons';
 import { RiDeleteBin6Line } from 'react-icons/ri';
 import { AiOutlineEdit } from 'react-icons/ai';
 import { loginNear } from 'utils';
 import { toDecimals, fromDecimals } from 'utils';
 import octopusConfig from 'config/octopus';
-import { FAILED_TO_REDIRECT_MESSAGE, SIMPLE_CALL_GAS } from 'config/constants';
+import { FAILED_TO_REDIRECT_MESSAGE, SIMPLE_CALL_GAS, COMPLEX_CALL_GAS } from 'config/constants';
 import { useNavigate } from 'react-router-dom';
 
 const Permissions = ({ status }) => {
@@ -54,10 +56,9 @@ const Permissions = ({ status }) => {
   const [downvotePopoverOpen, setDownvotePopoverOpen] = useBoolean(false);
   const [isEditing, setIsEditing] = useBoolean(false);
 
-  const [voteAction, setVoteAction] = useState<'deposit'|'withdraw'>('deposit');
-  const [upvoteAmount, setUpvoteAmount] = useState('0');
-  const [downvoteAmount, setDownvoteAmount] = useState('0');
-  const [anchorCodeFile, setAnchorCodeFile] = useState<File>();
+  const [voteAction, setVoteAction] = useState('');
+  const [upvoteAmount, setUpvoteAmount] = useState('');
+  const [downvoteAmount, setDownvoteAmount] = useState('');
 
   const [accountBalance, setAccountBalance] = useState(0);
   const [upvoteDeposit, setUpvoteDeposit] = useState(0);
@@ -184,6 +185,24 @@ const Permissions = ({ status }) => {
 
   }
 
+  useEffect(() => {
+    if (upvotePopoverOpen) {
+      setVoteAction('deposit');
+      if (upvoteInputRef.current) {
+        setTimeout(() => {
+          (upvoteInputRef.current as any).focus();
+        }, 200);
+      }
+    } else if (downvotePopoverOpen) {
+      setVoteAction('deposit');
+      if (downvoteInputRef.current) {
+        setTimeout(() => {
+          (downvoteInputRef.current as any).focus();
+        }, 200);
+      }
+    }
+  }, [upvotePopoverOpen, downvotePopoverOpen]);
+
   if (!window.accountId) {
     return (
       status?.appchain_state === 'InQueue' ?
@@ -191,26 +210,6 @@ const Permissions = ({ status }) => {
         <Button colorScheme="octoColor" onClick={loginNear}>Login to Vote</Button>
       ) : null
     );
-  }
-
-  const onUpvoteAction = (a: 'deposit' | 'withdraw') => {
-    setUpvotePopoverOpen.toggle();
-    setVoteAction(a);
-    setTimeout(() => {
-      if (upvoteInputRef.current) {
-        (upvoteInputRef.current as any).focus();
-      }
-    }, 200);
-  }
-
-  const onDownvoteAction = (a: 'deposit' | 'withdraw') => {
-    setDownvotePopoverOpen.toggle();
-    setVoteAction(a);
-    setTimeout(() => {
-      if (downvoteInputRef.current) {
-        (downvoteInputRef.current as any).focus();
-      }
-    }, 200);
   }
 
   const onDepositVotes = () => {
@@ -255,7 +254,7 @@ const Permissions = ({ status }) => {
           appchain_id: status.appchain_id,
           amount: toDecimals(voteAmount)
         },
-        SIMPLE_CALL_GAS
+        COMPLEX_CALL_GAS
       ).then(() => {
         window.location.reload();
       }).catch(err => {
@@ -334,7 +333,6 @@ const Permissions = ({ status }) => {
         <>
         <Button colorScheme="octoColor" isLoading={loadingType === 'passAuditing'}
           isDisabled={!!loadingType || passAuditingPopoverOpen} onClick={onPassAuditing}>Pass Auditing</Button>
-        
         <Popover
           initialFocusRef={initialFocusRef}
           placement="bottom"
@@ -389,45 +387,52 @@ const Permissions = ({ status }) => {
             onClose={setUpvotePopoverOpen.off}
           >
             <PopoverTrigger>
-              <ButtonGroup isAttached variant="outline">
-                <Button mr="-px" 
-                  disabled={upvotePopoverOpen}
-                  onClick={() => onUpvoteAction('deposit')}>
-                  
-                  {/* <TriangleUpIcon /> */}
-                  <Text fontSize="sm" ml="1">Upvote</Text>
-                </Button>
-                <IconButton aria-label="withdraw downvote" icon={<MinusIcon />} 
-                  disabled={upvotePopoverOpen}
-                  onClick={() => onUpvoteAction('withdraw')} />
-              </ButtonGroup>
+              <Button mr="-px" variant="outline" colorScheme="octoColor"
+                disabled={upvotePopoverOpen}
+                onClick={setUpvotePopoverOpen.on}>
+                <TriangleUpIcon />
+                <Text fontSize="sm" ml="1">Upvote</Text>
+              </Button>
             </PopoverTrigger>
             <PopoverContent>
               <PopoverCloseButton disabled={!!loadingType} />
-              <PopoverBody>
+              <PopoverBody mt="3">
                 <Box p="2">
-                  <Heading fontSize="md">{ voteAction === 'deposit' ? 'Deposit' : 'Withdraw' } upvotes</Heading>
-                  <Flex justifyContent="flex-end" mt="3">
-                    <Input placeholder={`${voteAction} amount`} borderRightRadius="0" ref={upvoteInputRef}
-                      onChange={e => setUpvoteAmount(e.target.value)} />
-                    <Button colorScheme="octoColor" borderLeftRadius="0" 
+                  <RadioGroup onChange={(action: any) => setVoteAction(action)} value={voteAction}>
+                    <HStack spacing={4}>
+                      <Radio value="deposit">
+                        Deposit
+                      </Radio>
+                      <Radio value="witdraw">
+                        Withdraw
+                      </Radio>
+                    </HStack>
+                  </RadioGroup>
+                  <Box mt="3">
+                    <InputGroup>
+                      <Input ref={upvoteInputRef} placeholder={`${voteAction} amount`} value={upvoteAmount}
+                        onChange={e => setUpvoteAmount(e.target.value)} />
+                      <InputRightElement width="auto" children={
+                        <Text mr="2" cursor="pointer" fontSize="sm" color="octoColor.500" onClick={() => setUpvoteAmount((
+                          voteAction === 'deposit' ? accountBalance : upvoteDeposit
+                        ) as any)}>
+                          Max: {voteAction === 'deposit' ? accountBalance : upvoteDeposit}
+                        </Text>
+                      } />
+                    </InputGroup>
+                  </Box>
+                  <Box mt="4">
+                    <Button colorScheme="octoColor" isFullWidth={true}
                       isDisabled={!!loadingType || isNaN(upvoteAmount as any) || upvoteAmount as any <= 0} isLoading={loadingType === 'upvote'}
                       onClick={voteAction === 'deposit' ? onDepositVotes : onWithdrawVotes }>
-                      { voteAction === 'deposit' ? 'Deposit' : 'Withdraw' }
+                      { voteAction === 'deposit' ? 'Deposit' : 'Withdraw' } Upvotes
                     </Button>
-                  </Flex>
-                  <Box textAlign="right">
-                    {
-                      voteAction === 'deposit' ?
-                      <Text mt="1" fontSize="sm" color="gray">Balance: {accountBalance} OCT</Text> :
-                      <Text mt="1" fontSize="sm" color="gray">Max withdraw amount: {upvoteDeposit}</Text>
-                    }
                   </Box>
                 </Box>
               </PopoverBody>
             </PopoverContent>  
           </Popover>
-
+          
           <Popover
             initialFocusRef={initialFocusRef}
             placement="bottom"
@@ -436,38 +441,46 @@ const Permissions = ({ status }) => {
             onClose={setDownvotePopoverOpen.off}
           >
             <PopoverTrigger>
-              <ButtonGroup isAttached variant="outline">
-                <Button mr="-px" 
-                  disabled={downvotePopoverOpen}
-                  onClick={() => onDownvoteAction('deposit')}>
-                  {/* <TriangleDownIcon /> */}
-                  <Text fontSize="sm" ml="1">Downvote</Text>
-                </Button>
-                <IconButton aria-label="withdraw upvote" icon={<MinusIcon />} 
-                  disabled={downvotePopoverOpen}
-                  onClick={() => onDownvoteAction('withdraw')} />
-              </ButtonGroup>
+              <Button mr="-px" variant="outline" colorScheme="octoColor"
+                disabled={downvotePopoverOpen}
+                onClick={setDownvotePopoverOpen.on}>
+                <TriangleUpIcon />
+                <Text fontSize="sm" ml="1">Downvote</Text>
+              </Button>
             </PopoverTrigger>
             <PopoverContent>
               <PopoverCloseButton disabled={!!loadingType} />
-              <PopoverBody>
+              <PopoverBody mt="3">
                 <Box p="2">
-                  <Heading fontSize="md">{ voteAction === 'deposit' ? 'Deposit' : 'Withdraw' } downvotes</Heading>
-                  <Flex justifyContent="flex-end" mt="3">
-                    <Input placeholder={`${voteAction} amount`} borderRightRadius="0" ref={downvoteInputRef}
-                      onChange={e => setDownvoteAmount(e.target.value)} />
-                    <Button colorScheme="octoColor" borderLeftRadius="0" 
+                  <RadioGroup onChange={(action: any) => setVoteAction(action)} value={voteAction}>
+                    <HStack spacing={4}>
+                      <Radio value="deposit">
+                        Deposit
+                      </Radio>
+                      <Radio value="witdraw">
+                        Withdraw
+                      </Radio>
+                    </HStack>
+                  </RadioGroup>
+                  <Box mt="3">
+                    <InputGroup>
+                      <Input ref={downvoteInputRef} placeholder={`${voteAction} amount`} value={downvoteAmount}
+                        onChange={e => setDownvoteAmount(e.target.value)} />
+                      <InputRightElement width="auto" children={
+                        <Text mr="2" cursor="pointer" fontSize="sm" color="octoColor.500" onClick={() => setDownvoteAmount((
+                          voteAction === 'deposit' ? accountBalance : downvoteDeposit
+                        ) as any)}>
+                          Max: {voteAction === 'deposit' ? accountBalance : downvoteDeposit}
+                        </Text>
+                      } />
+                    </InputGroup>
+                  </Box>
+                  <Box mt="4">
+                    <Button colorScheme="octoColor" isFullWidth={true}
                       isDisabled={!!loadingType || isNaN(downvoteAmount as any) || downvoteAmount as any <= 0} isLoading={loadingType === 'downvote'}
                       onClick={voteAction === 'deposit' ? onDepositVotes : onWithdrawVotes }>
-                      { voteAction === 'deposit' ? 'Deposit' : 'Withdraw' }
+                      { voteAction === 'deposit' ? 'Deposit' : 'Withdraw' } Downvotes
                     </Button>
-                  </Flex>
-                  <Box textAlign="right">
-                    {
-                      voteAction === 'deposit' ?
-                      <Text mt="1" fontSize="sm" color="gray">Balance: {accountBalance} OCT</Text> :
-                      <Text mt="1" fontSize="sm" color="gray">Max withdraw amount: {downvoteDeposit}</Text>
-                    }
                   </Box>
                 </Box>
               </PopoverBody>

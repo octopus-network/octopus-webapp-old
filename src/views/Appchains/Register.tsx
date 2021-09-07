@@ -61,8 +61,21 @@ const Register = () => {
   }
 
   const onSubmit = (values, actions) => {
-    const { appchainId, websiteUrl, githubAddress, githubRelease, commitId, email } = values;
    
+    const { appchainId, websiteUrl, githubAddress, githubRelease, commitId, email } = values;
+    if (accountBalance < minimumRegisterDeposit) {
+      toast({
+        position: 'top-right',
+        title: 'Error',
+        description: 'Insufficient OCT Balance',
+        status: 'error'
+      });
+      setTimeout(() => {
+        actions.setSubmitting(false);
+      }, 300);
+      return;
+    }
+
     window
       .tokenContract
       .ft_transfer_call(

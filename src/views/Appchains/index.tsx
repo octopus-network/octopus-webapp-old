@@ -264,7 +264,7 @@ const Appchains = () => {
       <Flex mt="6">
         <Box boxShadow="octoShadow" p="6" borderRadius="10" flex={1}
           position="relative" overflow="hidden">
-          <SimpleGrid columns={{ base: 2, md: 3 }}>
+          <SimpleGrid columns={3}>
             <StatBox title={t('registered')} value={numRegistered} icon={FaRegEdit} color="green"
               tooltip="The appchains have registered, or in auditing/dead state." />
             <StatBox title={t('inqueue')} value={numInQueue} icon={GoTasklist} color="teal"
@@ -337,14 +337,16 @@ const Appchains = () => {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent>
-                  <PopoverCloseButton />
                   <PopoverBody>
                     <Box p="2" d="flex">
-                      <Heading fontSize="xl">Are you confirm to count score?</Heading>
+                      <Heading fontSize="lg">Are you confirm to count score?</Heading>
                     </Box>
                   </PopoverBody>
                   <PopoverFooter d="flex" justifyContent="flex-end">
-                    <Button size="sm" onClick={onCount} colorScheme="red">{t('Confirm')}</Button>
+                    <HStack spacing={3}>
+                      <Button size="sm" onClick={setCountPopoverOpen.off}>{t('Cancel')}</Button>
+                      <Button size="sm" onClick={onCount} colorScheme="octoColor">{t('Confirm')}</Button>
+                    </HStack>
                   </PopoverFooter>
                 </PopoverContent>
               </Popover>
@@ -362,20 +364,22 @@ const Appchains = () => {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent>
-                  <PopoverCloseButton />
                   <PopoverBody>
                     <Box p="2" d="flex">
-                      <Heading fontSize="xl">Are you confirm to conclude score?</Heading>
+                      <Heading fontSize="lg">Are you confirm to conclude score?</Heading>
                     </Box>
                   </PopoverBody>
                   <PopoverFooter d="flex" justifyContent="flex-end">
-                    <Button size="sm" onClick={onConclude} colorScheme="red">{t('Confirm')}</Button>
+                    <HStack spacing={3}>
+                      <Button size="sm" onClick={setConcludePopoverOpen.off}>{t('Cancel')}</Button>
+                      <Button size="sm" onClick={onConclude} colorScheme="octoColor">{t('Confirm')}</Button>
+                    </HStack>
                   </PopoverFooter>
                 </PopoverContent>
               </Popover>
               
             </HStack> :
-            <Popover trigger="hover">
+            <Popover trigger="hover" placement="top">
               <PopoverTrigger>
                 <Flex alignItems="center" color="gray" fontSize="sm" cursor="pointer">
                   <QuestionOutlineIcon />
@@ -385,8 +389,11 @@ const Appchains = () => {
               <PopoverContent>
                 <PopoverBody>
                   <UnorderedList fontSize="sm">
-                    <ListItem>Rule1</ListItem>
-                    <ListItem>Rule2</ListItem>
+                    <ListItem>$OCT holders can change the ranking of appchain by upvoting or downvoting. </ListItem>
+                    <ListItem>At around 00:00 UTC each day, the octopus team’s operator counts the votes of appchains, the score on that day is the number of upvotes minus the number of downvotes. </ListItem>
+                    <ListItem>After a week of voting, the appchain with the highest total score moves on to the next stage.</ListItem>
+                    <ListItem>The total score of all the  other appchains will decrease by 50% when an appchain moves to the next stage. </ListItem>
+                    <ListItem>The $OCT holders may withdraw his vote at any time.</ListItem>
                   </UnorderedList>
                 </PopoverBody>
               </PopoverContent>
