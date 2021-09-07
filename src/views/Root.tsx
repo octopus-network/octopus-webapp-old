@@ -108,7 +108,7 @@ const Root = () => {
     <div style={{ 
       backgroundImage: colorMode === 'light' ? 
         'linear-gradient(to bottom, #f5f6f9, #fff 30%)' : '',
-      backgroundSize: 'auto 100vh',
+      backgroundSize: '100% 100vh',
       backgroundRepeat: 'no-repeat'
     }}>
       <Header />

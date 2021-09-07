@@ -22,10 +22,17 @@ import {
   DrawerContent,
   DrawerHeader,
   CloseButton,
-  Fade,
-  Center,
+  PopoverTrigger,
+  PopoverContent,
+  UnorderedList,
+  ListItem,
   useToast,
-  useBoolean
+  useBoolean,
+  Popover,
+  PopoverBody,
+  PopoverCloseButton,
+  PopoverHeader,
+  PopoverFooter
 } from '@chakra-ui/react';
 
 import { COMPLEX_CALL_GAS } from 'config/constants';
@@ -38,7 +45,7 @@ import { VscServerProcess } from 'react-icons/vsc';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Link as RouterLink } from 'react-router-dom';
-import { QuestionOutlineIcon, InfoOutlineIcon } from '@chakra-ui/icons';
+import { QuestionOutlineIcon, QuestionIcon, InfoOutlineIcon, WarningIcon } from '@chakra-ui/icons';
 import BootingItem from './BootingItem';
 import InQueueItem from './InQueueItem';
 import StagingItem from './StagingItem';
@@ -114,12 +121,15 @@ const Appchains = () => {
   const [numBooting, setNumBooting] = useState<string|number>('');
   const [isCounting, setIsCounting] = useState(false);
   const [isConcluding, setIsConcluding] = useState(false);
+  const [countPopoverOpen, setCountPopoverOpen] = useBoolean(false);
   const [concludePopoverOpen, setConcludePopoverOpen] = useBoolean(false);
 
   const [appchains, setAppchains] = useState<any[]|null>();
   const [tabIndex, setTabIndex] = useState(appchainStates[state]);
   const [stagingAppchainLoading, setStagingAppchainLoading] = useState(true);
   const [stagingAppchain, setStagingAppchain] = useState<any>();
+
+  const initialFocusRef = React.useRef();
 
   useEffect(() => {
     const promises = [
@@ -200,6 +210,7 @@ const Appchains = () => {
 
   const onCount = () => {
     setIsCounting(true);
+    setCountPopoverOpen.off();
     window
       .registryContract
       .count_voting_score(
@@ -264,20 +275,28 @@ const Appchains = () => {
       </Flex>
       <Box mt="8">
         <Heading fontSize="2xl">{t('Staging')}</Heading>
-        <Box mt="6">
+        <Box mt="4">
           <Skeleton isLoaded={!stagingAppchainLoading}>
-          {
-            stagingAppchain ?
-            <RouterLink to={`/appchains/staging/${stagingAppchain?.appchain_id}`}>
-              <StagingItem appchain={stagingAppchain} />
-            </RouterLink> :
-            <Box boxShadow="octoShadow" p="6" borderRadius="10" flex={1}>
-              <Center color="gray">
-                <InfoOutlineIcon w="6" h="6" />
-                <Text ml="2">No staging appchain</Text>
-              </Center>
-            </Box>
-          }
+            {
+              stagingAppchain ?
+              <>
+                <SimpleGrid columns={{ base: 10, md: 14 }} color="gray" pl="6" pr="6" mt="4" pb="2" fontSize="sm">
+                  <GridItem colSpan={5}>{t('ID')}</GridItem>
+                  <GridItem colSpan={4} display={{ base: 'none', md: 'block' }}>{t('Validators')}</GridItem>
+                  <GridItem colSpan={4}>{t('Staked')}</GridItem>
+                  <GridItem colSpan={1} />
+                </SimpleGrid>
+                <RouterLink to={`/appchains/${state}/${stagingAppchain?.appchain_id}`}>
+                  <StagingItem appchain={stagingAppchain} />
+                </RouterLink>
+              </> :
+              <Box p="6" borderRadius="10" flex={1} bg="rgba(120, 120, 150, .05)">
+                <Flex color="gray" flexDirection="column" justifyContent="center" alignItems="center">
+                  <WarningIcon w="6" h="6" />
+                  <Text mt="2">No staging appchain</Text>
+                </Flex>
+              </Box>
+            }
           </Skeleton>
         </Box>
       </Box>
@@ -296,19 +315,78 @@ const Appchains = () => {
               }
             </TabList>
           </Tabs>
-          <Fade in={tabIndex === 1 && isAdmin && appchains?.length > 0}>
-          <HStack spacing={3}>
-            <Button size="sm" disabled={isCounting || isConcluding} 
-              display={tabIndex === 1 && isAdmin ? { base: 'none', md: 'block' } : 'none'} isLoading={isCounting} onClick={onCount}>
-              <Icon as={BiBadgeCheck} mr="1" /> {t('Count score')}
-            </Button>
-            <Button size="sm" colorScheme="red" display={ tabIndex === 1 && isAdmin ? { base: 'none', md: 'block' } : 'none' } 
-              disabled={isCounting || isConcluding || concludePopoverOpen} isLoading={isConcluding} 
-              onClick={onConclude}>
-              <Icon as={BsFillStopFill} mr="1" /> {t('Conclude score')}
-            </Button>
-          </HStack>
-          </Fade>
+          {
+            tabIndex === 1 ?
+            isAdmin ?
+            <HStack spacing={3}>
+              <Popover
+                initialFocusRef={initialFocusRef}
+                placement="bottom"
+                onClose={setCountPopoverOpen.off}
+                isOpen={countPopoverOpen}
+              >
+                <PopoverTrigger>
+                  <Button size="sm" disabled={isCounting || isConcluding || countPopoverOpen} onClick={setCountPopoverOpen.on}
+                    display={{ base: 'none', md: 'block' }} isLoading={isCounting}>
+                    <Icon as={BiBadgeCheck} mr="1" /> {t('Count score')}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent>
+                  <PopoverCloseButton />
+                  <PopoverBody>
+                    <Box p="2" d="flex">
+                      <Heading fontSize="xl">Are you confirm to count score?</Heading>
+                    </Box>
+                  </PopoverBody>
+                  <PopoverFooter d="flex" justifyContent="flex-end">
+                    <Button size="sm" onClick={onCount} colorScheme="red">{t('Confirm')}</Button>
+                  </PopoverFooter>
+                </PopoverContent>
+              </Popover>
+              <Popover
+                initialFocusRef={initialFocusRef}
+                placement="bottom"
+                onClose={setConcludePopoverOpen.off}
+                isOpen={concludePopoverOpen}
+              >
+                <PopoverTrigger>
+                  <Button size="sm" colorScheme="red" display={{ base: 'none', md: 'block' }} 
+                    disabled={isCounting || isConcluding || concludePopoverOpen} isLoading={isConcluding} 
+                    onClick={setConcludePopoverOpen.on}>
+                    <Icon as={BsFillStopFill} mr="1" /> {t('Conclude score')}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent>
+                  <PopoverCloseButton />
+                  <PopoverBody>
+                    <Box p="2" d="flex">
+                      <Heading fontSize="xl">Are you confirm to conclude score?</Heading>
+                    </Box>
+                  </PopoverBody>
+                  <PopoverFooter d="flex" justifyContent="flex-end">
+                    <Button size="sm" onClick={onConclude} colorScheme="red">{t('Confirm')}</Button>
+                  </PopoverFooter>
+                </PopoverContent>
+              </Popover>
+              
+            </HStack> :
+            <Popover trigger="hover">
+              <PopoverTrigger>
+                <Flex alignItems="center" color="gray" fontSize="sm" cursor="pointer">
+                  <QuestionOutlineIcon />
+                  <Text ml="1">Voting rules</Text>
+                </Flex>
+              </PopoverTrigger>
+              <PopoverContent>
+                <PopoverBody>
+                  <UnorderedList fontSize="sm">
+                    <ListItem>Rule1</ListItem>
+                    <ListItem>Rule2</ListItem>
+                  </UnorderedList>
+                </PopoverBody>
+              </PopoverContent>
+            </Popover> : null
+          }
         </Flex>
         <Box mt="4">
           {
