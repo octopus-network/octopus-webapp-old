@@ -23,7 +23,7 @@ const Footer = () => {
     <Container mt="16">
       <Box>
         <Box p="4" bg="rgba(120, 120, 155, .06)" borderRadius="5">
-          <Center>
+          <Center whiteSpace="nowrap" overflow="hidden">
             <HStack spacing={4}>
               <Link href="#">Term of service</Link>
               <Text color="gray.300">|</Text>

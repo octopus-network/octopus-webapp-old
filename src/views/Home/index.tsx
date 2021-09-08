@@ -155,8 +155,8 @@ const Home = () => {
       <Container
         pt={{ base: '36px', md: '48px', lg: '80px' }} 
         pb={{ base: '36px', md: '48px', lg: '80px' }}>
-        <Center position="relative" zIndex="1">
-          <VStack spacing="3" textAlign="center">
+        <Center position="relative" >
+          <VStack spacing="3" textAlign="center" position="relative" zIndex="1">
             <Heading fontSize={{ base: '3xl', md: '4xl', lg: '5xl' }}>{t('Where Web3.0 Happens')}</Heading>
             <Text fontSize={{ base: 'lg', md: 'xl', lg: '2xl' }}>{t('A cryptonetwork for launching and running Web3.0 Appchains')}</Text>
           </VStack>
