@@ -22,8 +22,6 @@ import TokenItem from './TokenItem';
 import { CopyIcon, CheckIcon } from '@chakra-ui/icons';
 import ActivityItem from './ActivityItem';
 
-const tokenContractIds = ['oct-token.testnet', 'usdc.testnet'];
-
 const Dashboard = () => {
 
   const [isDesktop] = useMediaQuery('(min-width: 62em)');
@@ -32,6 +30,8 @@ const Dashboard = () => {
   const [accountBalance, setAccountBalance] = useState(0);
 
   const { hasCopied, onCopy } = useClipboard(window.accountId);
+
+  const tokenContractIds = [octopusConfig.tokenContractId, 'usdc.testnet'];
 
   useEffect(() => {
     if (!window.accountId) {

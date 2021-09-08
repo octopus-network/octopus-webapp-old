@@ -14,11 +14,19 @@ import {
   List,
   useClipboard,
   IconButton,
-  Button,
   DrawerBody,
+  DrawerFooter,
+  Avatar,
+  Badge,
+  Button,
+  useBoolean,
+  Input,
+  useToast,
+  Tooltip
 } from '@chakra-ui/react';
 
 import dayjs from 'dayjs';
+import { loginNear } from 'utils';
 import { AiOutlineUser, AiOutlineGlobal, AiFillGithub, AiOutlineFileZip } from 'react-icons/ai';
 import { IoMdTime } from 'react-icons/io';
 import { ExternalLinkIcon, CopyIcon, CheckIcon } from '@chakra-ui/icons';
@@ -31,6 +39,17 @@ const Overview = ({ appchainId }) => {
 
   const [appchainStatus, setAppchainStatus] = useState<any>();
   const { hasCopied, onCopy } = useClipboard(appchainStatus?.appchain_metadata?.contact_email);
+  const [isOwner, setIsOwner] = useState(false);
+  const toast = useToast();
+
+  const [isEditing, setIsEditing] = useBoolean(false);
+  const [isUpdating, setIsUpdating] = useBoolean(false);
+  const [appchainMetadata, setAppchainMeataData] = useState({});
+
+  const isAdmin = window.accountId && (
+    new RegExp(`\.${window.accountId}`).test(octopusConfig.registryContractId) ||
+    window.accountId === octopusConfig.registryContractId
+  );
   
   useEffect(() => {
     window
@@ -40,11 +59,43 @@ const Overview = ({ appchainId }) => {
       })
       .then(status => {
         setAppchainStatus(status);
+        setAppchainMeataData(status.appchain_metadata);
+        setIsOwner(window.accountId && status?.appchain_owner === window.accountId);
       });
   }, [appchainId]);
 
+  const onUpdate = async () => {
+    setIsUpdating.on();
+    
+    try {
+      delete appchainMetadata['custom_metadata'];
+      await window
+        .registryContract
+        .update_appchain_custom_metadata({
+          appchain_id: appchainId,
+          custom_metadata: appchainMetadata
+        });
+
+      window.location.reload();
+    } catch(err) {
+      setIsEditing.off();
+      setIsUpdating.off();
+      toast({
+        position: 'top-right',
+        title: 'Error',
+        description: err.toString(),
+        status: 'error'
+      });
+    }
+  }
+
+  const onAppchainMetadataChange = (k, v) => {
+    setAppchainMeataData(Object.assign({}, appchainMetadata, {[k]: v}));
+  }
+  
   return (
 
+    <>
     <DrawerBody>
       <Flex justifyContent="space-between" alignItems="center">
         <VStack alignItems="flex-start" spacing="3">
@@ -75,7 +126,7 @@ const Overview = ({ appchainId }) => {
             </HStack>
           </Skeleton>
         </VStack>
-        <Permissions status={appchainStatus} />
+        <Permissions status={appchainStatus} onEdit={setIsEditing.on} onUpdate={onUpdate} onCancelEdit={setIsEditing.off} />
       </Flex>
       <Divider mt="6" mb="6" />
       <List>
@@ -88,9 +139,14 @@ const Overview = ({ appchainId }) => {
               <Icon as={AiOutlineGlobal} w={5} h={5} />
               <Text>Website</Text>
             </HStack>
-            <Link href={appchainStatus?.appchain_metadata?.website_url} isExternal>
-              {appchainStatus?.appchain_metadata?.website_url} <ExternalLinkIcon mx="2px" />
-            </Link>
+            {
+              isEditing ?
+              <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.website_url} 
+                onChange={e => onAppchainMetadataChange('website_url', e.target.value)} width="auto" /> :
+              <Link href={appchainStatus?.appchain_metadata?.website_url} isExternal>
+                {appchainStatus?.appchain_metadata?.website_url} <ExternalLinkIcon mx="2px" />
+              </Link>
+            }
           </Flex>
           <Divider mt="4" mb="4" />
           </>
@@ -101,14 +157,19 @@ const Overview = ({ appchainId }) => {
               <Icon as={AiFillGithub} w={5} h={5} />
               <Text>Github</Text>
             </HStack>
-            <Link href={appchainStatus?.appchain_metadata?.github_address} isExternal>
-              <HStack>
-                <Box maxW="240px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
-                  {appchainStatus?.appchain_metadata?.github_address}
-                </Box>
-                <ExternalLinkIcon mx="2px" />
-              </HStack>
-            </Link>
+            {
+              isEditing ?
+              <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.github_address} 
+                onChange={e => onAppchainMetadataChange('github_address', e.target.value)} width="auto" /> :
+              <Link href={appchainStatus?.appchain_metadata?.github_address} isExternal>
+                <HStack>
+                  <Box maxW="240px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
+                    {appchainStatus?.appchain_metadata?.github_address}
+                  </Box>
+                  <ExternalLinkIcon mx="2px" />
+                </HStack>
+              </Link>
+            }
           </Flex>
         </Skeleton>
         <Divider mt="4" mb="4" />
@@ -118,14 +179,19 @@ const Overview = ({ appchainId }) => {
               <Icon as={AiOutlineFileZip} w={5} h={5} />
               <Text>Release</Text>
             </HStack>
-            <Link href={appchainStatus?.appchain_metadata?.github_release} isExternal>
-              <HStack>
-                <Box maxW="240px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
-                  {appchainStatus?.appchain_metadata?.github_release}
-                </Box>
-                <ExternalLinkIcon mx="2px" />
-              </HStack>
-            </Link>
+            {
+              isEditing ?
+              <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.github_release} 
+                onChange={e => onAppchainMetadataChange('github_release', e.target.value)} width="auto" /> :
+              <Link href={appchainStatus?.appchain_metadata?.github_release} isExternal>
+                <HStack>
+                  <Box maxW="240px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
+                    {appchainStatus?.appchain_metadata?.github_release}
+                  </Box>
+                  <ExternalLinkIcon mx="2px" />
+                </HStack>
+              </Link>
+            }
           </Flex>
         </Skeleton>
         <Divider mt="4" mb="4" />
@@ -135,17 +201,47 @@ const Overview = ({ appchainId }) => {
               <Icon as={HiOutlineMail} w={5} h={5} />
               <Text>Email</Text>
             </HStack>
-            <HStack>
-              <Text>{appchainStatus?.appchain_metadata?.contact_email}</Text>
-              <IconButton size="sm" aria-label="Copy" icon={
-                hasCopied ? <CheckIcon />: <CopyIcon />
-              } onClick={onCopy} />
-            </HStack>
+            {
+              isEditing ?
+              <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.contact_email} 
+                onChange={e => onAppchainMetadataChange('contact_email', e.target.value)} width="auto" /> :
+              <HStack>
+                <Text>{appchainStatus?.appchain_metadata?.contact_email}</Text>
+                <IconButton size="sm" aria-label="Copy" icon={
+                  hasCopied ? <CheckIcon />: <CopyIcon />
+                } onClick={onCopy} />
+              </HStack>
+            }
           </Flex>
         </Skeleton>
       </List>
-      
     </DrawerBody>
+    <DrawerFooter bg="rgba(120, 120, 150, .08)">
+      {
+        window.accountId ?
+        <HStack>
+          <Avatar size="xs" />
+          <Text>{window.accountId}</Text>
+          { 
+            isOwner && 
+            <Tooltip label="Owner of this appchain">
+              <Badge colorScheme="green">Owner</Badge>
+            </Tooltip>
+          }
+          { 
+            isAdmin && 
+            <Tooltip label="Admin of Octopus Registry">
+              <Badge colorScheme="purple">Admin</Badge>
+            </Tooltip>
+          }
+        </HStack> :
+        <Button size="sm" onClick={loginNear}>
+          <Avatar size="xs" mr="1" />
+          <Text color="gray">Login</Text>
+        </Button>
+      }
+    </DrawerFooter>
+    </>
   
   );
 }

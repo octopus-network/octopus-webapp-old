@@ -24,7 +24,6 @@ import {
   Radio,
   useBoolean,
   InputRightElement,
-  Flex,
   InputGroup
 } from '@chakra-ui/react';
 
@@ -37,8 +36,11 @@ import octopusConfig from 'config/octopus';
 import { FAILED_TO_REDIRECT_MESSAGE, SIMPLE_CALL_GAS, COMPLEX_CALL_GAS } from 'config/constants';
 import { useNavigate } from 'react-router-dom';
 
-const Permissions = ({ status }) => {
+import { useTranslation } from 'react-i18next';
+
+const Permissions = ({ status, onEdit, onUpdate, onCancelEdit }) => {
   const toast = useToast();
+  const { t } = useTranslation();
 
   const isAdmin = window.accountId && (
     new RegExp(`\.${window.accountId}`).test(octopusConfig.registryContractId) ||
@@ -49,12 +51,11 @@ const Permissions = ({ status }) => {
 
   const navigate = useNavigate();
   const [loadingType, setLoadingType] = useState('');
-  const [refundPercent, setRefundPercent] = useState(100);
-  const [refundPopoverOpen, setRefundPopoverOpen] = useBoolean(false);
+  const [rejectPopoverOpen, setRejectPopoverOpen] = useBoolean(false);
   const [passAuditingPopoverOpen, setPassAuditingPopoverOpen] = useBoolean(false);
   const [upvotePopoverOpen, setUpvotePopoverOpen] = useBoolean(false);
   const [downvotePopoverOpen, setDownvotePopoverOpen] = useBoolean(false);
-  const [isEditing, setIsEditing] = useBoolean(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const [voteAction, setVoteAction] = useState('');
   const [upvoteAmount, setUpvoteAmount] = useState('');
@@ -112,13 +113,12 @@ const Permissions = ({ status }) => {
 
   const onReject = () => {
     setLoadingType('reject');
-    setRefundPopoverOpen.off();
+    setRejectPopoverOpen.off();
     window
       .registryContract
       .reject_appchain(
         {
-          appchain_id: status.appchain_id,
-          refund_percent: refundPercent.toString()
+          appchain_id: status.appchain_id
         },
         SIMPLE_CALL_GAS
       ).then(() => {
@@ -136,7 +136,7 @@ const Permissions = ({ status }) => {
 
   const onRemove = () => {
     setLoadingType('remove');
-    setRefundPopoverOpen.off();
+    setRejectPopoverOpen.off();
     window
       .registryContract
       .remove_appchain(
@@ -268,13 +268,22 @@ const Permissions = ({ status }) => {
       });
   }
 
-  const onUpdate = () => {
+  const _onUpdate = async () => {
     setLoadingType('update');
 
-    setTimeout(() => {
-      setLoadingType('');
-      setIsEditing.off();
-    }, 500);
+    await onUpdate();
+    setLoadingType('');
+    setIsEditing(false);
+  }
+
+  const _onEdit = () => {
+    setIsEditing(true);
+    onEdit();
+  }
+
+  const _onCancelEdit = () => {
+    setIsEditing(false);
+    onCancelEdit();
   }
 
   return (
@@ -286,46 +295,46 @@ const Permissions = ({ status }) => {
         <>
           <Button colorScheme="octoColor" isLoading={loadingType === 'audit'}
             isDisabled={!!loadingType} onClick={onStartAudit}>Start Audit</Button>
+
           <Popover
             initialFocusRef={initialFocusRef}
             placement="bottom"
-            isOpen={refundPopoverOpen}
-            onClose={setRefundPopoverOpen.off}
-          >
+            isOpen={rejectPopoverOpen}
+            onClose={setRejectPopoverOpen.off}
+            >
             <PopoverTrigger>
               <Button colorScheme="red" isLoading={loadingType === 'reject'}
-                isDisabled={!!loadingType || refundPopoverOpen} onClick={setRefundPopoverOpen.toggle}>Reject</Button>
+                isDisabled={!!loadingType || rejectPopoverOpen} onClick={setRejectPopoverOpen.toggle}>Reject</Button>
             </PopoverTrigger>
             <PopoverContent>
-              <PopoverCloseButton />
               <PopoverBody>
-                <VStack alignItems="flex-start">
-                  <Heading fontSize="md">Refund percent</Heading>
-                  <Box p="2" w="100%">
-                    <Slider defaultValue={refundPercent} min={0} max={100} step={10} onChange={value => setRefundPercent(value)}>
-                      <SliderTrack>
-                        <SliderFilledTrack />
-                      </SliderTrack>
-                      <SliderThumb />
-                    </Slider>
-                  </Box>
-                </VStack>
+                <Box p="2" d="flex">
+                  <Heading fontSize="lg">Are you confirm to reject this registration?</Heading>
+                </Box>
               </PopoverBody>
-              <PopoverFooter d="flex" justifyContent="space-between" alignItems="center">
-                <Text color="gray" fontSize="sm">
-                  Refund {refundPercent}% of {fromDecimals(status.register_deposit)}OCT
-                </Text>
-                <Button colorScheme="red" size="sm" onClick={onReject}>Confirm</Button>
+              <PopoverFooter d="flex" justifyContent="flex-end">
+                <HStack spacing={3}>
+                  <Button size="sm" onClick={setRejectPopoverOpen.off}>{t('Cancel')}</Button>
+                  <Button size="sm" onClick={onReject} colorScheme="octoColor">{t('Confirm')}</Button>
+                </HStack>
               </PopoverFooter>
             </PopoverContent>
           </Popover>
+          
         </> : 
         isOwner ?
-        <Button colorScheme={isEditing ? 'octoColor' : 'gray'} isLoading={loadingType === 'update'}
-          isDisabled={!!loadingType} onClick={isEditing ? onUpdate : setIsEditing.toggle}>
-          { !isEditing && <Icon as={AiOutlineEdit} mr="1" /> }
-          { isEditing ? 'Update' : 'Edit' }
+        isEditing ?
+        <>
+          <Button onClick={_onCancelEdit} variant="ghost" isDisabled={!!loadingType}>Cancel</Button>
+          <Button onClick={_onUpdate} isDisabled={!!loadingType} 
+            isLoading={loadingType === 'update'} colorScheme="octoColor">
+            Update
+          </Button>
+        </> :
+        <Button onClick={_onEdit}>
+          <Icon as={AiOutlineEdit} mr="1" /> Edit
         </Button> : null
+        
       ) : 
       status?.appchain_state === 'Auditing' ?
       (
@@ -336,33 +345,24 @@ const Permissions = ({ status }) => {
         <Popover
           initialFocusRef={initialFocusRef}
           placement="bottom"
-          isOpen={refundPopoverOpen}
-          onClose={setRefundPopoverOpen.off}
-        >
+          isOpen={rejectPopoverOpen}
+          onClose={setRejectPopoverOpen.off}
+          >
           <PopoverTrigger>
             <Button colorScheme="red" isLoading={loadingType === 'reject'}
-              isDisabled={!!loadingType || refundPopoverOpen} onClick={setRefundPopoverOpen.toggle}>Reject</Button>
+              isDisabled={!!loadingType || rejectPopoverOpen} onClick={setRejectPopoverOpen.toggle}>Reject</Button>
           </PopoverTrigger>
           <PopoverContent>
-            <PopoverCloseButton />
             <PopoverBody>
-              <VStack alignItems="flex-start">
-                <Heading fontSize="md">Refund percent</Heading>
-                <Box p="2" w="100%">
-                  <Slider defaultValue={refundPercent} min={0} max={100} step={10} onChange={value => setRefundPercent(value)}>
-                    <SliderTrack>
-                      <SliderFilledTrack />
-                    </SliderTrack>
-                    <SliderThumb />
-                  </Slider>
-                </Box>
-              </VStack>
+              <Box p="2" d="flex">
+                <Heading fontSize="lg">Are you confirm to reject this registration?</Heading>
+              </Box>
             </PopoverBody>
-            <PopoverFooter d="flex" justifyContent="space-between" alignItems="center">
-              <Text color="gray" fontSize="sm">
-                Refund {refundPercent}% of {fromDecimals(status.register_deposit)}OCT
-              </Text>
-              <Button colorScheme="red" size="sm" onClick={onReject}>Confirm</Button>
+            <PopoverFooter d="flex" justifyContent="flex-end">
+              <HStack spacing={3}>
+                <Button size="sm" onClick={setRejectPopoverOpen.off}>{t('Cancel')}</Button>
+                <Button size="sm" onClick={onReject} colorScheme="octoColor">{t('Confirm')}</Button>
+              </HStack>
             </PopoverFooter>
           </PopoverContent>
         </Popover>

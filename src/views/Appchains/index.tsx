@@ -20,6 +20,8 @@ import {
   Drawer,
   DrawerOverlay,
   DrawerContent,
+  DrawerBody,
+  DrawerFooter,
   DrawerHeader,
   CloseButton,
   PopoverTrigger,
@@ -30,9 +32,8 @@ import {
   useBoolean,
   Popover,
   PopoverBody,
-  PopoverCloseButton,
-  PopoverHeader,
-  PopoverFooter
+  PopoverFooter,
+  Avatar
 } from '@chakra-ui/react';
 
 import { COMPLEX_CALL_GAS } from 'config/constants';
@@ -357,7 +358,7 @@ const Appchains = () => {
                 isOpen={concludePopoverOpen}
               >
                 <PopoverTrigger>
-                  <Button size="sm" colorScheme="red" display={{ base: 'none', md: 'block' }} 
+                  <Button size="sm" colorScheme="octoColor" display={{ base: 'none', md: 'block' }} 
                     disabled={isCounting || isConcluding || concludePopoverOpen} isLoading={isConcluding} 
                     onClick={setConcludePopoverOpen.on}>
                     <Icon as={BsFillStopFill} mr="1" /> {t('Conclude score')}
@@ -390,7 +391,7 @@ const Appchains = () => {
                 <PopoverBody>
                   <UnorderedList fontSize="sm">
                     <ListItem>$OCT holders can change the ranking of appchain by upvoting or downvoting. </ListItem>
-                    <ListItem>At around 00:00 UTC each day, the octopus team’s operator counts the votes of appchains, the score on that day is the number of upvotes minus the number of downvotes. </ListItem>
+                    <ListItem>At around 00:00 UTC each day, the Octopus team’s operator counts the votes of appchains, the score on that day is the number of upvotes minus the number of downvotes. </ListItem>
                     <ListItem>After a week of voting, the appchain with the highest total score moves on to the next stage.</ListItem>
                     <ListItem>The total score of all the  other appchains will decrease by 50% when an appchain moves to the next stage. </ListItem>
                     <ListItem>The $OCT holders may withdraw his vote at any time.</ListItem>

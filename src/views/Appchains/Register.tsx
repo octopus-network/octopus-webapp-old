@@ -17,8 +17,7 @@ import {
   useToast
 } from '@chakra-ui/react';
 
-import { } from 'near-api-js';
-import { Formik, Form, Field, useField } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { useTranslation } from 'react-i18next';
 import { fromDecimals, toDecimals } from 'utils';
 import { FAILED_TO_REDIRECT_MESSAGE, COMPLEX_CALL_GAS } from 'config/constants';
@@ -195,7 +194,7 @@ const Register = () => {
                     <FormLabel htmlFor="email">&nbsp;</FormLabel>
                     <VStack alignItems="flex-start" spacing="0">
                       <Flex alignItems="center">
-                        <Text mr="1">Bond:</Text>
+                        <Text mr="1" fontSize="sm">Auditing Fee:</Text>
                         <Heading fontSize="md">{minimumRegisterDeposit} OCT</Heading>
                       </Flex>
                       <Text color="gray" fontSize="xs">Balance: {accountBalance} OCT</Text>
