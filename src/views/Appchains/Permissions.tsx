@@ -209,8 +209,19 @@ const Permissions = ({ status, onEdit, onUpdate, onCancelEdit }) => {
   }
 
   const onDepositVotes = () => {
+    
     const voteType = upvotePopoverOpen ? 'upvote' : 'downvote';
     const voteAmount = voteType === 'upvote' ? upvoteAmount : downvoteAmount;
+
+    if ((voteAmount as any)*1 > accountBalance) {
+      return toast({
+        position: 'top-right',
+        title: 'Error',
+        description: 'Insufficient Balance',
+        status: 'error'
+      });
+    }
+
     setLoadingType(voteType);
     window
       .tokenContract
