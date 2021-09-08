@@ -8,10 +8,6 @@ import {
   PopoverTrigger,
   PopoverContent,
   PopoverBody,
-  Slider,
-  SliderTrack,
-  SliderFilledTrack,
-  SliderThumb,
   PopoverFooter,
   PopoverCloseButton,
   VStack,
@@ -27,7 +23,7 @@ import {
   InputGroup
 } from '@chakra-ui/react';
 
-import { TriangleUpIcon } from '@chakra-ui/icons';
+import { TriangleUpIcon, TriangleDownIcon } from '@chakra-ui/icons';
 import { RiDeleteBin6Line } from 'react-icons/ri';
 import { AiOutlineEdit } from 'react-icons/ai';
 import { loginNear } from 'utils';
@@ -444,7 +440,7 @@ const Permissions = ({ status, onEdit, onUpdate, onCancelEdit }) => {
               <Button mr="-px" variant="outline" colorScheme="octoColor"
                 disabled={downvotePopoverOpen}
                 onClick={setDownvotePopoverOpen.on}>
-                <TriangleUpIcon />
+                <TriangleDownIcon />
                 <Text fontSize="sm" ml="1">Downvote</Text>
               </Button>
             </PopoverTrigger>
