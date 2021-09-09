@@ -1,6 +1,6 @@
 import * as React from 'react';
 import DocumentTitle from 'react-document-title';
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ChakraProvider } from '@chakra-ui/react';
 
 import defaultTheme from 'config/defaultTheme';
