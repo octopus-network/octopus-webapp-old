@@ -50,7 +50,7 @@ const Header = () => {
   return (
     <>
       <Box position="relative" zIndex="2">
-        <Container maxW="full" pt="4" pb="4">
+        <Container maxW="container.xl" pt="4" pb="4">
           <Flex justify="space-between" alignItems="center">
             <HStack spacing="12">
               <RouterLink to="/">
@@ -74,7 +74,7 @@ const Header = () => {
               {
                 window.walletConnection?.isSignedIn() ?
                 <Menu placement="top-end">
-                  <MenuButton as={Button}>
+                  <MenuButton as={Button} variant="ghost">
                     <HStack>
                       <Avatar w="20px" h="20px" mr="1" />
                       <Text maxW="100px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">{window.accountId}</Text>
