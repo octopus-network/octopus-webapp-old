@@ -49,7 +49,7 @@ const InQueueItem = ({
       </GridItem>
       <GridItem colSpan={3} textAlign="center">
         <Tag variant="outline" colorScheme="octoColor">
-          {fromDecimals(voting_score)}
+          {fromDecimals(voting_score).toFixed(2)}
         </Tag>
       </GridItem>
       <GridItem colSpan={1} textAlign="right">

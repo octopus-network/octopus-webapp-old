@@ -86,12 +86,12 @@ const Votes = ({
         <Tooltip label={`Upvotes ${fromDecimals(upvotes)}`}>
         <HStack spacing={1} color="#0845A5" fontSize="sm">
           <Icon as={BiUpArrow} />
-          <Text>{fromDecimals(upvotes)}</Text>
+          <Text>{fromDecimals(upvotes).toFixed(2)}</Text>
         </HStack>
         </Tooltip>
         <Tooltip label={`Upvotes - Downvotes`}>
         <Tag size="sm" variant="outline" colorScheme="octoColor">
-          {t('Score')}: {fromDecimals(upvotes - downvotes)}
+          {t('Score')}: {fromDecimals(upvotes - downvotes).toFixed(2)}
         </Tag>
         </Tooltip>
         <Tooltip label={`Downvotes ${fromDecimals(downvotes)}`}>
