@@ -38,7 +38,7 @@ const InQueueItem = ({
   const backgrounds = ['yellow', 'blue', 'cyan', 'gray'];
 
   useEffect(() => {
-    axios.get( `/.netlify/functions/counter.js?appchain=${appchain_id}`)
+    axios.get( `/api/counter.js?appchain=${appchain_id}`)
       .then((res: any) => {
         console.log(res);
         if (res.success) {
