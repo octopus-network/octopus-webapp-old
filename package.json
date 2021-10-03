@@ -30,6 +30,7 @@
     "history": "^5.0.0",
     "i18next": "^20.3.5",
     "near-api-js": "^0.42.0",
+    "pg-promise": "^10.11.0",
     "react": "^17.0.2",
     "react-document-title": "^2.0.3",
     "react-dom": "^17.0.2",

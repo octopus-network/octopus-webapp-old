@@ -11,12 +11,12 @@ import {
   HStack,
   Icon,
   Tooltip,
-  Tag
+  Tag,
+  Button
 } from '@chakra-ui/react';
 
 import { fromDecimals } from 'utils';
-import { BiUpArrow, BiDownArrow } from 'react-icons/bi';
-import { TriangleDownIcon, TriangleUpIcon } from '@chakra-ui/icons';
+import { MdArrowDropUp, MdArrowDropDown } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 
 // const StyledProgress = styled(Progress)<{ value: number }>`
@@ -52,7 +52,7 @@ const StyledProgress = styled(Progress)<{ value: number }>`
     height: 12px;
     width: 12px;
     border-radius: 6px;
-    transform: scale(.8);
+    transform: scale(.7);
     background: #fff;
     border: 2px solid #0845A5;
     top: 1px;
@@ -74,7 +74,7 @@ const Votes = ({
     downvotes > 0 ?
     new BigNumber(upvotes).times(100).dividedBy(
       new BigNumber(upvotes).plus(new BigNumber(downvotes))
-    ) :
+    ).toNumber() :
     100 :
     0;
 
@@ -83,22 +83,26 @@ const Votes = ({
       
       <StyledProgress value={value} size="sm" />
       <Flex mt="2" justifyContent="space-between">
-        <Tooltip label={`Upvotes ${fromDecimals(upvotes)}`}>
-        <HStack spacing={1} color="#0845A5" fontSize="sm">
+        <Tooltip label={`Upvote`}>
+          <Button borderRadius={30} size="xs" variant="outline">
+            <Icon as={MdArrowDropUp} w={5} h={5} />
+            <Text>{fromDecimals(upvotes).toFixed(2)}</Text>
+          </Button>
+        {/* <HStack spacing={1} color="#0845A5" fontSize="sm">
           <Icon as={BiUpArrow} />
           <Text>{fromDecimals(upvotes).toFixed(2)}</Text>
-        </HStack>
+        </HStack> */}
         </Tooltip>
-        <Tooltip label={`Upvotes - Downvotes`}>
-        <Tag size="sm" variant="outline" colorScheme="octoColor">
+        <Tooltip label={`Current voting score: upvotes - downvotes`}>
+        <Tag size="sm">
           {t('Score')}: {fromDecimals(upvotes - downvotes).toFixed(2)}
         </Tag>
         </Tooltip>
-        <Tooltip label={`Downvotes ${fromDecimals(downvotes)}`}>
-        <HStack spacing={1} color="#0845A5" fontSize="sm">
-          <Icon as={BiDownArrow} />
-          <Text>{fromDecimals(downvotes)}</Text>
-        </HStack>
+        <Tooltip label={`Downvote`}>
+          <Button borderRadius={30} size="xs" variant="outline">
+            <Icon as={MdArrowDropDown} w={5} h={5} />
+            <Text>{fromDecimals(downvotes).toFixed(2)}</Text>
+          </Button>
         </Tooltip>
       </Flex>
     </Flex>

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import axios from 'axios';
 
 import { 
   GridItem,
@@ -30,9 +31,21 @@ const InQueueItem = ({
   appchain: any;
   index: number;
 }) => {
- 
+  
+  const [counterData, setCounterData] = useState([]);
+
   const { appchain_id, downvote_deposit, upvote_deposit, voting_score } = appchain;
   const backgrounds = ['yellow', 'blue', 'cyan', 'gray'];
+
+  useEffect(() => {
+    axios.get( `/.netlify/functions/counter.js?appchain=${appchain_id}`)
+      .then((res: any) => {
+        console.log(res);
+        if (res.success) {
+          setCounterData(res.data);
+        }
+      });
+  }, []);
 
   return (
     <StyledAppchainItem boxShadow="octoShadow" columns={{ base: 9, md: 15 }} p="6" alignItems="center">
@@ -48,7 +61,7 @@ const InQueueItem = ({
         <Votes upvotes={upvote_deposit} downvotes={downvote_deposit} />
       </GridItem>
       <GridItem colSpan={3} textAlign="center">
-        <Tag variant="outline" colorScheme="octoColor">
+        <Tag>
           {fromDecimals(voting_score).toFixed(2)}
         </Tag>
       </GridItem>
