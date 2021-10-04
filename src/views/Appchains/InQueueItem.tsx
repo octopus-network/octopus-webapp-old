@@ -101,7 +101,7 @@ const InQueueItem = ({
           <Box w="24px" h="24px" borderRadius="12px" bg={`${backgrounds[index] || 'gray'}.500`} display="flex" alignItems="center" justifyContent="center">
             <Heading size="sm" color="white">{index+1}</Heading>
           </Box>
-          <Heading fontSize="xl" ml={2}>{appchain_id}</Heading>
+          <Heading fontSize="xl" ml={2} whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">{appchain_id}</Heading>
         </HStack>
       </GridItem>
       <GridItem colSpan={6}  display={{ base: 'none', md: 'block' }}>

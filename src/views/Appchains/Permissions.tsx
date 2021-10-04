@@ -11,6 +11,8 @@ import {
   PopoverFooter,
   PopoverCloseButton,
   VStack,
+  Grid,
+  GridItem,
   Heading,
   Text,
   Input,
@@ -18,6 +20,7 @@ import {
   Box,
   RadioGroup,
   Radio,
+  Flex,
   useBoolean,
   InputRightElement,
   InputGroup
@@ -52,6 +55,7 @@ const Permissions = ({ status, onEdit, onUpdate, onCancelEdit }) => {
   const [upvotePopoverOpen, setUpvotePopoverOpen] = useBoolean(false);
   const [downvotePopoverOpen, setDownvotePopoverOpen] = useBoolean(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
 
   const [voteAction, setVoteAction] = useState('');
   const [upvoteAmount, setUpvoteAmount] = useState('');
@@ -255,7 +259,7 @@ const Permissions = ({ status, onEdit, onUpdate, onCancelEdit }) => {
       window.registryContract.withdraw_upvote_deposit_of : 
       window.registryContract.withdraw_downvote_deposit_of;
 
-    setLoadingType(voteType);
+    setIsWithdrawing(true);
     method(
         {
           appchain_id: status.appchain_id,
@@ -265,7 +269,7 @@ const Permissions = ({ status, onEdit, onUpdate, onCancelEdit }) => {
       ).then(() => {
         window.location.reload();
       }).catch(err => {
-        setLoadingType('');
+        setIsWithdrawing(false);
         toast({
           position: 'top-right',
           title: 'Error',
@@ -402,38 +406,32 @@ const Permissions = ({ status, onEdit, onUpdate, onCancelEdit }) => {
               </Button>
             </PopoverTrigger>
             <PopoverContent>
-              <PopoverCloseButton disabled={!!loadingType} />
-              <PopoverBody mt="3">
-                <Box p="2">
-                  <RadioGroup onChange={(action: any) => setVoteAction(action)} value={voteAction}>
-                    <HStack spacing={4}>
-                      <Radio value="deposit">
-                        Deposit
-                      </Radio>
-                      <Radio value="witdraw">
-                        Withdraw
-                      </Radio>
-                    </HStack>
-                  </RadioGroup>
-                  <Box mt="3">
-                    <InputGroup>
-                      <Input ref={upvoteInputRef} placeholder={`${voteAction} amount`} value={upvoteAmount}
-                        onChange={e => setUpvoteAmount(e.target.value)} />
-                      <InputRightElement width="auto" children={
-                        <Text mr="2" cursor="pointer" fontSize="sm" color="octoColor.500" onClick={() => setUpvoteAmount((
-                          voteAction === 'deposit' ? accountBalance : upvoteDeposit
-                        ) as any)}>
-                          Max: {voteAction === 'deposit' ? accountBalance : upvoteDeposit}
-                        </Text>
-                      } />
-                    </InputGroup>
+              <PopoverCloseButton disabled={!!loadingType || isWithdrawing} />
+              <PopoverBody mt={3}>
+                <Box p={2}>
+                  <Box mt={3}>
+                    <Input ref={upvoteInputRef} placeholder={`amount of votes`} value={upvoteAmount}
+                      onChange={e => setUpvoteAmount(e.target.value)} />
+                    <Flex justifyContent="flex-end" mt={2}>
+                      <Text fontSize="sm" color="gray">Deposited: {upvoteDeposit} OCT</Text>
+                    </Flex>
                   </Box>
-                  <Box mt="4">
-                    <Button colorScheme="octoColor" isFullWidth={true}
-                      isDisabled={!!loadingType || isNaN(upvoteAmount as any) || upvoteAmount as any <= 0} isLoading={loadingType === 'upvote'}
-                      onClick={voteAction === 'deposit' ? onDepositVotes : onWithdrawVotes }>
-                      { voteAction === 'deposit' ? 'Deposit' : 'Withdraw' } Upvotes
-                    </Button>
+                  <Box mt={4}>
+                    <Grid templateColumns="repeat(5, 1fr)" gap={2}>
+                      <GridItem colSpan={upvoteDeposit <= 0 ? 5 : 3}>
+                        <Button colorScheme="octoColor" isFullWidth={true}
+                          isDisabled={!!loadingType || isWithdrawing || isNaN(upvoteAmount as any) || upvoteAmount as any <= 0} isLoading={loadingType === 'upvote'}
+                          onClick={onDepositVotes}>Deposit</Button>
+                      </GridItem>
+                      {
+                        upvoteDeposit > 0 &&
+                        <GridItem colSpan={2}>
+                          <Button isFullWidth={true}
+                            isDisabled={isWithdrawing || isNaN(upvoteAmount as any) || upvoteAmount as any <= 0} isLoading={isWithdrawing}
+                            onClick={onWithdrawVotes}>Withdraw</Button>
+                        </GridItem>
+                      }
+                    </Grid>
                   </Box>
                 </Box>
               </PopoverBody>
@@ -456,38 +454,32 @@ const Permissions = ({ status, onEdit, onUpdate, onCancelEdit }) => {
               </Button>
             </PopoverTrigger>
             <PopoverContent>
-              <PopoverCloseButton disabled={!!loadingType} />
-              <PopoverBody mt="3">
-                <Box p="2">
-                  <RadioGroup onChange={(action: any) => setVoteAction(action)} value={voteAction}>
-                    <HStack spacing={4}>
-                      <Radio value="deposit">
-                        Deposit
-                      </Radio>
-                      <Radio value="witdraw">
-                        Withdraw
-                      </Radio>
-                    </HStack>
-                  </RadioGroup>
-                  <Box mt="3">
-                    <InputGroup>
-                      <Input ref={downvoteInputRef} placeholder={`${voteAction} amount`} value={downvoteAmount}
-                        onChange={e => setDownvoteAmount(e.target.value)} />
-                      <InputRightElement width="auto" children={
-                        <Text mr="2" cursor="pointer" fontSize="sm" color="octoColor.500" onClick={() => setDownvoteAmount((
-                          voteAction === 'deposit' ? accountBalance : downvoteDeposit
-                        ) as any)}>
-                          Max: {voteAction === 'deposit' ? accountBalance : downvoteDeposit}
-                        </Text>
-                      } />
-                    </InputGroup>
+              <PopoverCloseButton disabled={!!loadingType || isWithdrawing} />
+              <PopoverBody mt={3}>
+                <Box p={2}>
+                  <Box mt={3}>
+                    <Input ref={downvoteInputRef} placeholder={`amount of votes`} value={downvoteAmount}
+                      onChange={e => setDownvoteAmount(e.target.value)} />
+                    <Flex justifyContent="flex-end" mt={2}>
+                      <Text fontSize="sm" color="gray">Deposited: {downvoteDeposit} OCT</Text>
+                    </Flex>
                   </Box>
-                  <Box mt="4">
-                    <Button colorScheme="octoColor" isFullWidth={true}
-                      isDisabled={!!loadingType || isNaN(downvoteAmount as any) || downvoteAmount as any <= 0} isLoading={loadingType === 'downvote'}
-                      onClick={voteAction === 'deposit' ? onDepositVotes : onWithdrawVotes }>
-                      { voteAction === 'deposit' ? 'Deposit' : 'Withdraw' } Downvotes
-                    </Button>
+                  <Box mt={4}>
+                    <Grid templateColumns="repeat(5, 1fr)" gap={2}>
+                      <GridItem colSpan={downvoteDeposit <= 0 ? 5 : 3}>
+                        <Button colorScheme="octoColor" isFullWidth={true}
+                          isDisabled={!!loadingType || isWithdrawing || isNaN(downvoteAmount as any) || downvoteAmount as any <= 0} isLoading={loadingType === 'downvote'}
+                          onClick={onDepositVotes}>Deposit</Button>
+                      </GridItem>
+                      {
+                        downvoteDeposit > 0 &&
+                        <GridItem colSpan={2}>
+                          <Button isFullWidth={true}
+                            isDisabled={isWithdrawing || isNaN(downvoteAmount as any) || downvoteAmount as any <= 0} isLoading={isWithdrawing}
+                            onClick={onWithdrawVotes}>Withdraw</Button>
+                        </GridItem>
+                      }
+                    </Grid>
                   </Box>
                 </Box>
               </PopoverBody>
