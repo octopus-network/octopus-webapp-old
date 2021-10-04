@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 import {
   Box,
@@ -22,16 +22,20 @@ import {
   useBoolean,
   Input,
   useToast,
-  Tooltip
+  Tooltip,
+  Tag
 } from '@chakra-ui/react';
 
 import dayjs from 'dayjs';
-import { loginNear } from 'utils';
+import axios from 'axios';
+import { loginNear, fromDecimals } from 'utils';
 import { AiOutlineUser, AiOutlineGlobal, AiFillGithub, AiOutlineFileZip } from 'react-icons/ai';
+import { FaStarHalfAlt } from 'react-icons/fa';
 import { IoMdTime } from 'react-icons/io';
 import { ExternalLinkIcon, CopyIcon, CheckIcon } from '@chakra-ui/icons';
 import { HiOutlineMail } from 'react-icons/hi';
 import StateBadge from 'components/StateBadge';
+import ScoreChart from 'components/ScoreChart';
 import Permissions from './Permissions';
 import octopusConfig from 'config/octopus';
 
@@ -42,6 +46,10 @@ const Overview = ({ appchainId }) => {
   const [isOwner, setIsOwner] = useState(false);
   const toast = useToast();
 
+  const [counterData, setCounterData] = useState();
+  const highestScore = useRef(0);
+  const lowestScore = useRef(Number.MAX_SAFE_INTEGER);
+
   const [isEditing, setIsEditing] = useBoolean(false);
   const [isUpdating, setIsUpdating] = useBoolean(false);
   const [appchainMetadata, setAppchainMeataData] = useState({});
@@ -50,6 +58,27 @@ const Overview = ({ appchainId }) => {
     new RegExp(`\.${window.accountId}`).test(octopusConfig.registryContractId) ||
     window.accountId === octopusConfig.registryContractId
   );
+
+  useEffect(() => {
+    axios.get( `/api/counter?appchain=${appchainId}`)
+      .then(res => res.data)
+      .then((data: any) => {
+        if (data.success) {
+          setCounterData(data.data.map(({ voting_score, created_at }) => {
+            const score = fromDecimals(voting_score);
+            if (score < lowestScore.current) {
+              lowestScore.current = score;
+            } else if (score > highestScore.current) {
+              highestScore.current = score;
+            }
+            return {
+              date: dayjs(created_at).format('MM-DD'),
+              score
+            }
+          }));
+        }
+      });
+  }, []);
   
   useEffect(() => {
     window
@@ -58,6 +87,7 @@ const Overview = ({ appchainId }) => {
         appchain_id: appchainId
       })
       .then(status => {
+        console.log(status);
         setAppchainStatus(status);
         setAppchainMeataData(status.appchain_metadata);
         setIsOwner(window.accountId && status?.appchain_owner === window.accountId);
@@ -130,7 +160,27 @@ const Overview = ({ appchainId }) => {
       </Flex>
       <Divider mt="6" mb="6" />
       <List>
-        
+        {
+          appchainStatus?.appchain_state === 'InQueue' &&
+          <>
+          <Box>
+            <Flex justifyContent="space-between">
+              <HStack>
+                <Icon as={FaStarHalfAlt} w={5} h={5} />
+                <Text>Total Score</Text>
+              </HStack>
+              <Tag>{fromDecimals(appchainStatus?.voting_score)}</Tag>
+            </Flex>
+            <Skeleton isLoaded={counterData}>
+            <Box width="100%" height="80px" mt={4}>
+              <ScoreChart data={counterData} highest={highestScore.current} 
+                lowest={lowestScore.current} showDate={true} />
+            </Box>
+            </Skeleton>
+          </Box>
+          <Divider mt="4" mb="4" />
+          </>
+        }
         {
           appchainStatus?.appchain_metadata?.website_url &&
           <>
@@ -151,6 +201,7 @@ const Overview = ({ appchainId }) => {
           <Divider mt="4" mb="4" />
           </>
         }
+        
         <Skeleton isLoaded={!!appchainStatus}>
           <Flex justifyContent="space-between">
             <HStack>

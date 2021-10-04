@@ -32,6 +32,7 @@ import { FcComboChart, FcCurrencyExchange, FcOrgUnit } from 'react-icons/fc';
 import { Link as RouterLink } from 'react-router-dom';
 import StatCard from './StatCard';
 import NoData from 'components/NoData';
+import globe from 'assets/globe.svg';
 
 const StyledAppchainItem = styled(SimpleGrid)`
   border-radius: 10px;
@@ -154,7 +155,9 @@ const Home = () => {
     <>
       <Container
         pt={{ base: '36px', md: '48px', lg: '80px' }} 
-        pb={{ base: '36px', md: '48px', lg: '80px' }}>
+        pb={{ base: '36px', md: '48px', lg: '80px' }}
+        position="relative"
+      >
         <Center position="relative" >
           <VStack spacing="3" textAlign="center" position="relative" zIndex="1">
             <Heading fontSize={{ base: '3xl', md: '4xl', lg: '5xl' }}>{t('Where Web3.0 Happens')}</Heading>
@@ -177,6 +180,8 @@ const Home = () => {
             </RouterLink>
           </Center>
         </Box>
+        <Box position="absolute" left="0" right="0" bottom="0" top="0" opacity=".2" zIndex="0"
+          bg={`url(${globe}) center -50px / cover no-repeat;`} />
       </Container>
       <Container>
         <Grid templateColumns={isDesktop ? 'repeat(3, 1fr)' : 'repeat(1, 1fr)'} gap={12}>

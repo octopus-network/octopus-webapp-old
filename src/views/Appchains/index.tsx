@@ -412,9 +412,8 @@ const Appchains = () => {
             </SimpleGrid> :
             tabIndex === 1 ?
             <SimpleGrid columns={{ base: 9, md: 15 }} color="gray" pl="6" pr="6" pb="2" fontSize="sm">
-              <GridItem colSpan={1} />
               <GridItem colSpan={4}>{t('ID')}</GridItem>
-              <GridItem colSpan={6} textAlign="center"
+              <GridItem colSpan={7} textAlign="center"
                 display={{ base: 'none', md: 'block' }}>{t('Votes')}</GridItem>
               <GridItem colSpan={3} textAlign="center">{t('Total Score')}</GridItem>
               <GridItem colSpan={1} />

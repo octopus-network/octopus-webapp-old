@@ -83,7 +83,7 @@ const Votes = ({
       
       <StyledProgress value={value} size="sm" />
       <Flex mt="2" justifyContent="space-between">
-        <Tooltip label={`Upvote`}>
+        <Tooltip label={`Upvotes`}>
           <Button borderRadius={30} size="xs" variant="outline">
             <Icon as={MdArrowDropUp} w={5} h={5} />
             <Text>{fromDecimals(upvotes).toFixed(2)}</Text>
@@ -98,7 +98,7 @@ const Votes = ({
           {t('Score')}: {fromDecimals(upvotes - downvotes).toFixed(2)}
         </Tag>
         </Tooltip>
-        <Tooltip label={`Downvote`}>
+        <Tooltip label={`Downvotes`}>
           <Button borderRadius={30} size="xs" variant="outline">
             <Icon as={MdArrowDropDown} w={5} h={5} />
             <Text>{fromDecimals(downvotes).toFixed(2)}</Text>
