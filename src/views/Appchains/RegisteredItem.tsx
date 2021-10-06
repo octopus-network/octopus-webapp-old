@@ -33,11 +33,11 @@ const BootingItem = ({
       <GridItem colSpan={5}>
         <HStack>
           <Avatar name={appchain_id} size="sm" display={{ base: 'none', md: 'block' }} />
-          <Heading fontSize="xl">{appchain_id}</Heading>
+          <Heading fontSize="lg">{appchain_id}</Heading>
         </HStack>
       </GridItem>
       <GridItem colSpan={4} display={{ base: 'none', md: 'block' }}>
-        <Text fontSize="xl">{appchain_owner}</Text>
+        <Text fontSize="lg">{appchain_owner}</Text>
       </GridItem>
       <GridItem colSpan={4}>
         <StateBadge state={appchain_state} />

@@ -35,7 +35,7 @@ const StagingItem = ({
       <GridItem colSpan={5}>
         <HStack>
           <Avatar name={appchain_id} size="sm" display={{ base: 'none', md: 'block' }} bg="blue.100" />
-          <Heading fontSize="xl">{appchain_id}</Heading>
+          <Heading fontSize="lg">{appchain_id}</Heading>
         </HStack>
       </GridItem>
       <GridItem colSpan={4}>

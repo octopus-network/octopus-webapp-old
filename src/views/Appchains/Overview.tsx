@@ -44,6 +44,7 @@ const Overview = ({ appchainId }) => {
   const [appchainStatus, setAppchainStatus] = useState<any>();
   const { hasCopied, onCopy } = useClipboard(appchainStatus?.appchain_metadata?.contact_email);
   const [isOwner, setIsOwner] = useState(false);
+  const [accountBalance, setAccountBalance] = useState(0);
   const toast = useToast();
 
   const [counterData, setCounterData] = useState();
@@ -78,6 +79,11 @@ const Overview = ({ appchainId }) => {
           }));
         }
       });
+    window.tokenContract.ft_balance_of({
+      account_id: window.accountId
+    }).then(balance => {
+      setAccountBalance(fromDecimals(balance));
+    });
   }, []);
   
   useEffect(() => {
@@ -272,22 +278,30 @@ const Overview = ({ appchainId }) => {
     <DrawerFooter bg="rgba(120, 120, 150, .08)">
       {
         window.accountId ?
-        <HStack>
-          <Avatar size="xs" />
-          <Text>{window.accountId}</Text>
-          { 
-            isOwner && 
-            <Tooltip label="Owner of this appchain">
-              <Badge colorScheme="green">Owner</Badge>
-            </Tooltip>
-          }
-          { 
-            isAdmin && 
-            <Tooltip label="Admin of Octopus Registry">
-              <Badge colorScheme="purple">Admin</Badge>
-            </Tooltip>
-          }
-        </HStack> :
+        <VStack alignItems="flex-end" spacing={0}>
+          <HStack>
+            <Avatar size="sm" />
+            <VStack spacing={-1} alignItems="flex-start">
+              <HStack>
+                <Text>{window.accountId}</Text>
+                { 
+                  isOwner && 
+                  <Tooltip label="Owner of this appchain">
+                    <Badge colorScheme="green">Owner</Badge>
+                  </Tooltip>
+                }
+                { 
+                  isAdmin && 
+                  <Tooltip label="Admin of Octopus Registry">
+                    <Badge colorScheme="purple">Admin</Badge>
+                  </Tooltip>
+                }
+              </HStack>
+              <Text fontSize="xs" color="gray">Balance: {accountBalance} OCT</Text>
+            </VStack>
+          </HStack>
+          
+        </VStack> :
         <Button size="sm" onClick={loginNear}>
           <Avatar size="xs" mr="1" />
           <Text color="gray">Login</Text>
