@@ -67,7 +67,7 @@ const Header = () => {
               </HStack>
             </HStack>
             <HStack spacing={3} display={{ base: 'none', lg: 'flex' }} alignItems="center">
-              <ColorModeSwitcher />
+              {/* <ColorModeSwitcher /> */}
               <Link onClick={setLocalModalOpen.on}>
                 {t('localeName')} <Icon w={3} h={3} as={FaChevronDown} />
               </Link>

@@ -30,7 +30,7 @@ import dayjs from 'dayjs';
 import axios from 'axios';
 import { loginNear, fromDecimals } from 'utils';
 import { AiOutlineUser, AiOutlineGlobal, AiFillGithub, AiOutlineFileZip } from 'react-icons/ai';
-import { FaStarHalfAlt } from 'react-icons/fa';
+import { FaStar } from 'react-icons/fa';
 import { IoMdTime } from 'react-icons/io';
 import { ExternalLinkIcon, CopyIcon, CheckIcon } from '@chakra-ui/icons';
 import { HiOutlineMail } from 'react-icons/hi';
@@ -166,10 +166,12 @@ const Overview = ({ appchainId }) => {
           <Box>
             <Flex justifyContent="space-between">
               <HStack>
-                <Icon as={FaStarHalfAlt} w={5} h={5} />
+                <Icon as={FaStar} w={5} h={5} />
                 <Text>Total Score</Text>
               </HStack>
-              <Tag>{fromDecimals(appchainStatus?.voting_score)}</Tag>
+              <Box borderRadius={30} border="1px solid #ccc" p="2px 8px" fontSize="sm">
+                {fromDecimals(appchainStatus?.voting_score).toFixed(2)}
+              </Box>
             </Flex>
             <Skeleton isLoaded={counterData}>
             <Box width="100%" height="80px" mt={4}>

@@ -45,7 +45,7 @@ export default function ScoreChart({ data, lowest, highest, showDate }: {
         <defs>
           <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%" stopColor="#e3964e" stopOpacity={0.5}/>
-            <stop offset="70%" stopColor="#e3964e" stopOpacity={0}/>
+            <stop offset="80%" stopColor="#e3964e" stopOpacity={0}/>
           </linearGradient>
         </defs>
         <YAxis hide={true} domain={[lowest, highest]} />

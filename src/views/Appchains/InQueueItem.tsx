@@ -10,23 +10,17 @@ import {
   HStack,
   Icon,
   SimpleGrid,
-  Skeleton,
-  Text
+  Tag,
+  Text,
+  Flex,
+  Tooltip,
+  Skeleton
 } from '@chakra-ui/react';
 
-
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  Tooltip as ChartTooltip, 
-  YAxis,
-  ResponsiveContainer,
-} from 'recharts';
-
 import { MdKeyboardArrowRight } from 'react-icons/md';
+import { FaStar } from 'react-icons/fa';
 import { fromDecimals } from 'utils';
-import Votes from 'components/Votes';
+
 import ScoreChart from 'components/ScoreChart';
 
 const StyledAppchainItem = styled(SimpleGrid)`
@@ -37,41 +31,71 @@ const StyledAppchainItem = styled(SimpleGrid)`
   }
 `;
 
-const CustomTooltip = ({ 
-  label,
-  active,
-  payload
-}: {
-  label?: any;
-  active?: boolean;
-  payload?: any;
-}) => {
- 
-  if (active && payload && payload.length) {
-    return (
-      <Box bg="rgba(120, 120, 155, .1)" p={1} borderRadius={3}>
-        <Text fontSize="xs">{payload[0].payload.date}: {payload[0].payload.score}</Text>
-      </Box>
-    );
-  }
-  return null;
-}
+const StyledBar = styled(Box)`
+  border-radius: 5px;
+  transition: width .8s ease-out;
+`;
+
+const StyledBox = styled(Box)`
+  padding: 2px 8px;
+  transition: opacity .8s ease-out;
+  white-space: nowrap;
+`;
 
 const InQueueItem = ({
   appchain,
-  index
+  index,
+  highestVotes,
+  highestScore
 }: {
   appchain: any;
   index: number;
+  highestVotes: number;
+  highestScore: number;
 }) => {
   
   const [counterData, setCounterData] = useState();
 
-  const highestScore = useRef(0);
-  const lowestScore = useRef(Number.MAX_SAFE_INTEGER);
+  const [upvotes, setUpvotes] = useState(0);
+  const [downvotes, setDownvotes] = useState(0);
+  const [score, setScore] = useState(0);
+
+  const highest = useRef(0);
+  const lowest = useRef(0);
 
   const { appchain_id, downvote_deposit, upvote_deposit, voting_score } = appchain;
+  const [userUpvoteDeposit, setUserUpvoteDeposit] = useState(0);
+  const [userDownvoteDeposit, setUserDownvoteDeposit] = useState(0);
+
   const backgrounds = ['yellow', 'blue', 'cyan', 'gray'];
+
+  useEffect(() => {
+    setTimeout(() => {
+      setUpvotes(fromDecimals(upvote_deposit));
+      setDownvotes(fromDecimals(downvote_deposit));
+      setScore(fromDecimals(voting_score));
+    }, 10);
+  }, [downvote_deposit, upvote_deposit]);
+
+  useEffect(() => {
+    if (!appchain_id) {
+      return;
+    }
+
+    Promise.all([
+      window.registryContract.get_upvote_deposit_for({
+        appchain_id,
+        account_id: window.accountId
+      }),
+      window.registryContract.get_downvote_deposit_for({
+        appchain_id,
+        account_id: window.accountId
+      })
+    ]).then(([upvoteDeposit, downvoteDeposit]) => {
+      setUserUpvoteDeposit(fromDecimals(upvoteDeposit));
+      setUserDownvoteDeposit(fromDecimals(downvoteDeposit));
+    });
+  }, [appchain_id]);
 
   useEffect(() => {
     axios.get( `/api/counter?appchain=${appchain_id}`)
@@ -80,14 +104,14 @@ const InQueueItem = ({
         if (data.success) {
           setCounterData(data.data.map(({ voting_score, created_at }) => {
             const score = fromDecimals(voting_score);
-            if (score < lowestScore.current) {
-              lowestScore.current = score;
-            } else if (score > highestScore.current) {
-              highestScore.current = score;
+            if (score < lowest.current) {
+              lowest.current = score;
+            } else if (score > highest.current) {
+              highest.current = score;
             }
             return {
               date: dayjs(created_at).format('MM-DD'),
-              score
+              score: score.toFixed(2)
             }
           }));
         }
@@ -95,25 +119,85 @@ const InQueueItem = ({
   }, []);
 
   return (
-    <StyledAppchainItem boxShadow="octoShadow" columns={{ base: 9, md: 15 }} p="6" alignItems="center">
+    <StyledAppchainItem boxShadow="octoShadow" columns={{ base: 9, md: 14 }} p="6" alignItems="center">
       <GridItem colSpan={4}>
         <HStack>
           <Box w="24px" h="24px" borderRadius="12px" bg={`${backgrounds[index] || 'gray'}.500`} display="flex" alignItems="center" justifyContent="center">
             <Heading size="sm" color="white">{index+1}</Heading>
           </Box>
-          <Heading fontSize="xl" ml={2} whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">{appchain_id}</Heading>
+          <Heading fontSize="lg" ml={2} whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">{appchain_id}</Heading>
         </HStack>
       </GridItem>
-      <GridItem colSpan={6}  display={{ base: 'none', md: 'block' }}>
-        <Votes upvotes={upvote_deposit} downvotes={downvote_deposit} />
+      <GridItem colSpan={5}  display={{ base: 'none', md: 'block' }}>
+        <Box height="45px" position="relative">
+          <Tooltip label={
+            <Box>
+              <Flex alignItems="center">
+                <Box w="8px" h="8px" bg="#8884d8" borderRadius={2} />
+                <Text fontSize="xs" ml={1}>Upvotes: {upvotes.toFixed(2)}</Text>
+              </Flex>
+              <Flex alignItems="center">
+                <Box w="8px" h="8px" bg="#82ca9d" borderRadius={2} />
+                <Text fontSize="xs" ml={1}>Downvotes: {downvotes.toFixed(2)}</Text>
+              </Flex>
+            </Box>
+          }>
+            <Box>
+              <Box bg="#f5f5fc" borderRadius={10} p="0 5px">
+              <Flex alignItems="center">
+                <StyledBar width={(upvotes ? 100*upvotes/highestVotes : 0) + '%'} h="8px" bg="#8884d8" />
+                <Text fontSize="xs" ml={1}>{upvotes.toFixed(2)}</Text>
+              </Flex>
+              </Box>
+              <Box bg="#f5faf5" borderRadius={10} mt={2} p="0 5px">
+              <Flex alignItems="center" mt={-1}>
+                <StyledBar width={(downvotes ? 100*downvotes/highestVotes : 0) + '%'} h="8px" bg="#82ca9d" />
+                <Text fontSize="xs" ml={1}>{downvotes.toFixed(2)}</Text>
+              </Flex>
+              </Box>
+            </Box>
+          </Tooltip>
+          {
+            (userDownvoteDeposit || userUpvoteDeposit) ?
+            <Flex position="absolute" bottom="-15px" transform="scale(.95)">
+              <HStack color="gray" fontSize="xs">
+                <Text >Your deposit:</Text>
+                <Text>
+                  {
+                    userDownvoteDeposit && userUpvoteDeposit ? 
+                    `${userUpvoteDeposit} upvotes, ${userDownvoteDeposit} downvotes` :
+                    userUpvoteDeposit ?
+                    `${userUpvoteDeposit} upvotes` :
+                    `${userDownvoteDeposit} downvotes`
+                  }
+                </Text>
+              </HStack>
+            </Flex> : null
+          }
+        </Box>
       </GridItem>
       <GridItem colSpan={1} />
       <GridItem colSpan={3} textAlign="center">
-        <Skeleton isLoaded={counterData}>
-          <Box width="100%" height="38px">
-            <ScoreChart data={counterData} highest={highestScore.current} lowest={lowestScore.current} />
+        <Tooltip label={
+          <Box>
+            <Text fontSize="xs" ml={1}>Total Score: {score.toFixed(2)}</Text>
+            <Text fontSize="xs" ml={1}>Pending Score: {(upvotes-downvotes).toFixed(2)}</Text>
           </Box>
-        </Skeleton>
+        }>
+        <HStack spacing={-1}>
+          <StyledBox border="1px solid #ccc"
+            style={{ opacity: score ? '1' : '0', borderRadius: '30px' }}>
+            <HStack>
+              <Icon as={FaStar} style={{ width: '12px', height: '12px' }} />
+              <Text fontSize="sm">{score.toFixed(2)}</Text>
+            </HStack>
+          </StyledBox>
+          <StyledBox border="1px dashed #ccc"
+            style={{ opacity: score ? '2' : '0', borderRadius: '0 30px 30px 0', color: '#9a9a9a', borderLeft: 0 }}>
+            <Text fontSize="xs">{(upvotes-downvotes).toFixed(2)}</Text>
+          </StyledBox>
+        </HStack>
+        </Tooltip>
       </GridItem>
       <GridItem colSpan={1} textAlign="right">
         <Icon as={MdKeyboardArrowRight} color="rgba(0, 0, 0, .3)" w={6} h={6} />

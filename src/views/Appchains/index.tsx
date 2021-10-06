@@ -55,6 +55,7 @@ import RegisteredItem from './RegisteredItem';
 import NoData from 'components/NoData';
 import Overview from './Overview';
 import octopusConfig from 'config/octopus';
+import { fromDecimals } from 'utils';
 
 const StatBox = ({
   title,
@@ -124,6 +125,8 @@ const Appchains = () => {
   const [isConcluding, setIsConcluding] = useState(false);
   const [countPopoverOpen, setCountPopoverOpen] = useBoolean(false);
   const [concludePopoverOpen, setConcludePopoverOpen] = useBoolean(false);
+  const [highestVotes, setHighestVotes] = useState(0);
+  const [highestScore, setHighestScore] = useState(0);
 
   const [appchains, setAppchains] = useState<any[]|null>();
   const [tabIndex, setTabIndex] = useState(appchainStates[state]);
@@ -186,6 +189,20 @@ const Appchains = () => {
         sorting_order: 'Descending'
       }).then((arr: any) => {
         setAppchains([].concat(...arr));
+        let highest = 0;
+        for (let i = 0; i < arr.length; i++) {
+          const { upvote_deposit, downvote_deposit } = arr[i];
+          if (fromDecimals(upvote_deposit) > highest) {
+            highest = fromDecimals(upvote_deposit);
+          }
+          if (fromDecimals(downvote_deposit) > highest) {
+            highest = fromDecimals(upvote_deposit);
+          }
+          setHighestVotes(highest);
+        }
+        if (arr.length) {
+          setHighestScore(fromDecimals(arr[0].voting_score));
+        }
       });
 
   }, [tabIndex]);
@@ -380,25 +397,37 @@ const Appchains = () => {
               </Popover>
               
             </HStack> :
-            <Popover trigger="hover" placement="top">
-              <PopoverTrigger>
-                <Flex alignItems="center" color="octoColor.500" fontSize="sm" cursor="pointer">
-                  <QuestionOutlineIcon />
-                  <Text ml="1">Voting rules</Text>
+            <HStack spacing={4}>
+              <HStack>
+                <Flex alignItems="center">
+                  <Box w="10px" h="10px" bg="#8884d8" borderRadius={2} />
+                  <Text fontSize="sm" ml={1} color="gray">Upvotes</Text>
                 </Flex>
-              </PopoverTrigger>
-              <PopoverContent>
-                <PopoverBody>
-                  <UnorderedList fontSize="sm">
-                    <ListItem>$OCT holders can change the ranking of appchain by upvoting or downvoting. </ListItem>
-                    <ListItem>At around 00:00 UTC each day, the Octopus team’s operator counts the votes of appchains, the score on that day is the number of upvotes minus the number of downvotes. </ListItem>
-                    <ListItem>After a week of voting, the appchain with the highest total score moves on to the next stage.</ListItem>
-                    <ListItem>The total score of all the  other appchains will decrease by 50% when an appchain moves to the next stage. </ListItem>
-                    <ListItem>The $OCT holders may withdraw his vote at any time.</ListItem>
-                  </UnorderedList>
-                </PopoverBody>
-              </PopoverContent>
-            </Popover> : null
+                <Flex alignItems="center">
+                  <Box w="10px" h="10px" bg="#82ca9d" borderRadius={2} />
+                  <Text fontSize="sm" ml={1} color="gray">Downvotes</Text>
+                </Flex>
+              </HStack>
+              <Popover trigger="hover" placement="top">
+                <PopoverTrigger>
+                  <Flex alignItems="center" color="octoColor.500" fontSize="sm" cursor="pointer">
+                    <QuestionOutlineIcon />
+                    <Text ml="1">Voting rules</Text>
+                  </Flex>
+                </PopoverTrigger>
+                <PopoverContent>
+                  <PopoverBody>
+                    <UnorderedList fontSize="sm">
+                      <ListItem>$OCT holders can change the ranking of appchain by upvoting or downvoting. </ListItem>
+                      <ListItem>At around 00:00 UTC each day, the Octopus team’s operator counts the votes of appchains, the score on that day is the number of upvotes minus the number of downvotes. </ListItem>
+                      <ListItem>After a week of voting, the appchain with the highest total score moves on to the next stage.</ListItem>
+                      <ListItem>The total score of all the  other appchains will decrease by 50% when an appchain moves to the next stage. </ListItem>
+                      <ListItem>The $OCT holders may withdraw his vote at any time.</ListItem>
+                    </UnorderedList>
+                  </PopoverBody>
+                </PopoverContent>
+              </Popover>
+            </HStack> : null
           }
         </Flex>
         <Box mt="4">
@@ -411,11 +440,11 @@ const Appchains = () => {
               <GridItem colSpan={1} />
             </SimpleGrid> :
             tabIndex === 1 ?
-            <SimpleGrid columns={{ base: 9, md: 15 }} color="gray" pl="6" pr="6" pb="2" fontSize="sm">
+            <SimpleGrid columns={{ base: 10, md: 14 }} color="gray" pl="6" pr="6" pb="2" fontSize="sm">
               <GridItem colSpan={4}>{t('ID')}</GridItem>
-              <GridItem colSpan={7} textAlign="center"
+              <GridItem colSpan={6} textAlign="center"
                 display={{ base: 'none', md: 'block' }}>{t('Votes')}</GridItem>
-              <GridItem colSpan={3} textAlign="center">{t('Total Score')}</GridItem>
+              <GridItem colSpan={3} textAlign="center">{t('Score')}</GridItem>
               <GridItem colSpan={1} />
             </SimpleGrid> :
             <SimpleGrid columns={{ base: 13, md: 17 }} color="gray" pl="6" pr="6" pb="2" fontSize="sm">
@@ -436,7 +465,8 @@ const Appchains = () => {
               </RouterLink> :
               tabIndex === 1 ?
               <RouterLink to={`/appchains/${state}/${appchain.appchain_id}`}>
-                <InQueueItem index={idx} appchain={appchain} key={`appchain-${idx}`} />
+                <InQueueItem index={idx} appchain={appchain} key={`appchain-${idx}`} 
+                  highestVotes={highestVotes} highestScore={highestScore} />
               </RouterLink> :
               <BootingItem appchain={appchain} key={`appchain-${idx}`} />
             )) :
