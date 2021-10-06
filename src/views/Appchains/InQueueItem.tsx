@@ -129,7 +129,7 @@ const InQueueItem = ({
         </HStack>
       </GridItem>
       <GridItem colSpan={5}  display={{ base: 'none', md: 'block' }}>
-        <Box height="40px" position="relative">
+        <Box height="35px" position="relative">
           <Tooltip label={
             <Box>
               <Flex alignItems="center">
@@ -143,19 +143,19 @@ const InQueueItem = ({
             </Box>
           }>
             <Box>
-              <Box bg="#f5f5fc" borderRadius={15} pl="5px" pr="5px" height="15px" overflow="hidden">
-                <Box mt="-1px" position="relative">
+              <Box bg="#f5f5fc" borderRadius={15} height="11px" overflow="hidden">
+                <Box mt="-3px" position="relative">
                   <Flex alignItems="center">
-                    <StyledBar width={(upvotes ? 100*upvotes/highestVotes : 0) + '%'} h="8px" bg="#8884d8" />
-                    <Text fontSize="xs" ml={1} transform="scale(.9)">{upvotes.toFixed(2)}</Text>
+                    <StyledBar width={(upvotes ? 100*upvotes/highestVotes : 0) + '%'} h="9px" bg="#8884d8" />
+                    <Text fontSize="xs" transform="scale(.9)">{upvotes.toFixed(2)}</Text>
                   </Flex>
                 </Box>
               </Box>
-              <Box bg="#f5faf5" borderRadius={15} mt={1} pl="5px" pr="5px" height="15px" overflow="hidden">
-                <Box mt="-1px" position="relative">
+              <Box bg="#f5faf5" borderRadius={15} mt={2} height="11px" overflow="hidden">
+                <Box mt="-3px" position="relative">
                   <Flex alignItems="center">
-                    <StyledBar width={(downvotes ? 100*downvotes/highestVotes : 0) + '%'} h="8px" bg="#82ca9d" />
-                    <Text fontSize="xs" ml={1} transform="scale(.9)">{downvotes.toFixed(2)}</Text>
+                    <StyledBar width={(downvotes ? 100*downvotes/highestVotes : 0) + '%'} h="9px" bg="#82ca9d" />
+                    <Text fontSize="xs" transform="scale(.9)">{downvotes.toFixed(2)}</Text>
                   </Flex>
                 </Box>
               </Box>
@@ -163,7 +163,7 @@ const InQueueItem = ({
           </Tooltip>
           {
             (userDownvoteDeposit || userUpvoteDeposit) ?
-            <Flex position="absolute" bottom="-14px" transform="scale(.95)">
+            <Flex position="absolute" bottom="-14px" transform="scale(.9)  translateX(-10px)">
               <HStack color="gray" fontSize="xs">
                 <Text >Your deposit:</Text>
                 <Text>
@@ -191,9 +191,9 @@ const InQueueItem = ({
         <HStack spacing={-1}>
           <StyledBox border="1px solid #ccc"
             style={{ opacity: score ? '1' : '0', borderRadius: '30px' }}>
-            <HStack>
+            <HStack spacing={1}>
               <Icon as={FaStar} style={{ width: '12px', height: '12px' }} />
-              <Text fontSize="sm">{score.toFixed(2)}</Text>
+              <Text fontSize="xs">{score.toFixed(2)}</Text>
             </HStack>
           </StyledBox>
           <StyledBox border="1px dashed #ccc"
