@@ -80,14 +80,21 @@ const Overview = ({ appchainId }) => {
           }));
         }
       });
-    window.tokenContract.ft_balance_of({
-      account_id: window.accountId
-    }).then(balance => {
-      setAccountBalance(fromDecimals(balance));
-    });
-    window.registryContract.get_owner().then(owner => {
-      setIsAdmin(owner === window.accountId);
-    });
+
+    window
+      .tokenContract
+      .ft_balance_of({
+        account_id: window.accountId
+      }).then(balance => {
+        setAccountBalance(fromDecimals(balance));
+      });
+
+    window
+      .registryContract
+      .get_owner()
+      .then(owner => {
+        setIsAdmin(owner === window.accountId);
+      });
   }, []);
   
   useEffect(() => {

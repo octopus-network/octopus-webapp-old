@@ -113,17 +113,13 @@ const Appchains = () => {
     state = location.pathname.split('/').pop();
   }
 
-  // const isAdmin = window.accountId && (
-  //   new RegExp(`\.${window.accountId}`).test(octopusConfig.registryContractId) ||
-  //   window.accountId === octopusConfig.registryContractId
-  // );
-
   const [numRegistered, setNumRegistered] = useState<string|number>('');
   const [numInQueue, setNumInQueue] = useState<string|number>('');
   const [numBooting, setNumBooting] = useState<string|number>('');
   const [isCounting, setIsCounting] = useState(false);
   const [isConcluding, setIsConcluding] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+ 
+  const [isCounter, setIsCounter] = useState(false);
   const [countPopoverOpen, setCountPopoverOpen] = useBoolean(false);
   const [concludePopoverOpen, setConcludePopoverOpen] = useBoolean(false);
   const [highestVotes, setHighestVotes] = useState(0);
@@ -165,12 +161,12 @@ const Appchains = () => {
       }).catch(err => {
         console.log(err);
       });
-
+  
     window
       .registryContract
-      .get_owner()
-      .then(owner => {
-        setIsAdmin(owner === window.accountId);
+      .get_registry_settings()
+      .then(({ operator_of_counting_voting_score }) => {
+        setIsCounter(operator_of_counting_voting_score === window.accountId);
       });
     
   }, []);
@@ -348,7 +344,7 @@ const Appchains = () => {
           </Tabs>
           {
             tabIndex === 1 ?
-            isAdmin ?
+            isCounter ?
             <HStack spacing={3}>
               <Popover
                 initialFocusRef={initialFocusRef}
