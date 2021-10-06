@@ -31,7 +31,7 @@ const initNear = async () => {
     octopusConfig.registryContractId,
     {
       viewMethods: [
-        'get_minimum_register_deposit', 'get_appchains_with_state_of', 'get_appchain_status_of',
+        'get_minimum_register_deposit', 'get_appchains_with_state_of', 'get_appchain_status_of', 'get_owner',
         'get_upvote_deposit_for', 'get_downvote_deposit_for', 'get_appchains_count_of', 'get_total_stake'
       ],
       changeMethods: [

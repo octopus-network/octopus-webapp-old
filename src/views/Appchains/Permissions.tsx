@@ -41,10 +41,11 @@ const Permissions = ({ status, onEdit, onUpdate, onCancelEdit }) => {
   const toast = useToast();
   const { t } = useTranslation();
 
-  const isAdmin = window.accountId && (
-    new RegExp(`\.${window.accountId}`).test(octopusConfig.registryContractId) ||
-    window.accountId === octopusConfig.registryContractId
-  );
+  // const isAdmin = window.accountId && (
+  //   new RegExp(`\.${window.accountId}`).test(octopusConfig.registryContractId) ||
+  //   window.accountId === octopusConfig.registryContractId
+  // );
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const isOwner = window.accountId && status?.appchain_owner === window.accountId;
 
@@ -80,11 +81,13 @@ const Permissions = ({ status, onEdit, onUpdate, onCancelEdit }) => {
       window.registryContract.get_downvote_deposit_for({
         appchain_id: status.appchain_id,
         account_id: window.accountId
-      })
-    ]).then(([balance, upvoteDeposit, downvoteDeposit]) => {
+      }),
+      window.registryContract.get_owner()
+    ]).then(([balance, upvoteDeposit, downvoteDeposit, owner]) => {
       setAccountBalance(fromDecimals(balance));
       setUpvoteDeposit(fromDecimals(upvoteDeposit));
       setDownvoteDeposit(fromDecimals(downvoteDeposit));
+      setIsAdmin(owner === window.accountId);
     });
   }, [status]);
 

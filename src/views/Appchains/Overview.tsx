@@ -55,10 +55,11 @@ const Overview = ({ appchainId }) => {
   const [isUpdating, setIsUpdating] = useBoolean(false);
   const [appchainMetadata, setAppchainMeataData] = useState({});
 
-  const isAdmin = window.accountId && (
-    new RegExp(`\.${window.accountId}`).test(octopusConfig.registryContractId) ||
-    window.accountId === octopusConfig.registryContractId
-  );
+  // const isAdmin = window.accountId && (
+  //   new RegExp(`\.${window.accountId}`).test(octopusConfig.registryContractId) ||
+  //   window.accountId === octopusConfig.registryContractId
+  // );
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     axios.get( `/api/counter?appchain=${appchainId}`)
@@ -83,6 +84,9 @@ const Overview = ({ appchainId }) => {
       account_id: window.accountId
     }).then(balance => {
       setAccountBalance(fromDecimals(balance));
+    });
+    window.registryContract.get_owner().then(owner => {
+      setIsAdmin(owner === window.accountId);
     });
   }, []);
   

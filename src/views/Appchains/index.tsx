@@ -113,16 +113,17 @@ const Appchains = () => {
     state = location.pathname.split('/').pop();
   }
 
-  const isAdmin = window.accountId && (
-    new RegExp(`\.${window.accountId}`).test(octopusConfig.registryContractId) ||
-    window.accountId === octopusConfig.registryContractId
-  );
+  // const isAdmin = window.accountId && (
+  //   new RegExp(`\.${window.accountId}`).test(octopusConfig.registryContractId) ||
+  //   window.accountId === octopusConfig.registryContractId
+  // );
 
   const [numRegistered, setNumRegistered] = useState<string|number>('');
   const [numInQueue, setNumInQueue] = useState<string|number>('');
   const [numBooting, setNumBooting] = useState<string|number>('');
   const [isCounting, setIsCounting] = useState(false);
   const [isConcluding, setIsConcluding] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [countPopoverOpen, setCountPopoverOpen] = useBoolean(false);
   const [concludePopoverOpen, setConcludePopoverOpen] = useBoolean(false);
   const [highestVotes, setHighestVotes] = useState(0);
@@ -163,6 +164,13 @@ const Appchains = () => {
         setStagingAppchain(appchain);
       }).catch(err => {
         console.log(err);
+      });
+
+    window
+      .registryContract
+      .get_owner()
+      .then(owner => {
+        setIsAdmin(owner === window.accountId);
       });
     
   }, []);
@@ -460,12 +468,12 @@ const Appchains = () => {
             appchains.length ?
             appchains.map((appchain, idx) => (
               tabIndex === 0 ?
-              <RouterLink to={`/appchains/${state}/${appchain.appchain_id}`}>
-                <RegisteredItem appchain={appchain} key={`appchain-${idx}`} /> 
+              <RouterLink to={`/appchains/${state}/${appchain.appchain_id}`} key={`appchain-${idx}`}>
+                <RegisteredItem appchain={appchain} /> 
               </RouterLink> :
               tabIndex === 1 ?
-              <RouterLink to={`/appchains/${state}/${appchain.appchain_id}`}>
-                <InQueueItem index={idx} appchain={appchain} key={`appchain-${idx}`} 
+              <RouterLink to={`/appchains/${state}/${appchain.appchain_id}`} key={`appchain-${idx}`}>
+                <InQueueItem index={idx} appchain={appchain} 
                   highestVotes={highestVotes} highestScore={highestScore} />
               </RouterLink> :
               <BootingItem appchain={appchain} key={`appchain-${idx}`} />
