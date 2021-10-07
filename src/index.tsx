@@ -35,7 +35,7 @@ const initNear = async () => {
         'get_upvote_deposit_for', 'get_downvote_deposit_for', 'get_appchains_count_of', 'get_total_stake', 'get_owner'
       ],
       changeMethods: [
-        'start_auditing_appchain', 'reject_appchain', 'remove_appchain', 'pass_auditing_appchain', 'update_appchain_custom_metadata',
+        'start_auditing_appchain', 'reject_appchain', 'remove_appchain', 'pass_auditing_appchain', 'update_appchain_metadata',
         'withdraw_upvote_deposit_of', 'withdraw_downvote_deposit_of', 'count_voting_score', 'conclude_voting_score'
       ]
     }

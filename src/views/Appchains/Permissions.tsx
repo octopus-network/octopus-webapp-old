@@ -335,19 +335,19 @@ const Permissions = ({ status, onEdit, onUpdate, onCancelEdit }) => {
             </PopoverContent>
           </Popover>
           
-        </> : 
-        isOwner ?
-        isEditing ?
-        <>
-          <Button onClick={_onCancelEdit} variant="ghost" isDisabled={!!loadingType}>Cancel</Button>
-          <Button onClick={_onUpdate} isDisabled={!!loadingType} 
-            isLoading={loadingType === 'update'} colorScheme="octoColor">
-            Update
-          </Button>
-        </> :
-        <Button onClick={_onEdit}>
-          <Icon as={AiOutlineEdit} mr="1" /> Edit
-        </Button> : null
+        </> : null
+        // isOwner ?
+        // isEditing ?
+        // <>
+        //   <Button onClick={_onCancelEdit} variant="ghost" isDisabled={!!loadingType}>Cancel</Button>
+        //   <Button onClick={_onUpdate} isDisabled={!!loadingType} 
+        //     isLoading={loadingType === 'update'} colorScheme="octoColor">
+        //     Update
+        //   </Button>
+        // </> :
+        // <Button onClick={_onEdit}>
+        //   <Icon as={AiOutlineEdit} mr="1" /> Edit
+        // </Button> : null
         
       ) : 
       status?.appchain_state === 'Auditing' ?

@@ -32,6 +32,7 @@ import { loginNear, fromDecimals } from 'utils';
 import { AiOutlineUser, AiOutlineGlobal, AiFillGithub, AiOutlineFileZip } from 'react-icons/ai';
 import { FaStar } from 'react-icons/fa';
 import { IoMdTime } from 'react-icons/io';
+import { RiHandCoinLine, RiExchangeFundsFill, RiMoneyDollarCircleLine } from 'react-icons/ri';
 import { ExternalLinkIcon, CopyIcon, CheckIcon } from '@chakra-ui/icons';
 import { HiOutlineMail } from 'react-icons/hi';
 import StateBadge from 'components/StateBadge';
@@ -115,12 +116,13 @@ const Overview = ({ appchainId }) => {
     setIsUpdating.on();
     
     try {
-      delete appchainMetadata['custom_metadata'];
+      // delete appchainMetadata['custom_metadata'];
+
       await window
         .registryContract
-        .update_appchain_custom_metadata({
+        .update_appchain_metadata({
           appchain_id: appchainId,
-          custom_metadata: appchainMetadata
+          ...appchainMetadata
         });
 
       window.location.reload();
@@ -220,7 +222,6 @@ const Overview = ({ appchainId }) => {
           <Divider mt="4" mb="4" />
           </>
         }
-        
         <Skeleton isLoaded={!!appchainStatus}>
           <Flex justifyContent="space-between">
             <HStack>
@@ -283,6 +284,56 @@ const Overview = ({ appchainId }) => {
               </HStack>
             }
           </Flex>
+        </Skeleton>
+        
+        <Skeleton isLoaded={!!appchainStatus}>
+          <Box p="4" bg="#f9fafc" borderRadius="5" mt="4">
+          <List spacing={2}>
+            <Flex justifyContent="space-between" fontSize="sm">
+              <HStack>
+                <Icon as={RiHandCoinLine} w={5} h={5} />
+                <Text>Preminted Amount</Text>
+              </HStack>
+              {
+                isEditing ?
+                <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.preminted_wrapped_appchain_token} bg="white" 
+                  onChange={e => onAppchainMetadataChange('preminted_wrapped_appchain_token', e.target.value)} width="auto" size="sm" /> :
+                <HStack>
+                  <Text>{appchainStatus?.appchain_metadata?.preminted_wrapped_appchain_token}</Text>
+                </HStack>
+              }
+            </Flex>
+            <Flex justifyContent="space-between" fontSize="sm">
+              <HStack>
+                <Icon as={RiExchangeFundsFill} w={5} h={5} />
+                <Text>IDO Amount</Text>
+              </HStack>
+              {
+                isEditing ?
+                <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.ido_amount_of_wrapped_appchain_token} bg="white"
+                  onChange={e => onAppchainMetadataChange('ido_amount_of_wrapped_appchain_token', e.target.value)} width="auto" size="sm" /> :
+                <HStack>
+                  <Text>{appchainStatus?.appchain_metadata?.ido_amount_of_wrapped_appchain_token}</Text>
+                </HStack>
+              }
+            </Flex>
+          
+            <Flex justifyContent="space-between" fontSize="sm">
+              <HStack>
+                <Icon as={RiMoneyDollarCircleLine} w={5} h={5} />
+                <Text>Era Reward</Text>
+              </HStack>
+              {
+                isEditing ?
+                <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.initial_era_reward} bg="white"
+                  onChange={e => onAppchainMetadataChange('initial_era_reward', e.target.value)} width="auto" size="sm" /> :
+                <HStack>
+                  <Text>{appchainStatus?.appchain_metadata?.initial_era_reward}</Text>
+                </HStack>
+              }
+            </Flex>
+          </List>
+          </Box>
         </Skeleton>
       </List>
     </DrawerBody>
