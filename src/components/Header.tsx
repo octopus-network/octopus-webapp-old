@@ -23,6 +23,7 @@ import {
   Avatar
 } from '@chakra-ui/react';
 
+import octopus from 'config/octopus';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FaChevronDown } from 'react-icons/fa';
@@ -61,8 +62,12 @@ const Header = () => {
                   aria-selected={/home/.test(locationPath)}>{t('Home')}</Link>
                 <Link as={RouterLink} to="/appchains" _selected={selectedLinkStyle}
                   aria-selected={/appchains/.test(locationPath)}>{t('Appchains')}</Link>
-                <Link target="_blank" href="https://bridge.testnet.oct.network">{t('Bridge')}</Link>
-                <Link target="_blank" href="https://faucet.testnet.oct.network">{t('Faucet')}</Link>
+                <Link target="_blank" href={`https://bridge.${octopus.networkId}.oct.network`}>{t('Bridge')}</Link>
+                {
+                  octopus.networkId === 'testnet' ?
+                  <Link target="_blank" href="https://faucet.testnet.oct.network">{t('Faucet')}</Link> : null
+                }
+                
                 <Link target="_blank" href="https://docs.oct.network">{t('Docs')}</Link>
               </HStack>
             </HStack>
