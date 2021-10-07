@@ -211,7 +211,7 @@ const Register = () => {
                         <FormLabel htmlFor="premintedAmount">{t('Preminted Amount')}</FormLabel>
                         <InputGroup size="lg">
                           <Input {...field} id="premintedAmount" placeholder="preminted amount" />
-                          <InputRightElement children={<Text fontSize="sm" color="black">OCT</Text>} />
+                          {/* <InputRightElement children={<Text fontSize="sm" color="black">OCT</Text>} /> */}
                         </InputGroup>
                         <FormErrorMessage>{form.errors.premintedAmount}</FormErrorMessage>
                       </FormControl>
@@ -225,7 +225,7 @@ const Register = () => {
                         <FormLabel htmlFor="idoAmount">{t('IDO Amount')}</FormLabel>
                         <InputGroup size="lg">
                           <Input {...field} id="idoAmount" placeholder="ido amount" />
-                          <InputRightElement children={<Text fontSize="sm" color="black">OCT</Text>} />
+                          {/* <InputRightElement children={<Text fontSize="sm" color="black">OCT</Text>} /> */}
                         </InputGroup>
                         <FormErrorMessage>{form.errors.idoAmount}</FormErrorMessage>
                       </FormControl>
