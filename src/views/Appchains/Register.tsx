@@ -7,7 +7,9 @@ import {
   Button,
   FormControl,
   FormLabel,
+  InputGroup,
   Input,
+  InputRightElement,
   FormErrorMessage,
   Box,
   List,
@@ -33,16 +35,20 @@ const Register = () => {
   useEffect(() => {
     window
       .registryContract
-      .get_minimum_register_deposit()
-      .then(amount => {
-        setMinimumRegisterDeposit(fromDecimals(amount, 18));
+      .get_registry_settings()
+      .then(({ minimum_register_deposit }) => {
+        setMinimumRegisterDeposit(fromDecimals(minimum_register_deposit, 18));
       });
-    window
-      .tokenContract
-      .ft_balance_of({ account_id: window.accountId })
-      .then(amount => {
-        setAccountBalance(fromDecimals(amount));
-      });
+    
+    if (window.accountId) {
+      window
+        .tokenContract
+        .ft_balance_of({ account_id: window.accountId })
+        .then(amount => {
+          setAccountBalance(fromDecimals(amount));
+        });
+    }
+    
   }, []);
 
   const validateAppchainId = (value) => {
@@ -61,12 +67,29 @@ const Register = () => {
 
   const onSubmit = (values, actions) => {
    
-    const { appchainId, websiteUrl, githubAddress, githubRelease, commitId, email } = values;
+    const { 
+      appchainId, websiteUrl, githubAddress, githubRelease, commitId, email,
+      premintedAmount, idoAmount, eraReward
+    } = values;
+
     if (accountBalance < minimumRegisterDeposit) {
       toast({
         position: 'top-right',
         title: 'Error',
         description: 'Insufficient OCT Balance',
+        status: 'error'
+      });
+      setTimeout(() => {
+        actions.setSubmitting(false);
+      }, 300);
+      return;
+    }
+
+    if (isNaN(premintedAmount) || isNaN(idoAmount) || isNaN(eraReward)) {
+      toast({
+        position: 'top-right',
+        title: 'Error',
+        description: 'Preminted/IDO amount or Era Reward must be numeric',
         status: 'error'
       });
       setTimeout(() => {
@@ -81,7 +104,7 @@ const Register = () => {
         {
           receiver_id: octopusConfig.registryContractId,
           amount: toDecimals(minimumRegisterDeposit),
-          msg: `register_appchain,${appchainId},${websiteUrl},${githubAddress},${githubRelease},${commitId},${email}`
+          msg: `register_appchain,${appchainId},${websiteUrl},${githubAddress},${githubRelease},${commitId},${email},"${premintedAmount}","${idoAmount}","${eraReward}"`
         },
         COMPLEX_CALL_GAS,
         1,
@@ -100,7 +123,7 @@ const Register = () => {
   }
 
   return (
-    <Container maxW="520px" mt="16" mb="16">
+    <Container maxW="640px" mt="16" mb="16">
       
       <Box pb="10">
         <Heading fontSize={{ base: '3xl', md: '4xl' }}>{t('Join Octopus Network')}</Heading>
@@ -112,7 +135,10 @@ const Register = () => {
           githubAddress: '',
           githubRelease: '',
           commitId: '',
-          email: ''
+          email: '',
+          premintedAmount: 0,
+          idoAmount: 0,
+          eraReward: ''
         }}
         onSubmit={onSubmit}
       >
@@ -177,6 +203,47 @@ const Register = () => {
                   </Field>
                 </GridItem>
               </Grid>
+              <Grid templateColumns="repeat(6, 1fr)" gap="6">
+                <GridItem colSpan={2}>
+                  <Field name="premintedAmount">
+                    {({ field, form }) => (
+                      <FormControl isInvalid={form.errors.premintedAmount && form.touched.premintedAmount} isRequired>
+                        <FormLabel htmlFor="premintedAmount">{t('Preminted Amount')}</FormLabel>
+                        <InputGroup size="lg">
+                          <Input {...field} id="premintedAmount" placeholder="preminted amount" />
+                          <InputRightElement children={<Text fontSize="sm" color="black">OCT</Text>} />
+                        </InputGroup>
+                        <FormErrorMessage>{form.errors.premintedAmount}</FormErrorMessage>
+                      </FormControl>
+                    )}
+                  </Field>
+                </GridItem>
+                <GridItem colSpan={2}>
+                  <Field name="idoAmount">
+                    {({ field, form }) => (
+                      <FormControl isInvalid={form.errors.idoAmount && form.touched.idoAmount} isRequired>
+                        <FormLabel htmlFor="idoAmount">{t('IDO Amount')}</FormLabel>
+                        <InputGroup size="lg">
+                          <Input {...field} id="idoAmount" placeholder="ido amount" />
+                          <InputRightElement children={<Text fontSize="sm" color="black">OCT</Text>} />
+                        </InputGroup>
+                        <FormErrorMessage>{form.errors.idoAmount}</FormErrorMessage>
+                      </FormControl>
+                    )}
+                  </Field>
+                </GridItem>
+                <GridItem colSpan={2}>
+                  <Field name="eraReward">
+                    {({ field, form }) => (
+                      <FormControl isInvalid={form.errors.eraReward && form.touched.eraReward} isRequired>
+                        <FormLabel htmlFor="eraReward">{t('Era Reward')}</FormLabel>
+                        <Input {...field} id="eraReward" placeholder="initial era reward" size="lg" />
+                        <FormErrorMessage>{form.errors.eraReward}</FormErrorMessage>
+                      </FormControl>
+                    )}
+                  </Field>
+                </GridItem>
+              </Grid>
               <Grid templateColumns="repeat(5, 1fr)" gap="6">
                 <GridItem colSpan={3}>
                   <Field name="email" validate={validateEmail}>
@@ -211,11 +278,10 @@ const Register = () => {
                 size="lg"
                 isFullWidth={true}
               >
-                {t('Submit')}
+                { window?.accountId ? t('Submit') : t('Please Login') }
               </Button>
             </List>
           </Form>
-         
         )}
       </Formik>
       

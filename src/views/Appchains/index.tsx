@@ -54,7 +54,6 @@ import RegisteredItem from './RegisteredItem';
 
 import NoData from 'components/NoData';
 import Overview from './Overview';
-import octopusConfig from 'config/octopus';
 import { fromDecimals } from 'utils';
 
 const StatBox = ({
@@ -213,7 +212,7 @@ const Appchains = () => {
 
   useEffect(() => {
     let idx = appchainStates.indexOf(state);
-    setTabIndex(idx >= 0 ? idx : 1);
+    setTabIndex(idx > 0 ? idx : 0);
    
   }, [state]);
 
