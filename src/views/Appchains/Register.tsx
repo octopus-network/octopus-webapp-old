@@ -69,7 +69,7 @@ const Register = () => {
    
     const { 
       appchainId, websiteUrl, githubAddress, githubRelease, commitId, email,
-      premintedAmount, idoAmount, eraReward
+      preminedAmount, idoAmount, eraReward
     } = values;
 
     if (accountBalance < minimumRegisterDeposit) {
@@ -85,11 +85,11 @@ const Register = () => {
       return;
     }
 
-    if (isNaN(premintedAmount) || isNaN(idoAmount) || isNaN(eraReward)) {
+    if (isNaN(preminedAmount) || isNaN(idoAmount) || isNaN(eraReward)) {
       toast({
         position: 'top-right',
         title: 'Error',
-        description: 'Preminted/IDO amount or Era Reward must be numeric',
+        description: 'Premined/IDO amount or Era Reward must be numeric',
         status: 'error'
       });
       setTimeout(() => {
@@ -104,7 +104,20 @@ const Register = () => {
         {
           receiver_id: octopusConfig.registryContractId,
           amount: toDecimals(minimumRegisterDeposit),
-          msg: `register_appchain,${appchainId},${websiteUrl},${githubAddress},${githubRelease},${commitId},${email},"${premintedAmount}","${idoAmount}","${eraReward}"`
+          msg: JSON.stringify({
+            "RegisterAppchain": {
+              "appchain_id": appchainId,
+              "website_url": websiteUrl, 
+              "github_address": githubAddress, 
+              "github_release": githubRelease,
+              "commit_id": commitId,
+              "contact_email": email,
+              "premined_wrapped_appchain_token": preminedAmount.toString(),
+              "ido_amount_of_wrapped_appchain_token": idoAmount.toString(),
+              "initial_era_reward": eraReward.toString(),
+              "custom_metadata": {}
+            }
+          })
         },
         COMPLEX_CALL_GAS,
         1,
@@ -136,7 +149,7 @@ const Register = () => {
           githubRelease: '',
           commitId: '',
           email: '',
-          premintedAmount: 0,
+          preminedAmount: 0,
           idoAmount: 0,
           eraReward: ''
         }}
@@ -205,15 +218,15 @@ const Register = () => {
               </Grid>
               <Grid templateColumns="repeat(6, 1fr)" gap="6">
                 <GridItem colSpan={2}>
-                  <Field name="premintedAmount">
+                  <Field name="preminedAmount">
                     {({ field, form }) => (
-                      <FormControl isInvalid={form.errors.premintedAmount && form.touched.premintedAmount} isRequired>
-                        <FormLabel htmlFor="premintedAmount">{t('Preminted Amount')}</FormLabel>
+                      <FormControl isInvalid={form.errors.preminedAmount && form.touched.preminedAmount} isRequired>
+                        <FormLabel htmlFor="preminedAmount">{t('Premined Amount')}</FormLabel>
                         <InputGroup size="lg">
-                          <Input {...field} id="premintedAmount" placeholder="preminted amount" />
+                          <Input {...field} id="preminedAmount" placeholder="premined amount" />
                           {/* <InputRightElement children={<Text fontSize="sm" color="black">OCT</Text>} /> */}
                         </InputGroup>
-                        <FormErrorMessage>{form.errors.premintedAmount}</FormErrorMessage>
+                        <FormErrorMessage>{form.errors.preminedAmount}</FormErrorMessage>
                       </FormControl>
                     )}
                   </Field>

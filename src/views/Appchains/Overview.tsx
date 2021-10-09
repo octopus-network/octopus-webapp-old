@@ -23,7 +23,7 @@ import {
   Input,
   useToast,
   Tooltip,
-  Tag
+  Spinner
 } from '@chakra-ui/react';
 
 import dayjs from 'dayjs';
@@ -35,6 +35,7 @@ import { IoMdTime } from 'react-icons/io';
 import { RiHandCoinLine, RiExchangeFundsFill, RiMoneyDollarCircleLine } from 'react-icons/ri';
 import { ExternalLinkIcon, CopyIcon, CheckIcon } from '@chakra-ui/icons';
 import { HiOutlineMail } from 'react-icons/hi';
+import { AiOutlineEdit } from 'react-icons/ai';
 import StateBadge from 'components/StateBadge';
 import ScoreChart from 'components/ScoreChart';
 import Permissions from './Permissions';
@@ -45,7 +46,7 @@ const Overview = ({ appchainId }) => {
   const [appchainStatus, setAppchainStatus] = useState<any>();
   const { hasCopied, onCopy } = useClipboard(appchainStatus?.appchain_metadata?.contact_email);
   const [isOwner, setIsOwner] = useState(false);
-  const [accountBalance, setAccountBalance] = useState(0);
+  const [accountBalance, setAccountBalance] = useState<any>();
   const toast = useToast();
 
   const [counterData, setCounterData] = useState();
@@ -203,6 +204,24 @@ const Overview = ({ appchainId }) => {
           </>
         }
         {
+          isAdmin ?
+          <Flex justifyContent="flex-end" h="50px" alignItems="center">
+            {
+              isEditing ?
+              <HStack>
+              <Button onClick={setIsEditing.off} variant="ghost" isDisabled={isUpdating} size="sm">Cancel</Button>
+              <Button onClick={onUpdate} isDisabled={isUpdating} size="sm"
+                isLoading={isUpdating} colorScheme="octoColor">
+                Update
+              </Button>
+              </HStack> :
+              <Button onClick={setIsEditing.on} size="sm">
+                <Icon as={AiOutlineEdit} mr="1" /> Edit
+              </Button>
+            }
+          </Flex> : null
+        }
+        {
           appchainStatus?.appchain_metadata?.website_url &&
           <>
           <Flex justifyContent="space-between">
@@ -292,14 +311,14 @@ const Overview = ({ appchainId }) => {
             <Flex justifyContent="space-between" fontSize="sm">
               <HStack>
                 <Icon as={RiHandCoinLine} w={5} h={5} />
-                <Text>Preminted Amount</Text>
+                <Text>Premined Amount</Text>
               </HStack>
               {
                 isEditing ?
-                <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.preminted_wrapped_appchain_token} bg="white" 
-                  onChange={e => onAppchainMetadataChange('preminted_wrapped_appchain_token', e.target.value)} width="auto" size="sm" /> :
+                <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.premined_wrapped_appchain_token} bg="white" 
+                  onChange={e => onAppchainMetadataChange('premined_wrapped_appchain_token', e.target.value)} width="auto" size="sm" /> :
                 <HStack>
-                  <Text>{appchainStatus?.appchain_metadata?.preminted_wrapped_appchain_token}</Text>
+                  <Text>{appchainStatus?.appchain_metadata?.premined_wrapped_appchain_token}</Text>
                 </HStack>
               }
             </Flex>
@@ -359,7 +378,7 @@ const Overview = ({ appchainId }) => {
                   </Tooltip>
                 }
               </HStack>
-              <Text fontSize="xs" color="gray">Balance: {accountBalance} OCT</Text>
+              <Text fontSize="xs" color="gray">Balance: {accountBalance === undefined ? <Spinner size="sm" /> : accountBalance } OCT</Text>
             </VStack>
           </HStack>
           

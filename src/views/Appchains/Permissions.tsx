@@ -18,6 +18,7 @@ import {
   Input,
   Icon,
   Box,
+  Spinner,
   RadioGroup,
   Radio,
   Flex,
@@ -28,7 +29,6 @@ import {
 
 import { TriangleUpIcon, TriangleDownIcon } from '@chakra-ui/icons';
 import { RiDeleteBin6Line } from 'react-icons/ri';
-import { AiOutlineEdit } from 'react-icons/ai';
 import { loginNear } from 'utils';
 import { toDecimals, fromDecimals } from 'utils';
 import octopusConfig from 'config/octopus';
@@ -63,8 +63,8 @@ const Permissions = ({ status, onEdit, onUpdate, onCancelEdit }) => {
   const [downvoteAmount, setDownvoteAmount] = useState('');
 
   const [accountBalance, setAccountBalance] = useState(0);
-  const [upvoteDeposit, setUpvoteDeposit] = useState(0);
-  const [downvoteDeposit, setDownvoteDeposit] = useState(0);
+  const [upvoteDeposit, setUpvoteDeposit] = useState<any>();
+  const [downvoteDeposit, setDownvoteDeposit] = useState<any>();
 
   const initialFocusRef = React.useRef();
   const upvoteInputRef = React.useRef();
@@ -236,7 +236,11 @@ const Permissions = ({ status, onEdit, onUpdate, onCancelEdit }) => {
         {
           receiver_id: octopusConfig.registryContractId,
           amount: toDecimals(voteAmount),
-          msg: `${voteType}_appchain,${status.appchain_id}`
+          msg: JSON.stringify({
+            [`${voteType.replace(/^([a-z])|\s+([a-z])/g, $1 => $1.toUpperCase())}Appchain`]: {
+              "appchain_id": status.appchain_id
+            }
+          })
         },
         SIMPLE_CALL_GAS,
         1,
@@ -416,7 +420,7 @@ const Permissions = ({ status, onEdit, onUpdate, onCancelEdit }) => {
                     <Input ref={upvoteInputRef} placeholder={`amount of votes`} value={upvoteAmount}
                       onChange={e => setUpvoteAmount(e.target.value)} />
                     <Flex justifyContent="flex-end" mt={2}>
-                      <Text fontSize="sm" color="gray">Deposited: {upvoteDeposit} OCT</Text>
+                      <Text fontSize="sm" color="gray">Deposited: {upvoteDeposit === undefined ? <Spinner size="xs" /> : upvoteDeposit } OCT</Text>
                     </Flex>
                   </Box>
                   <Box mt={4}>
@@ -464,7 +468,7 @@ const Permissions = ({ status, onEdit, onUpdate, onCancelEdit }) => {
                     <Input ref={downvoteInputRef} placeholder={`amount of votes`} value={downvoteAmount}
                       onChange={e => setDownvoteAmount(e.target.value)} />
                     <Flex justifyContent="flex-end" mt={2}>
-                      <Text fontSize="sm" color="gray">Deposited: {downvoteDeposit} OCT</Text>
+                      <Text fontSize="sm" color="gray">Deposited: {downvoteDeposit === undefined ? <Spinner size="xs" /> : downvoteDeposit } OCT</Text>
                     </Flex>
                   </Box>
                   <Box mt={4}>
