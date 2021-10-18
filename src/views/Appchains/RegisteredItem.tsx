@@ -26,13 +26,12 @@ const BootingItem = ({
 }: {
   appchain: any;
 }) => {
-  const { appchain_id, appchain_owner, appchain_state } = appchain;
-
+  const { appchain_id, appchain_owner, appchain_state, appchain_metadata } = appchain;
   return (
     <StyledAppchainItem boxShadow="octoShadow" columns={{ base: 10, md: 14 }} p="6" alignItems="center">
       <GridItem colSpan={5}>
         <HStack>
-          <Avatar name={appchain_id} size="sm" display={{ base: 'none', md: 'block' }} />
+          <Avatar name={appchain_id} size="sm" display={{ base: 'none', md: 'block' }} src={appchain_metadata?.fungible_token_metadata?.icon} />
           <Heading fontSize="lg">{appchain_id}</Heading>
         </HStack>
       </GridItem>

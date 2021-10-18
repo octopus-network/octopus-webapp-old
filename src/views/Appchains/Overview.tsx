@@ -31,6 +31,7 @@ import axios from 'axios';
 import { loginNear, fromDecimals } from 'utils';
 import { AiOutlineUser, AiOutlineGlobal, AiFillGithub, AiOutlineFileZip } from 'react-icons/ai';
 import { FaStar } from 'react-icons/fa';
+import { GrUserWorker } from 'react-icons/gr';
 import { IoMdTime } from 'react-icons/io';
 import { RiHandCoinLine, RiExchangeFundsFill, RiMoneyDollarCircleLine } from 'react-icons/ri';
 import { ExternalLinkIcon, CopyIcon, CheckIcon } from '@chakra-ui/icons';
@@ -55,7 +56,8 @@ const Overview = ({ appchainId }) => {
 
   const [isEditing, setIsEditing] = useBoolean(false);
   const [isUpdating, setIsUpdating] = useBoolean(false);
-  const [appchainMetadata, setAppchainMeataData] = useState({});
+  const [appchainMetadata, setAppchainMeataData] = useState<any>({});
+  const [ftMetadata, setFTMetadata] = useState<any>({});
 
   // const isAdmin = window.accountId && (
   //   new RegExp(`\.${window.accountId}`).test(octopusConfig.registryContractId) ||
@@ -109,6 +111,7 @@ const Overview = ({ appchainId }) => {
         console.log(status);
         setAppchainStatus(status);
         setAppchainMeataData(status.appchain_metadata);
+        setFTMetadata(status.appchain_metadata.fungible_token_metadata);
         setIsOwner(window.accountId && status?.appchain_owner === window.accountId);
       });
   }, [appchainId]);
@@ -118,12 +121,12 @@ const Overview = ({ appchainId }) => {
     
     try {
       // delete appchainMetadata['custom_metadata'];
-
       await window
         .registryContract
         .update_appchain_metadata({
           appchain_id: appchainId,
-          ...appchainMetadata
+          ...appchainMetadata,
+          fungible_token_metadata: ftMetadata
         });
 
       window.location.reload();
@@ -139,8 +142,12 @@ const Overview = ({ appchainId }) => {
     }
   }
 
-  const onAppchainMetadataChange = (k, v) => {
+  const onAppchainMetadataChange = (k, v, isNumber = false) => {
     setAppchainMeataData(Object.assign({}, appchainMetadata, {[k]: v}));
+  }
+
+  const onFTMetadataChange = (k, v, isNumber = false) => {
+    setFTMetadata(Object.assign({}, ftMetadata, {[k]: isNumber ? v * 1 : v}));
   }
   
   return (
@@ -306,17 +313,17 @@ const Overview = ({ appchainId }) => {
         </Skeleton>
         
         <Skeleton isLoaded={!!appchainStatus}>
-          <Box p="4" bg="#f9fafc" borderRadius="5" mt="4">
-          <List spacing={2}>
+          
+          <List spacing={2} p={4} bg="#f9fafc" borderRadius={5} mt={4}>
             <Flex justifyContent="space-between" fontSize="sm">
               <HStack>
-                <Icon as={RiHandCoinLine} w={5} h={5} />
+                {/* <Icon as={RiHandCoinLine} w={5} h={5} /> */}
                 <Text>Premined Amount</Text>
               </HStack>
               {
                 isEditing ?
                 <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.premined_wrapped_appchain_token} bg="white" 
-                  onChange={e => onAppchainMetadataChange('premined_wrapped_appchain_token', e.target.value)} width="auto" size="sm" /> :
+                  onChange={e => onAppchainMetadataChange('premined_wrapped_appchain_token', e.target.value, true)} width="auto" size="sm" /> :
                 <HStack>
                   <Text>{appchainStatus?.appchain_metadata?.premined_wrapped_appchain_token}</Text>
                 </HStack>
@@ -324,35 +331,103 @@ const Overview = ({ appchainId }) => {
             </Flex>
             <Flex justifyContent="space-between" fontSize="sm">
               <HStack>
-                <Icon as={RiExchangeFundsFill} w={5} h={5} />
+                {/* <Icon as={GrUserWorker} w={5} h={5} /> */}
+                <Text>Premined Beneficiary</Text>
+              </HStack>
+              {
+                isEditing ?
+                <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.premined_wrapped_appchain_token_beneficiary} bg="white" 
+                  onChange={e => onAppchainMetadataChange('premined_wrapped_appchain_token_beneficiary', e.target.value)} width="auto" size="sm" /> :
+                <HStack>
+                  <Text>{appchainStatus?.appchain_metadata?.premined_wrapped_appchain_token_beneficiary}</Text>
+                </HStack>
+              }
+            </Flex>
+            <Flex justifyContent="space-between" fontSize="sm">
+              <HStack>
+                {/* <Icon as={RiExchangeFundsFill} w={5} h={5} /> */}
                 <Text>IDO Amount</Text>
               </HStack>
               {
                 isEditing ?
                 <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.ido_amount_of_wrapped_appchain_token} bg="white"
-                  onChange={e => onAppchainMetadataChange('ido_amount_of_wrapped_appchain_token', e.target.value)} width="auto" size="sm" /> :
+                  onChange={e => onAppchainMetadataChange('ido_amount_of_wrapped_appchain_token', e.target.value, true)} width="auto" size="sm" /> :
                 <HStack>
                   <Text>{appchainStatus?.appchain_metadata?.ido_amount_of_wrapped_appchain_token}</Text>
                 </HStack>
               }
             </Flex>
-          
             <Flex justifyContent="space-between" fontSize="sm">
               <HStack>
-                <Icon as={RiMoneyDollarCircleLine} w={5} h={5} />
+                {/* <Icon as={RiMoneyDollarCircleLine} w={5} h={5} /> */}
                 <Text>Era Reward</Text>
               </HStack>
               {
                 isEditing ?
                 <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.initial_era_reward} bg="white"
-                  onChange={e => onAppchainMetadataChange('initial_era_reward', e.target.value)} width="auto" size="sm" /> :
+                  onChange={e => onAppchainMetadataChange('initial_era_reward', e.target.value, true)} width="auto" size="sm" /> :
                 <HStack>
                   <Text>{appchainStatus?.appchain_metadata?.initial_era_reward}</Text>
                 </HStack>
               }
             </Flex>
+            <Divider mt={4} mb={4} />
+            <Flex justifyContent="space-between" fontSize="sm">
+              <HStack>
+                <Text>Token Name</Text>
+              </HStack>
+              {
+                isEditing ?
+                <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.fungible_token_metadata?.name} bg="white"
+                  onChange={e => onFTMetadataChange('name', e.target.value)} width="auto" size="sm" /> :
+                <HStack>
+                  <Text>{appchainStatus?.appchain_metadata?.fungible_token_metadata?.name}</Text>
+                </HStack>
+              }
+            </Flex>
+            <Flex justifyContent="space-between" fontSize="sm">
+              <HStack>
+                <Text>Token Symbol</Text>
+              </HStack>
+              {
+                isEditing ?
+                <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.fungible_token_metadata?.symbol} bg="white"
+                  onChange={e => onFTMetadataChange('symbol', e.target.value)} width="auto" size="sm" /> :
+                <HStack>
+                  <Text>{appchainStatus?.appchain_metadata?.fungible_token_metadata?.symbol}</Text>
+                </HStack>
+              }
+            </Flex>
+           
+            <Flex justifyContent="space-between" fontSize="sm">
+              <HStack>
+                <Text>Icon</Text>
+              </HStack>
+              {
+                isEditing ?
+                <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.fungible_token_metadata?.icon} bg="white"
+                  onChange={e => onFTMetadataChange('icon', e.target.value)} width="auto" size="sm" /> :
+                <HStack>
+                  <Text maxWidth={200} overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">{appchainStatus?.appchain_metadata?.fungible_token_metadata?.icon}</Text>
+                </HStack>
+              }
+            </Flex>
+            <Flex justifyContent="space-between" fontSize="sm">
+              <HStack>
+                <Text>Decimals</Text>
+              </HStack>
+              {
+                isEditing ?
+                <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.fungible_token_metadata?.decimals} bg="white"
+                  onChange={e => onFTMetadataChange('decimals', e.target.value, true)} width="auto" size="sm" /> :
+                <HStack>
+                  <Text>{appchainStatus?.appchain_metadata?.fungible_token_metadata?.decimals}</Text>
+                </HStack>
+              }
+            </Flex>
           </List>
-          </Box>
+          
+          
         </Skeleton>
       </List>
     </DrawerBody>

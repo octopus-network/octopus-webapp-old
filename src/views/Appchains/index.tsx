@@ -119,6 +119,7 @@ const Appchains = () => {
   const [isConcluding, setIsConcluding] = useState(false);
  
   const [isCounter, setIsCounter] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
   const [countPopoverOpen, setCountPopoverOpen] = useBoolean(false);
   const [concludePopoverOpen, setConcludePopoverOpen] = useBoolean(false);
   const [highestVotes, setHighestVotes] = useState(0);
@@ -160,14 +161,16 @@ const Appchains = () => {
       }).catch(err => {
         console.log(err);
       });
-  
-    window
-      .registryContract
-      .get_registry_settings()
-      .then(({ operator_of_counting_voting_score }) => {
-        setIsCounter(operator_of_counting_voting_score === window.accountId);
-      });
     
+    Promise.all([
+      window.registryContract.get_owner(),
+      window.registryContract.get_registry_settings()
+    ]).then(([owner, { operator_of_counting_voting_score }]) => {
+      console.log(owner, operator_of_counting_voting_score);
+      setIsOwner(owner === window.accountId);
+      setIsCounter(operator_of_counting_voting_score === window.accountId);
+    });
+
   }, []);
 
   useEffect(() => {
@@ -345,60 +348,65 @@ const Appchains = () => {
             tabIndex === 1 ?
             isCounter ?
             <HStack spacing={3}>
-              <Popover
-                initialFocusRef={initialFocusRef}
-                placement="bottom"
-                onClose={setCountPopoverOpen.off}
-                isOpen={countPopoverOpen}
-              >
-                <PopoverTrigger>
-                  <Button size="sm" disabled={isCounting || isConcluding || countPopoverOpen} onClick={setCountPopoverOpen.on}
-                    display={{ base: 'none', md: 'block' }} isLoading={isCounting}>
-                    <Icon as={BiBadgeCheck} mr="1" /> {t('Count score')}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent>
-                  <PopoverBody>
-                    <Box p="2" d="flex">
-                      <Heading fontSize="lg">Are you confirm to count score?</Heading>
-                    </Box>
-                  </PopoverBody>
-                  <PopoverFooter d="flex" justifyContent="flex-end">
-                    <HStack spacing={3}>
-                      <Button size="sm" onClick={setCountPopoverOpen.off}>{t('Cancel')}</Button>
-                      <Button size="sm" onClick={onCount} colorScheme="octoColor">{t('Confirm')}</Button>
-                    </HStack>
-                  </PopoverFooter>
-                </PopoverContent>
-              </Popover>
-              <Popover
-                initialFocusRef={initialFocusRef}
-                placement="bottom"
-                onClose={setConcludePopoverOpen.off}
-                isOpen={concludePopoverOpen}
-              >
-                <PopoverTrigger>
-                  <Button size="sm" colorScheme="octoColor" display={{ base: 'none', md: 'block' }} 
-                    disabled={isCounting || isConcluding || concludePopoverOpen} isLoading={isConcluding} 
-                    onClick={setConcludePopoverOpen.on}>
-                    <Icon as={BsFillStopFill} mr="1" /> {t('Conclude score')}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent>
-                  <PopoverBody>
-                    <Box p="2" d="flex">
-                      <Heading fontSize="lg">Are you confirm to conclude score?</Heading>
-                    </Box>
-                  </PopoverBody>
-                  <PopoverFooter d="flex" justifyContent="flex-end">
-                    <HStack spacing={3}>
-                      <Button size="sm" onClick={setConcludePopoverOpen.off}>{t('Cancel')}</Button>
-                      <Button size="sm" onClick={onConclude} colorScheme="octoColor">{t('Confirm')}</Button>
-                    </HStack>
-                  </PopoverFooter>
-                </PopoverContent>
-              </Popover>
-              
+              {
+                isCounter ?
+                <Popover
+                  initialFocusRef={initialFocusRef}
+                  placement="bottom"
+                  onClose={setCountPopoverOpen.off}
+                  isOpen={countPopoverOpen}
+                >
+                  <PopoverTrigger>
+                    <Button size="sm" disabled={isCounting || isConcluding || countPopoverOpen} onClick={setCountPopoverOpen.on}
+                      display={{ base: 'none', md: 'block' }} isLoading={isCounting}>
+                      <Icon as={BiBadgeCheck} mr="1" /> {t('Count score')}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent>
+                    <PopoverBody>
+                      <Box p="2" d="flex">
+                        <Heading fontSize="lg">Are you confirm to count score?</Heading>
+                      </Box>
+                    </PopoverBody>
+                    <PopoverFooter d="flex" justifyContent="flex-end">
+                      <HStack spacing={3}>
+                        <Button size="sm" onClick={setCountPopoverOpen.off}>{t('Cancel')}</Button>
+                        <Button size="sm" onClick={onCount} colorScheme="octoColor">{t('Confirm')}</Button>
+                      </HStack>
+                    </PopoverFooter>
+                  </PopoverContent>
+                </Popover> : null
+              }
+              {
+                isOwner ?
+                <Popover
+                  initialFocusRef={initialFocusRef}
+                  placement="bottom"
+                  onClose={setConcludePopoverOpen.off}
+                  isOpen={concludePopoverOpen}
+                >
+                  <PopoverTrigger>
+                    <Button size="sm" colorScheme="octoColor" display={{ base: 'none', md: 'block' }} 
+                      disabled={isCounting || isConcluding || concludePopoverOpen} isLoading={isConcluding} 
+                      onClick={setConcludePopoverOpen.on}>
+                      <Icon as={BsFillStopFill} mr="1" /> {t('Conclude score')}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent>
+                    <PopoverBody>
+                      <Box p="2" d="flex">
+                        <Heading fontSize="lg">Are you confirm to conclude score?</Heading>
+                      </Box>
+                    </PopoverBody>
+                    <PopoverFooter d="flex" justifyContent="flex-end">
+                      <HStack spacing={3}>
+                        <Button size="sm" onClick={setConcludePopoverOpen.off}>{t('Cancel')}</Button>
+                        <Button size="sm" onClick={onConclude} colorScheme="octoColor">{t('Confirm')}</Button>
+                      </HStack>
+                    </PopoverFooter>
+                  </PopoverContent>
+                </Popover> : null
+              }
             </HStack> :
             <HStack spacing={4}>
               <HStack>
