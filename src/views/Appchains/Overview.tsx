@@ -34,7 +34,7 @@ import { FaStar } from 'react-icons/fa';
 import { GrUserWorker } from 'react-icons/gr';
 import { IoMdTime } from 'react-icons/io';
 import { RiHandCoinLine, RiExchangeFundsFill, RiMoneyDollarCircleLine } from 'react-icons/ri';
-import { ExternalLinkIcon, CopyIcon, CheckIcon } from '@chakra-ui/icons';
+import { ExternalLinkIcon, CopyIcon, CheckIcon, AttachmentIcon } from '@chakra-ui/icons';
 import { HiOutlineMail } from 'react-icons/hi';
 import { AiOutlineEdit } from 'react-icons/ai';
 import StateBadge from 'components/StateBadge';
@@ -241,7 +241,37 @@ const Overview = ({ appchainId }) => {
               <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.website_url} 
                 onChange={e => onAppchainMetadataChange('website_url', e.target.value)} width="auto" /> :
               <Link href={appchainStatus?.appchain_metadata?.website_url} isExternal>
-                {appchainStatus?.appchain_metadata?.website_url} <ExternalLinkIcon mx="2px" />
+                <HStack>
+                  <Box maxW="240px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
+                    {appchainStatus?.appchain_metadata?.website_url}
+                  </Box>
+                  <ExternalLinkIcon mx="2px" />
+                </HStack>
+              </Link>
+            }
+          </Flex>
+          <Divider mt="4" mb="4" />
+          </>
+        }
+        {
+          appchainStatus?.appchain_metadata?.function_spec_url &&
+          <>
+          <Flex justifyContent="space-between">
+            <HStack>
+              <Icon as={AttachmentIcon} w={5} h={5} />
+              <Text>Function Spec</Text>
+            </HStack>
+            {
+              isEditing ?
+              <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.function_spec_url} 
+                onChange={e => onAppchainMetadataChange('function_spec_url', e.target.value)} width="auto" /> :
+              <Link href={appchainStatus?.appchain_metadata?.function_spec_url} isExternal>
+                <HStack>
+                  <Box maxW="240px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
+                    {appchainStatus?.appchain_metadata?.function_spec_url}
+                  </Box>
+                  <ExternalLinkIcon mx="2px" />
+                </HStack>
               </Link>
             }
           </Flex>
