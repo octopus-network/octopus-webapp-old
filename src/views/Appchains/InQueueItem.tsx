@@ -147,7 +147,7 @@ const InQueueItem = ({
                 <Box mt="-3px" position="relative">
                   <Flex alignItems="center">
                     <StyledBar width={(upvotes ? 100*upvotes/highestVotes : 0) + '%'} h="9px" bg="#8884d8" />
-                    <Text fontSize="xs" transform="scale(.9)">{upvotes.toFixed(2)}</Text>
+                    <Text fontSize="xs" ml={1}>{upvotes.toFixed(2)}</Text>
                   </Flex>
                 </Box>
               </Box>
@@ -155,7 +155,7 @@ const InQueueItem = ({
                 <Box mt="-3px" position="relative">
                   <Flex alignItems="center">
                     <StyledBar width={(downvotes ? 100*downvotes/highestVotes : 0) + '%'} h="9px" bg="#82ca9d" />
-                    <Text fontSize="xs" transform="scale(.9)">{downvotes.toFixed(2)}</Text>
+                    <Text fontSize="xs" ml={1}>{downvotes.toFixed(2)}</Text>
                   </Flex>
                 </Box>
               </Box>
@@ -163,9 +163,9 @@ const InQueueItem = ({
           </Tooltip>
           {
             (userDownvoteDeposit || userUpvoteDeposit) ?
-            <Flex position="absolute" bottom="-14px" transform="scale(.9)  translateX(-10px)">
+            <Flex position="absolute" bottom="-14px">
               <HStack color="gray" fontSize="xs">
-                <Text >Your deposit:</Text>
+                <Text >Your Vote:</Text>
                 <Text>
                   {
                     userDownvoteDeposit && userUpvoteDeposit ? 

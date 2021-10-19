@@ -149,7 +149,7 @@ const Overview = ({ appchainId }) => {
   const onFTMetadataChange = (k, v, isNumber = false) => {
     setFTMetadata(Object.assign({}, ftMetadata, {[k]: isNumber ? v * 1 : v}));
   }
-  
+
   return (
 
     <>

@@ -420,7 +420,7 @@ const Permissions = ({ status, onEdit, onUpdate, onCancelEdit }) => {
                     <Input ref={upvoteInputRef} placeholder={`amount of votes`} value={upvoteAmount}
                       onChange={e => setUpvoteAmount(e.target.value)} />
                     <Flex justifyContent="flex-end" mt={2}>
-                      <Text fontSize="sm" color="gray">Deposited: {upvoteDeposit === undefined ? <Spinner size="xs" /> : upvoteDeposit } OCT</Text>
+                      <Text fontSize="sm" color="gray">Voted: {upvoteDeposit === undefined ? <Spinner size="xs" /> : upvoteDeposit } OCT</Text>
                     </Flex>
                   </Box>
                   <Box mt={4}>
@@ -428,14 +428,14 @@ const Permissions = ({ status, onEdit, onUpdate, onCancelEdit }) => {
                       <GridItem colSpan={upvoteDeposit <= 0 ? 5 : 3}>
                         <Button colorScheme="octoColor" isFullWidth={true}
                           isDisabled={!!loadingType || isWithdrawing || isNaN(upvoteAmount as any) || upvoteAmount as any <= 0} isLoading={loadingType === 'upvote'}
-                          onClick={onDepositVotes}>Deposit</Button>
+                          onClick={onDepositVotes}>Upvote</Button>
                       </GridItem>
                       {
                         upvoteDeposit > 0 &&
                         <GridItem colSpan={2}>
                           <Button isFullWidth={true}
                             isDisabled={isWithdrawing || isNaN(upvoteAmount as any) || upvoteAmount as any <= 0} isLoading={isWithdrawing}
-                            onClick={onWithdrawVotes}>Withdraw</Button>
+                            onClick={onWithdrawVotes}>Recall</Button>
                         </GridItem>
                       }
                     </Grid>
@@ -468,7 +468,7 @@ const Permissions = ({ status, onEdit, onUpdate, onCancelEdit }) => {
                     <Input ref={downvoteInputRef} placeholder={`amount of votes`} value={downvoteAmount}
                       onChange={e => setDownvoteAmount(e.target.value)} />
                     <Flex justifyContent="flex-end" mt={2}>
-                      <Text fontSize="sm" color="gray">Deposited: {downvoteDeposit === undefined ? <Spinner size="xs" /> : downvoteDeposit } OCT</Text>
+                      <Text fontSize="sm" color="gray">Voted: {downvoteDeposit === undefined ? <Spinner size="xs" /> : downvoteDeposit } OCT</Text>
                     </Flex>
                   </Box>
                   <Box mt={4}>
@@ -476,14 +476,14 @@ const Permissions = ({ status, onEdit, onUpdate, onCancelEdit }) => {
                       <GridItem colSpan={downvoteDeposit <= 0 ? 5 : 3}>
                         <Button colorScheme="octoColor" isFullWidth={true}
                           isDisabled={!!loadingType || isWithdrawing || isNaN(downvoteAmount as any) || downvoteAmount as any <= 0} isLoading={loadingType === 'downvote'}
-                          onClick={onDepositVotes}>Deposit</Button>
+                          onClick={onDepositVotes}>Downvote</Button>
                       </GridItem>
                       {
                         downvoteDeposit > 0 &&
                         <GridItem colSpan={2}>
                           <Button isFullWidth={true}
                             isDisabled={isWithdrawing || isNaN(downvoteAmount as any) || downvoteAmount as any <= 0} isLoading={isWithdrawing}
-                            onClick={onWithdrawVotes}>Withdraw</Button>
+                            onClick={onWithdrawVotes}>Recall</Button>
                         </GridItem>
                       }
                     </Grid>
