@@ -36,7 +36,7 @@ const initNear = async () => {
       ],
       changeMethods: [
         'start_auditing_appchain', 'reject_appchain', 'remove_appchain', 'pass_auditing_appchain', 'update_appchain_metadata',
-        'withdraw_upvote_deposit_of', 'withdraw_downvote_deposit_of', 'count_voting_score', 'conclude_voting_score'
+        'withdraw_upvote_deposit_of', 'withdraw_downvote_deposit_of', 'count_voting_score', 'conclude_voting_score', 'go_booting'
       ]
     }
   );

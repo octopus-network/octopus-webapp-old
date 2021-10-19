@@ -52,6 +52,7 @@ const Permissions = ({ status, onEdit, onUpdate, onCancelEdit }) => {
   const navigate = useNavigate();
   const [loadingType, setLoadingType] = useState('');
   const [rejectPopoverOpen, setRejectPopoverOpen] = useBoolean(false);
+  const [bootingPopoverOpen, setBootingPopoverOpen] = useBoolean(false);
   const [passAuditingPopoverOpen, setPassAuditingPopoverOpen] = useBoolean(false);
   const [upvotePopoverOpen, setUpvotePopoverOpen] = useBoolean(false);
   const [downvotePopoverOpen, setDownvotePopoverOpen] = useBoolean(false);
@@ -120,6 +121,29 @@ const Permissions = ({ status, onEdit, onUpdate, onCancelEdit }) => {
     window
       .registryContract
       .reject_appchain(
+        {
+          appchain_id: status.appchain_id
+        },
+        SIMPLE_CALL_GAS
+      ).then(() => {
+        window.location.reload();
+      }).catch(err => {
+        setLoadingType('');
+        toast({
+          position: 'top-right',
+          title: 'Error',
+          description: err.toString(),
+          status: 'error'
+        });
+      });
+  }
+
+  const onBooting = () => {
+    setLoadingType('booting');
+    setBootingPopoverOpen.off();
+    window
+      .registryContract
+      .go_booting(
         {
           appchain_id: status.appchain_id
         },
@@ -386,6 +410,36 @@ const Permissions = ({ status, onEdit, onUpdate, onCancelEdit }) => {
         </Popover>
         </> : null
       ) : 
+      status?.appchain_state === 'Staging' ?
+      (
+        isAdmin ?
+        <>
+          <Popover
+            initialFocusRef={initialFocusRef}
+            placement="bottom"
+            isOpen={bootingPopoverOpen}
+            onClose={setBootingPopoverOpen.off}
+            >
+            <PopoverTrigger>
+              <Button colorScheme="octoColor" isLoading={loadingType === 'booting'}
+                isDisabled={!!loadingType || bootingPopoverOpen} onClick={setBootingPopoverOpen.toggle}>Go Booting</Button>
+            </PopoverTrigger>
+            <PopoverContent>
+              <PopoverBody>
+                <Box p="2" d="flex">
+                  <Heading fontSize="lg">Are you confirm to set this appchain status to 'Booting'?</Heading>
+                </Box>
+              </PopoverBody>
+              <PopoverFooter d="flex" justifyContent="flex-end">
+                <HStack spacing={3}>
+                  <Button size="sm" onClick={setBootingPopoverOpen.off}>{t('Cancel')}</Button>
+                  <Button size="sm" onClick={onBooting} colorScheme="octoColor">{t('Confirm')}</Button>
+                </HStack>
+              </PopoverFooter>
+            </PopoverContent>
+          </Popover>
+        </> : null
+      ) :
       status?.appchain_state === 'Dead' ?
       (
         isAdmin ?
