@@ -346,7 +346,7 @@ const Appchains = () => {
           </Tabs>
           {
             tabIndex === 1 ?
-            isCounter ?
+           
             <HStack spacing={3}>
               {
                 isCounter ?
@@ -438,7 +438,7 @@ const Appchains = () => {
                   </PopoverBody>
                 </PopoverContent>
               </Popover>
-            </HStack> : null
+            </HStack>
           }
         </Flex>
         <Box mt="4">
