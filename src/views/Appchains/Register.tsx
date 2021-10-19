@@ -168,7 +168,7 @@ const Register = () => {
 
   return (
     <>
-    <Container maxW="640px" mt={14} mb={16}>
+    <Container maxW="620px" mt={14} mb={16}>
       <Box pb={10}>
         <Heading fontSize={{ base: '3xl', md: '4xl' }}>{t('Join Octopus Network')}</Heading>
       </Box>

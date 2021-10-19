@@ -253,31 +253,27 @@ const Overview = ({ appchainId }) => {
           <Divider mt="4" mb="4" />
           </>
         }
-        {
-          appchainStatus?.appchain_metadata?.function_spec_url &&
-          <>
-          <Flex justifyContent="space-between">
-            <HStack>
-              <Icon as={AttachmentIcon} w={5} h={5} />
-              <Text>Function Spec</Text>
-            </HStack>
-            {
-              isEditing ?
-              <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.function_spec_url} 
-                onChange={e => onAppchainMetadataChange('function_spec_url', e.target.value)} width="auto" /> :
-              <Link href={appchainStatus?.appchain_metadata?.function_spec_url} isExternal>
-                <HStack>
-                  <Box maxW="240px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
-                    {appchainStatus?.appchain_metadata?.function_spec_url}
-                  </Box>
-                  <ExternalLinkIcon mx="2px" />
-                </HStack>
-              </Link>
-            }
-          </Flex>
-          <Divider mt="4" mb="4" />
-          </>
-        }
+        <Flex justifyContent="space-between">
+          <HStack>
+            <Icon as={AttachmentIcon} w={5} h={5} />
+            <Text>Function Spec</Text>
+          </HStack>
+          {
+            isEditing ?
+            <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.function_spec_url} 
+              onChange={e => onAppchainMetadataChange('function_spec_url', e.target.value)} width="auto" /> :
+            appchainStatus?.appchain_metadata?.function_spec_url ?
+            <Link href={appchainStatus?.appchain_metadata?.function_spec_url} isExternal>
+              <HStack>
+                <Box maxW="240px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
+                  {appchainStatus?.appchain_metadata?.function_spec_url}
+                </Box>
+                <ExternalLinkIcon mx="2px" />
+              </HStack>
+            </Link> : null
+          }
+        </Flex>
+        <Divider mt="4" mb="4" />
         <Skeleton isLoaded={!!appchainStatus}>
           <Flex justifyContent="space-between">
             <HStack>
