@@ -10,24 +10,24 @@ import {
   HStack,
   Icon,
   SimpleGrid,
-  Tag,
   Text,
   Flex,
   Tooltip,
-  Skeleton
 } from '@chakra-ui/react';
 
 import { MdKeyboardArrowRight } from 'react-icons/md';
 import { FaStar } from 'react-icons/fa';
 import { fromDecimals } from 'utils';
-
-import ScoreChart from 'components/ScoreChart';
+import { useNavigate } from 'react-router-dom';
 
 const StyledAppchainItem = styled(SimpleGrid)`
   border-radius: 10px;
+  box-shadow: rgb(0 0 0 / 20%) 0px 0px 2px;
+  transition: transform 0.2s ease-in-out 0s, box-shadow 0.2s ease-in-out 0s;
   cursor: pointer;
   &:hover {
-    background: rgba(122, 122, 122, .1);
+    box-shadow: rgb(0 0 0 / 15%) 0px 0px 10px;
+    transform: scaleX(0.99);
   }
 `;
 
@@ -53,9 +53,9 @@ const InQueueItem = ({
   highestVotes: number;
   highestScore: number;
 }) => {
-  
-  const [counterData, setCounterData] = useState();
 
+  const navigate = useNavigate();
+  const [counterData, setCounterData] = useState();
   const [upvotes, setUpvotes] = useState(0);
   const [downvotes, setDownvotes] = useState(0);
   const [score, setScore] = useState(0);
@@ -119,7 +119,8 @@ const InQueueItem = ({
   }, []);
 
   return (
-    <StyledAppchainItem boxShadow="octoShadow" columns={{ base: 9, md: 14 }} p="6" alignItems="center">
+    <StyledAppchainItem columns={{ base: 9, md: 14 }} p={4} alignItems="center"
+      onClick={() => navigate(`/appchains/overview/${appchain_id}`)}>
       <GridItem colSpan={4}>
         <HStack>
           <Box w="24px" h="24px" borderRadius="12px" bg={`${backgrounds[index] || 'gray'}.500`} display="flex" alignItems="center" justifyContent="center">
@@ -146,7 +147,7 @@ const InQueueItem = ({
               <Box bg="#f5f5fc" borderRadius={15} height="11px" overflow="hidden">
                 <Box mt="-3px" position="relative">
                   <Flex alignItems="center">
-                    <StyledBar width={(upvotes ? 100*upvotes/highestVotes : 0) + '%'} h="9px" bg="#8884d8" />
+                    <StyledBar width={(upvotes ? 100*upvotes/highestVotes : 0) + '%'} h="8px" bg="#8884d8" />
                     <Text fontSize="xs" ml={1}>{upvotes.toFixed(2)}</Text>
                   </Flex>
                 </Box>
@@ -154,7 +155,7 @@ const InQueueItem = ({
               <Box bg="#f5faf5" borderRadius={15} mt={2} height="11px" overflow="hidden">
                 <Box mt="-3px" position="relative">
                   <Flex alignItems="center">
-                    <StyledBar width={(downvotes ? 100*downvotes/highestVotes : 0) + '%'} h="9px" bg="#82ca9d" />
+                    <StyledBar width={(downvotes ? 100*downvotes/highestVotes : 0) + '%'} h="8px" bg="#82ca9d" />
                     <Text fontSize="xs" ml={1}>{downvotes.toFixed(2)}</Text>
                   </Flex>
                 </Box>

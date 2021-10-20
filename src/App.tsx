@@ -31,8 +31,8 @@ export const App = () => {
               <Route path="appchains/inqueue" element={<Appchains />} />
               <Route path="appchains/staging" element={<Appchains />} />
               <Route path="appchains/booting" element={<Appchains />} />
-              <Route path="appchains/:state/:appchainId" element={<Appchains />} />
-              <Route path="appchains/:appchainId" element={<Appchain />} />
+              <Route path="appchains/overview/:id" element={<Appchains />} />
+              <Route path="appchains/:id" element={<Appchain />} />
               <Route path="user" element={<UserView />}>
                 <Route path="dashboard" element={<Dashboard />} />
               </Route>

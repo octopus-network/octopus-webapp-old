@@ -17,9 +17,12 @@ import { HiOutlineArrowNarrowRight } from 'react-icons/hi';
 
 const StyledAppchainItem = styled(SimpleGrid)`
   border-radius: 10px;
+  box-shadow: rgb(0 0 0 / 20%) 0px 0px 2px;
+  transition: transform 0.2s ease-in-out 0s, box-shadow 0.2s ease-in-out 0s;
   cursor: pointer;
   &:hover {
-    background: rgba(122, 122, 122, .1);
+    box-shadow: rgb(0 0 0 / 15%) 0px 0px 10px;
+    transform: scaleX(0.99);
   }
 `;
 
@@ -30,14 +33,10 @@ const BootingItem = ({
 }) => {
  
   const { appchain_id, validators } = appchain;
-  // const totalStaked = validators.reduce(
-  //   (total, b) => total + b.staked_amount,
-  //   0
-  // );
   
   return (
-    // <RouterLink to={`/appchains/${appchain_id}`}>
-    <StyledAppchainItem boxShadow="octoShadow" columns={{ base: 13, md: 17 }} p="6" alignItems="center">
+   
+    <StyledAppchainItem boxShadow="octoShadow" columns={{ base: 13, md: 17 }} p={4} alignItems="center">
       <GridItem colSpan={5}>
         <HStack>
           <Avatar name={appchain_id} size="sm" display={{ base: 'none', md: 'block' }} bg="blue.100" />
@@ -52,14 +51,11 @@ const BootingItem = ({
       </GridItem>
       
       <GridItem colSpan={4} textAlign="right" display={{ base: 'none', md: 'block' }}>
-        {/* <RouterLink to={`/appchains/${appchain_id}`}>
-          <Button>Enter <Icon as={HiOutlineArrowNarrowRight} ml="1" /></Button>
-        </RouterLink> */}
         <Button>Enter <Icon as={HiOutlineArrowNarrowRight} ml="1" /></Button>
       </GridItem>
      
     </StyledAppchainItem>
-    // </RouterLink>
+
   );
 }
 
