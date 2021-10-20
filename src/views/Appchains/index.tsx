@@ -34,14 +34,14 @@ import {
 
 import { COMPLEX_CALL_GAS } from 'config/constants';
 import { FiEdit, FiCheckCircle, FiPlus } from 'react-icons/fi';
-import { AiOutlineAudit, AiOutlineInbox } from 'react-icons/ai';
+import { AiOutlineAudit, AiOutlineInbox, AiOutlineDashboard } from 'react-icons/ai';
 import { BiBadgeCheck } from 'react-icons/bi';
 import { BsFillStopFill, BsPeople } from 'react-icons/bs';
 import { VscServerProcess } from 'react-icons/vsc';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Link as RouterLink } from 'react-router-dom';
-import { QuestionOutlineIcon, QuestionIcon, InfoOutlineIcon, WarningIcon } from '@chakra-ui/icons';
+import { QuestionOutlineIcon, InfoOutlineIcon } from '@chakra-ui/icons';
 import BootingItem from './BootingItem';
 import InQueueItem from './InQueueItem';
 import StagingItem from './StagingItem';
@@ -271,7 +271,7 @@ const Appchains = () => {
             <StatBox title={t('Voting')} value={numInQueue} icon={FiCheckCircle} href="#voting" />
             <StatBox title={t('Staking')} value={numStaging} icon={AiOutlineInbox} href="#staking" />
             <StatBox title={t('Booting')} value={numBooting} icon={VscServerProcess} href="#booting" />
-            <StatBox title={t('Running')} value={numActive} icon={VscServerProcess} href="#active" />
+            <StatBox title={t('Running')} value={numActive} icon={AiOutlineDashboard} href="#active" />
           </SimpleGrid>
         </Box>
       </Flex>
