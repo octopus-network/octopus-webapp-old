@@ -37,10 +37,9 @@ import { FiEdit, FiCheckCircle, FiPlus } from 'react-icons/fi';
 import { AiOutlineAudit, AiOutlineInbox } from 'react-icons/ai';
 import { BiBadgeCheck } from 'react-icons/bi';
 import { BsFillStopFill, BsPeople } from 'react-icons/bs';
-import { GoTasklist } from 'react-icons/go';
 import { VscServerProcess } from 'react-icons/vsc';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Link as RouterLink } from 'react-router-dom';
 import { QuestionOutlineIcon, QuestionIcon, InfoOutlineIcon, WarningIcon } from '@chakra-ui/icons';
 import BootingItem from './BootingItem';
@@ -76,13 +75,14 @@ const StatBox = ({
   display?: any;
 }) => {
   return (
+    <a href={href}>
     <Box display={display}>
       <HStack>
         <Box w={10} h={10} borderRadius="50%"  display={{ base: 'none', md: 'flex' }}
           alignItems="center" justifyContent="center" mr={1}>
           <Icon as={icon} w={7} h={7} color="rgba(255, 255, 255, 1)" />
         </Box>
-        <a href={href}>
+        
         <VStack alignItems="start" spacing={0} cursor="pointer">
           <HStack>
             <Text color="rgba(255, 255, 255, .7)" fontSize="xs">{title}</Text>
@@ -91,9 +91,10 @@ const StatBox = ({
             {value !== '' ? value : <Spinner size="xs" />}
           </Heading>
         </VStack>
-        </a>
+       
       </HStack>
     </Box>
+    </a>
   );
 }
 
@@ -253,8 +254,8 @@ const Appchains = () => {
   return (
     <>
     <Container mt={6} mb={6}>
-      <Flex justifyContent="flex-end" alignItems="center">
-        {/* <Heading fontSize="2xl" color="gray">{t('Overview')}</Heading> */}
+      <Flex justifyContent="space-between" alignItems="center">
+        <Heading fontSize="2xl" color="gray">{t('Appchains')}</Heading>
         <RouterLink to="/appchains/join">
           <Button colorScheme="octoColor" variant="outline">
             <Icon as={FiPlus} mr="1" /> {t('Join')}
@@ -269,8 +270,8 @@ const Appchains = () => {
             <StatBox title={t('Auditing')} value={numAuditing} icon={AiOutlineAudit} href="#auditing" />
             <StatBox title={t('Voting')} value={numInQueue} icon={FiCheckCircle} href="#voting" />
             <StatBox title={t('Staking')} value={numStaging} icon={AiOutlineInbox} href="#staking" />
-            <StatBox title={t('booting')} value={numBooting} icon={VscServerProcess} href="#booting" />
-            <StatBox title={t('Active')} value={numActive} icon={VscServerProcess} href="#active" />
+            <StatBox title={t('Booting')} value={numBooting} icon={VscServerProcess} href="#booting" />
+            <StatBox title={t('Running')} value={numActive} icon={VscServerProcess} href="#active" />
           </SimpleGrid>
         </Box>
       </Flex>
@@ -338,7 +339,28 @@ const Appchains = () => {
       </Box>
       <Box mt={8}>
         <Flex justifyContent="space-between">
-          <Heading fontSize="xl" color="gray" id="voting">{t('Voting')}</Heading>
+          <HStack spacing={2}>
+            <Heading fontSize="xl" color="gray" id="voting">{t('Voting')}</Heading>
+            <Popover trigger="hover" placement="top">
+              <PopoverTrigger>
+                <Flex alignItems="center" color="gray" fontSize="sm" cursor="pointer">
+                  <QuestionOutlineIcon />
+                  <Text ml="1">Voting rules</Text>
+                </Flex>
+              </PopoverTrigger>
+              <PopoverContent>
+                <PopoverBody>
+                  <UnorderedList fontSize="sm">
+                    <ListItem>$OCT holders can change the ranking of appchain by upvoting or downvoting. </ListItem>
+                    <ListItem>At around 00:00 UTC each day, the Octopus team’s operator counts the votes of appchains, the score on that day is the number of upvotes minus the number of downvotes. </ListItem>
+                    <ListItem>After a week of voting, the appchain with the highest total score moves on to the next stage.</ListItem>
+                    <ListItem>The total score of all the  other appchains will decrease by 50% when an appchain moves to the next stage. </ListItem>
+                    <ListItem>The $OCT holders may withdraw his vote at any time.</ListItem>
+                  </UnorderedList>
+                </PopoverBody>
+              </PopoverContent>
+            </Popover>
+          </HStack>
           <HStack spacing={3}>
             {
               isCounter || isOwner ?
@@ -398,7 +420,6 @@ const Appchains = () => {
                   </PopoverContent>
                 </Popover>
               ) :
-              <>
               <HStack>
                 <Flex alignItems="center">
                   <Box w="10px" h="10px" bg="#8884d8" borderRadius={2} />
@@ -409,26 +430,6 @@ const Appchains = () => {
                   <Text fontSize="sm" ml={1} color="gray">Downvotes</Text>
                 </Flex>
               </HStack>
-              <Popover trigger="hover" placement="top">
-                <PopoverTrigger>
-                  <Flex alignItems="center" color="octoColor.500" fontSize="sm" cursor="pointer">
-                    <QuestionOutlineIcon />
-                    <Text ml="1">Voting rules</Text>
-                  </Flex>
-                </PopoverTrigger>
-                <PopoverContent>
-                  <PopoverBody>
-                    <UnorderedList fontSize="sm">
-                      <ListItem>$OCT holders can change the ranking of appchain by upvoting or downvoting. </ListItem>
-                      <ListItem>At around 00:00 UTC each day, the Octopus team’s operator counts the votes of appchains, the score on that day is the number of upvotes minus the number of downvotes. </ListItem>
-                      <ListItem>After a week of voting, the appchain with the highest total score moves on to the next stage.</ListItem>
-                      <ListItem>The total score of all the  other appchains will decrease by 50% when an appchain moves to the next stage. </ListItem>
-                      <ListItem>The $OCT holders may withdraw his vote at any time.</ListItem>
-                    </UnorderedList>
-                  </PopoverBody>
-                </PopoverContent>
-              </Popover>
-              </>
             }
           </HStack>
         </Flex>
@@ -522,7 +523,7 @@ const Appchains = () => {
       </Box>
       <Box mt={8}>
         <Flex alignItems="center">
-          <Heading fontSize="xl" color="gray" mr={2} id="active">{t('Active')}</Heading>
+          <Heading fontSize="xl" color="gray" mr={2} id="active">{t('Running')}</Heading>
           <Tooltip label="Active appchains">
             <QuestionOutlineIcon color="gray" cursor="pointer" />
           </Tooltip>
