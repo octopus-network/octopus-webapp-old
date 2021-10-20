@@ -7,9 +7,6 @@ import {
   Flex,
   Button,
   Icon,
-  Tabs,
-  TabList,
-  Tab,
   Skeleton,
   Text,
   SimpleGrid,
@@ -20,8 +17,7 @@ import {
   Drawer,
   DrawerOverlay,
   DrawerContent,
-  DrawerBody,
-  DrawerFooter,
+  Spinner,
   DrawerHeader,
   CloseButton,
   PopoverTrigger,
@@ -33,8 +29,7 @@ import {
   useBoolean,
   Popover,
   PopoverBody,
-  PopoverFooter,
-  Avatar
+  PopoverFooter
 } from '@chakra-ui/react';
 
 import { COMPLEX_CALL_GAS } from 'config/constants';
@@ -68,12 +63,14 @@ const NoAppchains = () => (
 const StatBox = ({
   title,
   value,
+  href,
   icon,
   display
 }: {
   title: string;
   tooltip?: string;
   value: string|number;
+  href: string;
   icon: any;
   color?: string;
   display?: any;
@@ -85,16 +82,16 @@ const StatBox = ({
           alignItems="center" justifyContent="center" mr={1}>
           <Icon as={icon} w={7} h={7} color="rgba(255, 255, 255, 1)" />
         </Box>
-        <VStack alignItems="start" spacing={0}>
+        <a href={href}>
+        <VStack alignItems="start" spacing={0} cursor="pointer">
           <HStack>
-            <Text color="rgba(255, 255, 255, .7)" fontSize="sm">{title}</Text>
+            <Text color="rgba(255, 255, 255, .7)" fontSize="xs">{title}</Text>
           </HStack>
-          <Skeleton isLoaded={value !== ''}>
-            <Heading color="white" fontWeight={600} fontSize={{ base: 'lg', md: '2xl' }}>
-              {value !== '' ? value : 'loading'}
-            </Heading>
-          </Skeleton>
+          <Heading color="white" fontWeight={600} fontSize={{ base: 'lg', md: '2xl' }}>
+            {value !== '' ? value : <Spinner size="xs" />}
+          </Heading>
         </VStack>
+        </a>
       </HStack>
     </Box>
   );
@@ -113,6 +110,7 @@ const Appchains = () => {
   const [numInQueue, setNumInQueue] = useState<string|number>('');
   const [numStaging, setNumStaging] = useState<string|number>('');
   const [numBooting, setNumBooting] = useState<string|number>('');
+  const [numActive, setNumActive] = useState<string|number>('');
   const [isCounting, setIsCounting] = useState(false);
   const [isConcluding, setIsConcluding] = useState(false);
  
@@ -129,24 +127,27 @@ const Appchains = () => {
   const [votingAppchains, setVotingAppchains] = useState<undefined|any[]>();
   const [stakingAppchains, setStakingAppchains] = useState<undefined|any[]>();
   const [bootingAppchains, setBootingAppchains] = useState<undefined|any[]>();
+  const [activeAppchains, setActiveAppchains] = useState<undefined|any[]>();
 
   const initialFocusRef = React.useRef();
 
   useEffect(() => {
     const promises = [
-      'Registered', 'Auditing', 'Dead', 'InQueue', 'Staging', 'Booting'
+      'Registered', 'Auditing', 'Dead', 'InQueue', 'Staging', 'Booting', 'Active'
     ].map(state => window.registryContract.get_appchains_count_of({
       appchain_state: state
     }));
 
     Promise.all(promises).then(([
-      registeredCount, auditingCount, deadCount, inQueueCount, stagingCount, bootingCount
+      registeredCount, auditingCount, deadCount, inQueueCount, 
+      stagingCount, bootingCount, activeCount
     ]) => {
       setNumPreAudit((registeredCount*1 + deadCount*1));
       setNumAuditing((auditingCount));
       setNumInQueue(inQueueCount);
       setNumStaging(stagingCount);
       setNumBooting(bootingCount);
+      setNumActive(activeCount);
     });
 
     Promise.all([
@@ -169,6 +170,7 @@ const Appchains = () => {
       ['InQueue'],
       ['Staging'],
       ['Booting'],
+      ['Active']
     ].map(states => window
       .registryContract
       .get_appchains_with_state_of({ 
@@ -177,12 +179,13 @@ const Appchains = () => {
         page_size: 10,
         sorting_field: 'RegisteredTime',
         sorting_order: 'Descending'
-    }))).then(([preAudit, auditing, voting, staking, booting]) => {
+    }))).then(([preAudit, auditing, voting, staking, booting, active]) => {
       setPreAuditAppchains(preAudit);
       setAuditingAppchains(auditing);
       setVotingAppchains(voting);
       setStakingAppchains(staking);
       setBootingAppchains(booting);
+      setActiveAppchains(active);
       setIsLoadingList(false);
       let highest = 0;
       for (let i = 0; i < voting.length; i++) {
@@ -249,30 +252,31 @@ const Appchains = () => {
 
   return (
     <>
-    <Container mt="8" mb="8">
-      <Flex justifyContent="space-between" alignItems="center">
-        <Heading fontSize="2xl" color="gray">{t('Overview')}</Heading>
+    <Container mt={6} mb={6}>
+      <Flex justifyContent="flex-end" alignItems="center">
+        {/* <Heading fontSize="2xl" color="gray">{t('Overview')}</Heading> */}
         <RouterLink to="/appchains/join">
           <Button colorScheme="octoColor" variant="outline">
             <Icon as={FiPlus} mr="1" /> {t('Join')}
           </Button>
         </RouterLink>
       </Flex>
-      <Flex mt={6}>
+      <Flex mt={4}>
         <Box boxShadow="lg" p={6} borderRadius={10} flex={1}
           position="relative" overflow="hidden" bgGradient="linear(to-r, #51b1c8, #a5e7f2)">
-          <SimpleGrid columns={5}>
-            <StatBox title={t('Pre-Audit')} value={numPreAudit} icon={FiEdit} />
-            <StatBox title={t('Auditing')} value={numAuditing} icon={AiOutlineAudit} />
-            <StatBox title={t('Voting')} value={numInQueue} icon={FiCheckCircle} />
-            <StatBox title={t('Staking')} value={numStaging} icon={AiOutlineInbox} />
-            <StatBox title={t('booting')} value={numBooting} icon={VscServerProcess} />
+          <SimpleGrid columns={6}>
+            <StatBox title={t('Pre-Audit')} value={numPreAudit} icon={FiEdit} href="#pre_audit" />
+            <StatBox title={t('Auditing')} value={numAuditing} icon={AiOutlineAudit} href="#auditing" />
+            <StatBox title={t('Voting')} value={numInQueue} icon={FiCheckCircle} href="#voting" />
+            <StatBox title={t('Staking')} value={numStaging} icon={AiOutlineInbox} href="#staking" />
+            <StatBox title={t('booting')} value={numBooting} icon={VscServerProcess} href="#booting" />
+            <StatBox title={t('Active')} value={numActive} icon={VscServerProcess} href="#active" />
           </SimpleGrid>
         </Box>
       </Flex>
       <Box mt={8}>
-        <Flex justifyContent="space-between">
-          <Heading fontSize="xl" color="gray">{t('Pre-Audit')}</Heading>
+        <Flex alignItems="center">
+          <Heading fontSize="xl" color="gray" mr={2} id="pre_audit">{t('Pre-Audit')}</Heading>
           <Tooltip label="The appchains have registered, or in auditing/dead state.">
             <QuestionOutlineIcon color="gray" cursor="pointer" />
           </Tooltip>
@@ -302,8 +306,8 @@ const Appchains = () => {
         </Box>
       </Box>
       <Box mt={8}>
-        <Flex justifyContent="space-between">
-          <Heading fontSize="xl" color="gray">{t('Auditing')}</Heading>
+        <Flex alignItems="center">
+          <Heading fontSize="xl" color="gray" mr={2} id="auditing">{t('Auditing')}</Heading>
           <Tooltip label="Auditing appchains">
             <QuestionOutlineIcon color="gray" cursor="pointer" />
           </Tooltip>
@@ -334,7 +338,7 @@ const Appchains = () => {
       </Box>
       <Box mt={8}>
         <Flex justifyContent="space-between">
-          <Heading fontSize="xl" color="gray">{t('Voting')}</Heading>
+          <Heading fontSize="xl" color="gray" id="voting">{t('Voting')}</Heading>
           <HStack spacing={3}>
             {
               isCounter || isOwner ?
@@ -455,8 +459,8 @@ const Appchains = () => {
         </Box>
       </Box>
       <Box mt={8}>
-        <Flex justifyContent="space-between">
-          <Heading fontSize="xl" color="gray">{t('Staking')}</Heading>
+        <Flex alignItems="center">
+          <Heading fontSize="xl" color="gray" mr={2} id="staking">{t('Staking')}</Heading>
           <Tooltip label="Validators and Delegators can deposit OCT for the appchain in this state. (There can be only one appchain in this state)">
             <QuestionOutlineIcon color="gray" cursor="pointer" />
           </Tooltip>
@@ -486,8 +490,8 @@ const Appchains = () => {
         </Box>
       </Box>
       <Box mt={8}>
-        <Flex justifyContent="space-between">
-          <Heading fontSize="xl" color="gray">{t('Booting')}</Heading>
+        <Flex alignItems="center">
+          <Heading fontSize="xl" color="gray" mr={2} id="booting">{t('Booting')}</Heading>
           <Tooltip label="Booting appchains">
             <QuestionOutlineIcon color="gray" cursor="pointer" />
           </Tooltip>
@@ -506,6 +510,37 @@ const Appchains = () => {
                 <List spacing={3}>
                 {
                   bootingAppchains.map((appchain, idx) => (
+                    <BootingItem appchain={appchain} key={`appchain-${idx}`} /> 
+                  ))
+                }
+                </List>
+              </> :
+              <NoAppchains />
+            }
+          </Skeleton>
+        </Box>
+      </Box>
+      <Box mt={8}>
+        <Flex alignItems="center">
+          <Heading fontSize="xl" color="gray" mr={2} id="active">{t('Active')}</Heading>
+          <Tooltip label="Active appchains">
+            <QuestionOutlineIcon color="gray" cursor="pointer" />
+          </Tooltip>
+        </Flex>
+        <Box mt={4}>
+          <Skeleton isLoaded={!!activeAppchains}>
+            {
+              activeAppchains?.length ?
+              <>
+                <SimpleGrid columns={{ base: 13, md: 17 }} color="gray" pl={4} pr={4} pb={2} fontSize="sm">
+                  <GridItem colSpan={5}>{t('ID')}</GridItem>
+                  <GridItem colSpan={4}>{t('Validators')}</GridItem>
+                  <GridItem colSpan={4}>{t('Staked')}</GridItem>
+                  <GridItem colSpan={4} display={{ base: 'none', md: 'block' }} />
+                </SimpleGrid>
+                <List spacing={3}>
+                {
+                  activeAppchains.map((appchain, idx) => (
                     <BootingItem appchain={appchain} key={`appchain-${idx}`} /> 
                   ))
                 }
