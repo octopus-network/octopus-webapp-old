@@ -165,12 +165,12 @@ const Overview = ({ appchainId }) => {
           <Skeleton isLoaded={!!appchainStatus}>
             <HStack color="gray" spacing={5} fontSize="sm">
               <Link isExternal href={`${octopusConfig.explorerUrl}/accounts/${appchainStatus?.appchain_owner}`}>
-                <HStack>
+                <HStack spacing={1}>
                   <Icon as={AiOutlineUser} />
                   <Text>{appchainStatus?.appchain_owner || 'loading...'}</Text>
                 </HStack>
               </Link>
-              <HStack>
+              <HStack spacing={1}>
                 <Icon as={IoMdTime} />
                 <Text>
                   {
@@ -192,13 +192,11 @@ const Overview = ({ appchainId }) => {
           <>
           <Box>
             <Flex justifyContent="space-between">
-              <HStack>
-                <Icon as={FaStar} w={5} h={5} />
+              <HStack fontSize="sm" spacing={1}>
+                <Icon as={FaStar} />
                 <Text>Total Score</Text>
               </HStack>
-              <Box borderRadius={30} border="1px solid #ccc" p="2px 8px" fontSize="sm">
-                {fromDecimals(appchainStatus?.voting_score).toFixed(2)}
-              </Box>
+              <Heading fontSize="md">{fromDecimals(appchainStatus?.voting_score).toFixed(2)}</Heading>
             </Flex>
             <Skeleton isLoaded={counterData}>
             <Box width="100%" height="80px" mt={4}>
@@ -207,7 +205,7 @@ const Overview = ({ appchainId }) => {
             </Box>
             </Skeleton>
           </Box>
-          <Divider mt="4" mb="4" />
+          <Divider mt={3} mb={3} />
           </>
         }
         {
@@ -223,7 +221,7 @@ const Overview = ({ appchainId }) => {
               </Button>
               </HStack> :
               <Button onClick={setIsEditing.on} size="sm">
-                <Icon as={AiOutlineEdit} mr="1" /> Edit
+                <Icon as={AiOutlineEdit} mr={1} /> Edit
               </Button>
             }
           </Flex> : null
@@ -232,8 +230,8 @@ const Overview = ({ appchainId }) => {
           appchainStatus?.appchain_metadata?.website_url &&
           <>
           <Flex justifyContent="space-between">
-            <HStack>
-              <Icon as={AiOutlineGlobal} w={5} h={5} />
+            <HStack fontSize="sm" spacing={1}>
+              <Icon as={AiOutlineGlobal} />
               <Text>Website</Text>
             </HStack>
             {
@@ -242,21 +240,21 @@ const Overview = ({ appchainId }) => {
                 onChange={e => onAppchainMetadataChange('website_url', e.target.value)} width="auto" /> :
               <Link href={appchainStatus?.appchain_metadata?.website_url} isExternal>
                 <HStack>
-                  <Box maxW="240px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
+                  <Heading fontSize="md" maxW="240px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
                     {appchainStatus?.appchain_metadata?.website_url}
-                  </Box>
+                  </Heading>
                   <ExternalLinkIcon mx="2px" />
                 </HStack>
               </Link>
             }
           </Flex>
-          <Divider mt="4" mb="4" />
+          <Divider mt={3} mb={3} />
           </>
         }
         <Skeleton isLoaded={!!appchainStatus}>
           <Flex justifyContent="space-between">
-            <HStack>
-              <Icon as={AttachmentIcon} w={5} h={5} />
+            <HStack fontSize="sm" spacing={1}>
+              <Icon as={AttachmentIcon} />
               <Text>Function Spec</Text>
             </HStack>
             {
@@ -266,20 +264,20 @@ const Overview = ({ appchainId }) => {
               appchainStatus?.appchain_metadata?.function_spec_url ?
               <Link href={appchainStatus?.appchain_metadata?.function_spec_url} isExternal>
                 <HStack>
-                  <Box maxW="240px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
+                  <Heading fontSize="md" maxW="240px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
                     {appchainStatus?.appchain_metadata?.function_spec_url}
-                  </Box>
+                  </Heading>
                   <ExternalLinkIcon mx="2px" />
                 </HStack>
               </Link> : null
             }
           </Flex>
         </Skeleton>
-        <Divider mt="4" mb="4" />
+        <Divider mt={3} mb={3} />
         <Skeleton isLoaded={!!appchainStatus}>
           <Flex justifyContent="space-between">
-            <HStack>
-              <Icon as={AiFillGithub} w={5} h={5} />
+            <HStack fontSize="sm" spacing={1}>
+              <Icon as={AiFillGithub} />
               <Text>Github</Text>
             </HStack>
             {
@@ -288,20 +286,20 @@ const Overview = ({ appchainId }) => {
                 onChange={e => onAppchainMetadataChange('github_address', e.target.value)} width="auto" /> :
               <Link href={appchainStatus?.appchain_metadata?.github_address} isExternal>
                 <HStack>
-                  <Box maxW="240px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
+                  <Heading fontSize="md" maxW="240px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
                     {appchainStatus?.appchain_metadata?.github_address}
-                  </Box>
+                  </Heading>
                   <ExternalLinkIcon mx="2px" />
                 </HStack>
               </Link>
             }
           </Flex>
         </Skeleton>
-        <Divider mt="4" mb="4" />
+        <Divider mt={3} mb={3} />
         <Skeleton isLoaded={!!appchainStatus}>
           <Flex justifyContent="space-between">
-            <HStack>
-              <Icon as={AiOutlineFileZip} w={5} h={5} />
+            <HStack fontSize="sm" spacing={1}>
+              <Icon as={AiOutlineFileZip} />
               <Text>Release</Text>
             </HStack>
             {
@@ -310,20 +308,20 @@ const Overview = ({ appchainId }) => {
                 onChange={e => onAppchainMetadataChange('github_release', e.target.value)} width="auto" /> :
               <Link href={appchainStatus?.appchain_metadata?.github_release} isExternal>
                 <HStack>
-                  <Box maxW="240px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
+                  <Heading fontSize="md" maxW="240px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
                     {appchainStatus?.appchain_metadata?.github_release}
-                  </Box>
+                  </Heading>
                   <ExternalLinkIcon mx="2px" />
                 </HStack>
               </Link>
             }
           </Flex>
         </Skeleton>
-        <Divider mt="4" mb="4" />
+        <Divider mt={3} mb={3} />
         <Skeleton isLoaded={!!appchainStatus}>
           <Flex justifyContent="space-between"c>
-            <HStack>
-              <Icon as={HiOutlineMail} w={5} h={5} />
+            <HStack fontSize="sm" spacing={1}>
+              <Icon as={HiOutlineMail} />
               <Text>Email</Text>
             </HStack>
             {
@@ -331,7 +329,7 @@ const Overview = ({ appchainId }) => {
               <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.contact_email} 
                 onChange={e => onAppchainMetadataChange('contact_email', e.target.value)} width="auto" /> :
               <HStack>
-                <Text>{appchainStatus?.appchain_metadata?.contact_email}</Text>
+                <Heading fontSize="md">{appchainStatus?.appchain_metadata?.contact_email}</Heading>
                 <IconButton size="sm" aria-label="Copy" icon={
                   hasCopied ? <CheckIcon />: <CopyIcon />
                 } onClick={onCopy} />
@@ -344,112 +342,108 @@ const Overview = ({ appchainId }) => {
           
           <List spacing={2} p={4} bg="#f9fafc" borderRadius={5} mt={4}>
             <Flex justifyContent="space-between" fontSize="sm">
-              <HStack>
-                {/* <Icon as={RiHandCoinLine} w={5} h={5} /> */}
-                <Text>Premined Amount</Text>
-              </HStack>
+              <Text fontSize="sm">Premined Amount</Text>
               {
                 isEditing ?
                 <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.premined_wrapped_appchain_token} bg="white" 
                   onChange={e => onAppchainMetadataChange('premined_wrapped_appchain_token', e.target.value, true)} width="auto" size="sm" /> :
                 <HStack>
-                  <Text>{appchainStatus?.appchain_metadata?.premined_wrapped_appchain_token}</Text>
+                  <Heading fontSize="sm">
+                    {appchainStatus?.appchain_metadata?.premined_wrapped_appchain_token}
+                  </Heading>
                 </HStack>
               }
             </Flex>
             <Flex justifyContent="space-between" fontSize="sm">
-              <HStack>
-                {/* <Icon as={GrUserWorker} w={5} h={5} /> */}
-                <Text>Premined Beneficiary</Text>
-              </HStack>
+              <Text fontSize="sm">Premined Beneficiary</Text>
               {
                 isEditing ?
                 <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.premined_wrapped_appchain_token_beneficiary} bg="white" 
                   onChange={e => onAppchainMetadataChange('premined_wrapped_appchain_token_beneficiary', e.target.value)} width="auto" size="sm" /> :
                 <HStack>
-                  <Text>{appchainStatus?.appchain_metadata?.premined_wrapped_appchain_token_beneficiary}</Text>
+                  <Heading fontSize="sm">
+                    {appchainStatus?.appchain_metadata?.premined_wrapped_appchain_token_beneficiary}
+                  </Heading>
                 </HStack>
               }
             </Flex>
             <Flex justifyContent="space-between" fontSize="sm">
-              <HStack>
-                {/* <Icon as={RiExchangeFundsFill} w={5} h={5} /> */}
-                <Text>IDO Amount</Text>
-              </HStack>
+              <Text fontSize="sm">IDO Amount</Text>
               {
                 isEditing ?
                 <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.ido_amount_of_wrapped_appchain_token} bg="white"
                   onChange={e => onAppchainMetadataChange('ido_amount_of_wrapped_appchain_token', e.target.value, true)} width="auto" size="sm" /> :
                 <HStack>
-                  <Text>{appchainStatus?.appchain_metadata?.ido_amount_of_wrapped_appchain_token}</Text>
+                  <Heading fontSize="sm">
+                    {appchainStatus?.appchain_metadata?.ido_amount_of_wrapped_appchain_token}
+                  </Heading>
                 </HStack>
               }
             </Flex>
             <Flex justifyContent="space-between" fontSize="sm">
-              <HStack>
-                {/* <Icon as={RiMoneyDollarCircleLine} w={5} h={5} /> */}
-                <Text>Era Reward</Text>
-              </HStack>
+              <Text fontSize="sm">Era Reward</Text>
               {
                 isEditing ?
                 <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.initial_era_reward} bg="white"
                   onChange={e => onAppchainMetadataChange('initial_era_reward', e.target.value, true)} width="auto" size="sm" /> :
                 <HStack>
-                  <Text>{appchainStatus?.appchain_metadata?.initial_era_reward}</Text>
+                  <Heading fontSize="sm">
+                    {appchainStatus?.appchain_metadata?.initial_era_reward}
+                  </Heading>
                 </HStack>
               }
             </Flex>
-            <Divider mt={4} mb={4} />
+            <Divider />
             <Flex justifyContent="space-between" fontSize="sm">
-              <HStack>
-                <Text>Token Name</Text>
-              </HStack>
+              <Text fontSize="sm">Token Name</Text>
               {
                 isEditing ?
                 <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.fungible_token_metadata?.name} bg="white"
                   onChange={e => onFTMetadataChange('name', e.target.value)} width="auto" size="sm" /> :
                 <HStack>
-                  <Text>{appchainStatus?.appchain_metadata?.fungible_token_metadata?.name}</Text>
+                  <Heading fontSize="sm">
+                    {appchainStatus?.appchain_metadata?.fungible_token_metadata?.name}
+                  </Heading>
                 </HStack>
               }
             </Flex>
             <Flex justifyContent="space-between" fontSize="sm">
-              <HStack>
-                <Text>Token Symbol</Text>
-              </HStack>
+              <Text fontSize="sm">Token Symbol</Text>
               {
                 isEditing ?
                 <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.fungible_token_metadata?.symbol} bg="white"
                   onChange={e => onFTMetadataChange('symbol', e.target.value)} width="auto" size="sm" /> :
                 <HStack>
-                  <Text>{appchainStatus?.appchain_metadata?.fungible_token_metadata?.symbol}</Text>
+                  <Heading fontSize="sm">
+                    {appchainStatus?.appchain_metadata?.fungible_token_metadata?.symbol}
+                  </Heading>
                 </HStack>
               }
             </Flex>
            
             <Flex justifyContent="space-between" fontSize="sm">
-              <HStack>
-                <Text>Icon</Text>
-              </HStack>
+              <Text fontSize="sm">Icon</Text>
               {
                 isEditing ?
                 <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.fungible_token_metadata?.icon} bg="white"
                   onChange={e => onFTMetadataChange('icon', e.target.value)} width="auto" size="sm" /> :
                 <HStack>
-                  <Text maxWidth={200} overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">{appchainStatus?.appchain_metadata?.fungible_token_metadata?.icon}</Text>
+                  <Heading fontSize="sm" maxWidth={200} overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
+                    {appchainStatus?.appchain_metadata?.fungible_token_metadata?.icon}
+                  </Heading>
                 </HStack>
               }
             </Flex>
             <Flex justifyContent="space-between" fontSize="sm">
-              <HStack>
-                <Text>Decimals</Text>
-              </HStack>
+              <Text fontSize="sm">Decimals</Text>
               {
                 isEditing ?
                 <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.fungible_token_metadata?.decimals} bg="white"
                   onChange={e => onFTMetadataChange('decimals', e.target.value, true)} width="auto" size="sm" /> :
                 <HStack>
-                  <Text>{appchainStatus?.appchain_metadata?.fungible_token_metadata?.decimals}</Text>
+                  <Heading fontSize="md">
+                    {appchainStatus?.appchain_metadata?.fungible_token_metadata?.decimals}
+                  </Heading>
                 </HStack>
               }
             </Flex>

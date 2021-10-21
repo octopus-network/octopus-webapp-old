@@ -144,7 +144,7 @@ const Register = () => {
                 "icon": tokenInfo.icon,
                 "reference": null,
                 "reference_hash": null,
-                "decimals": tokenInfo.decimals
+                "decimals": tokenInfo.decimals*1
               },
               "custom_metadata": {}
             }
