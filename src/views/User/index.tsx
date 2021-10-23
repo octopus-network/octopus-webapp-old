@@ -4,9 +4,9 @@ import {
   TabList,
   Tab,
   Container,
-  Box,
-  useColorMode
+  Box
 } from '@chakra-ui/react';
+
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Outlet } from 'react-router-dom';

@@ -13,7 +13,7 @@ import {
 
 import { useTranslation } from 'react-i18next';
 
-const LocaleModal = ({ 
+export const LocaleModal = ({ 
   isOpen, 
   onClose 
 }: {
@@ -53,5 +53,3 @@ const LocaleModal = ({
     </Modal>
   );
 }
-
-export default LocaleModal;

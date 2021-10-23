@@ -32,7 +32,7 @@ const CustomTooltip = ({
   return null;
 }
 
-export default function ScoreChart({ data, lowest, highest, showDate }: {
+export function ScoreChart({ data, lowest, highest, showDate }: {
   data: any[],
   lowest: number,
   highest: number,

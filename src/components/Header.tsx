@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import { 
   Container, 
@@ -11,10 +11,8 @@ import {
   Box, 
   Image,
   useBoolean,
-  Heading,
   Link,
   useColorMode,
-  Divider,
   Menu,
   MenuButton,
   MenuList,
@@ -28,14 +26,13 @@ import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FaChevronDown } from 'react-icons/fa';
 import { FiMenu } from 'react-icons/fi';
-import LocaleModal from 'components/LocaleModal';
-import { ColorModeSwitcher } from 'components/ColorModeSwitcher';
+import { LocaleModal, ColorModeSwitcher } from 'components';
 
 import { loginNear, logoutNear } from 'utils';
 import logo from 'assets/logo.png';
 import logoWhite from 'assets/logo_white.png';
 
-const Header = () => {
+export const Header = () => {
 
   const [localeModalOpen, setLocalModalOpen] = useBoolean();
   const { t } = useTranslation();
@@ -107,5 +104,3 @@ const Header = () => {
     </>
   );
 }
-
-export default Header;

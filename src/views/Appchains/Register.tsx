@@ -28,7 +28,7 @@ import { EditIcon } from '@chakra-ui/icons';
 import { fromDecimals, toDecimals } from 'utils';
 import { FAILED_TO_REDIRECT_MESSAGE, COMPLEX_CALL_GAS } from 'config/constants';
 import octopusConfig from 'config/octopus';
-import TokenInfoModal from 'components/TokenInfoModal';
+import { TokenInfoModal } from 'components';
 
 const Register = () => {
 

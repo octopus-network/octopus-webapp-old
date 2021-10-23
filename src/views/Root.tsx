@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 import {
   useToast,
@@ -7,12 +7,10 @@ import {
   Box
 } from '@chakra-ui/react';
 
-import { utils, providers } from "near-api-js";
+import { providers } from "near-api-js";
 import octopusConfig from 'config/octopus';
-import Footer from 'components/Footer';
-import Header from 'components/Header';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Outlet } from 'react-router-dom';
+import { Footer, Header } from 'components';
+import { useLocation, useNavigate, Outlet } from 'react-router-dom';
 
 const Loading = () => {
   return (

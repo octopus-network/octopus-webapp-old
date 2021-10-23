@@ -25,8 +25,7 @@ import {
 
 import { fromDecimals } from 'utils';
 import { useTranslation } from 'react-i18next';
-import RegisterValidatorModal from 'components/RegisterValidatorModal';
-import ValidatorsTable from 'components/ValidatorsTable';
+import { RegisterValidatorModal, ValidatorsTable } from 'components';
 
 const StakingPanel = ({ status, anchor }) => {
   const { appchain_id } = status;

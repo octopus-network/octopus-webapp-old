@@ -16,7 +16,7 @@ import { useTranslation } from 'react-i18next';
 import octopusConfig from 'config/octopus';
 import { FaDiscord, FaTwitter, FaGithub } from 'react-icons/fa';
 
-const Footer = () => {
+export const Footer = () => {
   const { t } = useTranslation();
 
   return (
@@ -59,5 +59,3 @@ const Footer = () => {
     </Container>
   );
 }
-
-export default Footer;

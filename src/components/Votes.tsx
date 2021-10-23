@@ -19,23 +19,6 @@ import { fromDecimals } from 'utils';
 import { MdArrowDropUp, MdArrowDropDown } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 
-// const StyledProgress = styled(Progress)<{ value: number }>`
-//   border-radius: 3px;
-//   [role=progressbar] {
-//     position: relative;
-//   }
-//   [role=progressbar]:after {
-//     content: '';
-//     position: absolute;
-//     width: 6px;
-//     background: #fff;
-//     top: -5px;
-//     right: -3px;
-//     bottom: -5px;
-//     transform: rotate(35deg);
-//     display: ${({ value }) => ( value > 5 && value < 95 ? 'block' : 'none' )};
-//   }
-// `;
 const StyledProgress = styled(Progress)<{ value: number }>`
   background: transparent;
   border-bottom: 2px solid #eee;
@@ -61,7 +44,7 @@ const StyledProgress = styled(Progress)<{ value: number }>`
   }
 `;
 
-const Votes = ({
+export const Votes = ({
   upvotes,
   downvotes
 }: {
@@ -88,10 +71,6 @@ const Votes = ({
             <Icon as={MdArrowDropUp} w={5} h={5} />
             <Text>{fromDecimals(upvotes).toFixed(2)}</Text>
           </Button>
-        {/* <HStack spacing={1} color="#0845A5" fontSize="sm">
-          <Icon as={BiUpArrow} />
-          <Text>{fromDecimals(upvotes).toFixed(2)}</Text>
-        </HStack> */}
         </Tooltip>
         <Tooltip label={`Current voting score: upvotes - downvotes`}>
         <Tag size="sm">
@@ -108,5 +87,3 @@ const Votes = ({
     </Flex>
   );
 }
-
-export default Votes;

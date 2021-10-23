@@ -9,7 +9,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import bg from 'assets/nodata.png';
 
-const NoData = ({ ...rest }) => {
+export const NoData = ({ ...rest }) => {
   const { t } = useTranslation();
 
   return (
@@ -19,5 +19,3 @@ const NoData = ({ ...rest }) => {
     </Flex>
   );
 }
-
-export default NoData;

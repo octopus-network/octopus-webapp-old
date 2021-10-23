@@ -24,14 +24,13 @@ import {
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
 
-import Ball from 'components/Ball';
+import { Ball, NoData } from 'components';
 import { fromDecimals } from 'utils';
 import { utils } from 'near-api-js';
 import { HiOutlineArrowNarrowRight } from 'react-icons/hi';
 import { FcComboChart, FcCurrencyExchange, FcOrgUnit } from 'react-icons/fc';
 import { Link as RouterLink } from 'react-router-dom';
 import StatCard from './StatCard';
-import NoData from 'components/NoData';
 import globe from 'assets/globe.svg';
 
 const StyledAppchainItem = styled(SimpleGrid)`

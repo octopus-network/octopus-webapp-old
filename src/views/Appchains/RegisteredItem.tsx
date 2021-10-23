@@ -10,7 +10,7 @@ import {
   Icon,
   SimpleGrid,
 } from '@chakra-ui/react';
-import StateBadge from 'components/StateBadge';
+import { StateBadge } from 'components';
 import { MdKeyboardArrowRight } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
 

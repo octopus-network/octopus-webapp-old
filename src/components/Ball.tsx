@@ -5,7 +5,7 @@ interface Props {
   height: number;
 }
 
-class Ball extends React.Component<Props> {
+export class Ball extends React.Component<Props> {
   canvasRef: React.RefObject<HTMLCanvasElement> = React.createRef();
 
   til = 1;
@@ -218,5 +218,3 @@ class Ball extends React.Component<Props> {
     )
   }
 }
-
-export default Ball;

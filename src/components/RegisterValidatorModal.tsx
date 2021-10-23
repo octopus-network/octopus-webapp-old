@@ -25,7 +25,7 @@ import { useTranslation } from 'react-i18next';
 import { fromDecimals, toDecimals } from 'utils';
 import { FAILED_TO_REDIRECT_MESSAGE, COMPLEX_CALL_GAS } from 'config/constants';
 
-const RegisterValidatorModal = ({ 
+export const RegisterValidatorModal = ({ 
   isOpen, 
   onClose,
   onSuccess,
@@ -160,5 +160,3 @@ const RegisterValidatorModal = ({
     </Modal>
   );
 }
-
-export default RegisterValidatorModal;

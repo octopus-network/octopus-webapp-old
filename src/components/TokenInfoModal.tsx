@@ -18,7 +18,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { Formik, Form, Field } from 'formik';
 
-const TokenInfoModal = ({ 
+export const TokenInfoModal = ({ 
   isOpen, 
   onClose,
   tokenInfo,
@@ -102,5 +102,3 @@ const TokenInfoModal = ({
     </Modal>
   );
 }
-
-export default TokenInfoModal;

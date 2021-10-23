@@ -172,13 +172,13 @@ const Appchains = () => {
       ['Staging'],
       ['Booting'],
       ['Active']
-    ].map(states => window
+    ].map((states, idx) => window
       .registryContract
       .get_appchains_with_state_of({ 
         appchain_state: states,
         page_number: 1,
-        page_size: 10,
-        sorting_field: 'RegisteredTime',
+        page_size: 20,
+        sorting_field: idx === 2 ? 'VotingScore' : 'RegisteredTime',
         sorting_order: 'Descending'
     }))).then(([preAudit, auditing, voting, staking, booting, active]) => {
       setPreAuditAppchains(preAudit);

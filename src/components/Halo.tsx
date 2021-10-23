@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 
 import { TimelineMax, Linear, TweenMax } from 'gsap';
 
-const Halo = ({ width = 360, height = 270 }) => {
+export const Halo = ({ width = 360, height = 270 }) => {
 
   const mainSVGRef = useRef<any>();
   const orbitRef = useRef<any>();
@@ -124,5 +124,3 @@ const Halo = ({ width = 360, height = 270 }) => {
     </svg>
   );
 }
-
-export default Halo;

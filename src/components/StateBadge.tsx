@@ -12,10 +12,8 @@ const state2color = {
   'Booting': 'yellow'
 }
 
-const StateBadge = ({ state, size = 'md', varaint = 'subtle' }) => {
+export const StateBadge = ({ state, size = 'md', varaint = 'subtle' }) => {
   return (
     <Badge colorScheme={state2color[state]} size={size} variant={varaint}>{state}</Badge>
   )
 }
-
-export default StateBadge;

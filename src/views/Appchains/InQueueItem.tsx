@@ -17,7 +17,6 @@ import {
 } from '@chakra-ui/react';
 
 import { MdKeyboardArrowRight } from 'react-icons/md';
-import { FaStar } from 'react-icons/fa';
 import { fromDecimals } from 'utils';
 import { useNavigate } from 'react-router-dom';
 

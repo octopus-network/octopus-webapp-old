@@ -10,7 +10,7 @@ import {
   Td,
 } from '@chakra-ui/react';
 
-const ValidatorsTable = ({ anchor }) => {
+export const ValidatorsTable = ({ anchor }) => {
 
   useEffect(() => {
     anchor
@@ -51,5 +51,3 @@ const ValidatorsTable = ({ anchor }) => {
     </Table>
   );
 }
-
-export default ValidatorsTable;
