@@ -115,12 +115,16 @@ const Overview = ({ appchainId, onDrawerClose }) => {
             'get_validator_deposit_of',
             'get_anchor_status',
             'get_processing_status_of',
+            'get_unbonded_stakes_of',
             'get_anchor_settings',
             'get_protocol_settings',
             'get_validator_set_info_of',
-            'get_validator_list_of_era'
+            'get_validator_list_of',
+            'get_delegator_deposit_of'
           ],
-          changeMethods: []
+          changeMethods: [
+            'unbond_stake'
+          ]
         }
       );
       setAnchor(contract);

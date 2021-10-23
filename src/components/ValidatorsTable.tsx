@@ -1,53 +1,205 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import {
   Table,
   Thead,
   Tbody,
-  Tfoot,
   Tr,
   Th,
   Td,
+  Skeleton,
+  Box,
+  Flex,
+  Text,
+  Link,
+  VStack,
+  Button,
+  useBoolean,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverBody,
+  PopoverFooter,
+  Input,
+  HStack,
+  useToast,
+  Spinner
 } from '@chakra-ui/react';
+
+import { fromDecimals, toDecimals } from 'utils';
+import { InfoOutlineIcon } from '@chakra-ui/icons';
+import octopusConfig from 'config/octopus';
+import { RegisterDelegatorModal } from 'components';
+import { FAILED_TO_REDIRECT_MESSAGE, COMPLEX_CALL_GAS } from 'config/constants';
+
+const NoValidators = () => (
+  <Box p={3} borderRadius={10}  w="100%">
+    <Flex color="gray" flexDirection="column" justifyContent="center" alignItems="center">
+      <InfoOutlineIcon w={5} h={5} color="gray.400" />
+      <Text mt={2} fontSize="xs">No Validators</Text>
+    </Flex>
+  </Box>
+);
 
 export const ValidatorsTable = ({ anchor }) => {
 
+  const toast = useToast();
+  const [validatorList, setValidatorList] = useState<any>();
+  const [selectedValidatorAccountId, setSelectedValidatorAccountId] = useState('');
+  const [registerDelegatorModalOpen, setRegisterDelegatorModalOpen] = useBoolean(false);
+  const [delegatedDeposits, setDelegatedDeposits] = useState([]);
+  
+  const [delegateAmount, setDelegateAmount] = useState<any>();
+  const [delegateMorePopoverOpen, setDelegateMorePopoverOpen] = useBoolean(false);
+  const [isDelegating, setIsDelegating] = useState(false);
+
+  const initialFocusRef = React.useRef();
+  const delegateAmountInputRef = React.useRef<any>();
+
   useEffect(() => {
     anchor
-      .get_processing_status_of({ era_number: '0' })
+      .get_validator_list_of()
       .then(res => {
         console.log(res);
-      });
-
-    anchor
-      .get_anchor_status()
-      .then(status => {
-        console.log(status);
-      });
-
-    anchor
-      .get_validator_list_of_era({
-        era_number: '0'
-      })
-      .then(res => {
-        console.log(res);
+        setValidatorList(res);
       });
   }, [anchor]);
 
+  useEffect(() => {
+    if (delegateMorePopoverOpen) {
+        setTimeout(() => {
+          if (delegateAmountInputRef.current) {
+            delegateAmountInputRef.current.focus();
+          }
+        }, 200);
+    }
+  }, [delegateMorePopoverOpen]);
+
+  useEffect(() => {
+    if (!validatorList?.length) {
+      return;
+    }
+    Promise.all(
+      validatorList.map(v => anchor.get_delegator_deposit_of({
+        delegator_id: window.accountId,
+        validator_id: v.validator_id
+      }).then(amount => fromDecimals(amount)))
+    ).then(deposits => {
+      console.log(deposits);
+      setDelegatedDeposits(deposits);
+    });
+  }, [validatorList]);
+
+  const onRegisterDelegator = (id) => {
+    setSelectedValidatorAccountId(id);
+    setRegisterDelegatorModalOpen.on();
+  }
+
+  const onIncreaseDelegation = (id) => {
+    setIsDelegating(true);
+    window
+      .tokenContract
+      .ft_transfer_call(
+        {
+          receiver_id: anchor.contractId,
+          amount: toDecimals(delegateAmount),
+          msg: JSON.stringify({
+            IncreaseDelegation: {
+              validator_id: id
+            }
+          })
+        },
+        COMPLEX_CALL_GAS,
+        1,
+      ).catch(err => {
+        if (err.message === FAILED_TO_REDIRECT_MESSAGE) {
+          return;
+        }
+        toast({
+          position: 'top-right',
+          title: 'Error',
+          description: err.toString(),
+          status: 'error'
+        });
+        setIsDelegating(false);
+        console.log(err);
+      });
+  }
+
   return (
-    <Table>
-      <Thead>
-        <Tr>
-          <Th>Validator Id</Th>
-          <Th isNumeric>staked amount</Th>
-        </Tr>
-      </Thead>
-      <Tbody>
-        <Tr>
-          <Td></Td>
-          <Td></Td>
-        </Tr>
-      </Tbody>
-    </Table>
+    <>
+    <Skeleton isLoaded={validatorList !== undefined}>
+    {
+      validatorList?.length > 0 ?
+      <Table variant="simple" size="sm">
+        <Thead>
+          <Tr>
+            <Th>Validator Id</Th>
+            <Th textAlign="center">Delegators</Th>
+            <Th textAlign="center">Staked</Th>
+            <Th>Action</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          {
+            validatorList.map((v, idx) => (
+              <Tr key={`validator-${idx}`}>
+                <Td>
+                  <Link href={`${octopusConfig.explorerUrl}/accounts/${v.validator_id}`} isExternal>
+                    {v.validator_id}
+                  </Link>
+                </Td>
+                <Td textAlign="center">{v.delegators_count}</Td>
+                <Td>
+                  <VStack spacing={0} justifyContent="flex-start">
+                    <Text>{fromDecimals(v.total_stake)} OCT</Text>
+                    <Text fontSize="xs" color="gray">Self: {fromDecimals(v.deposit_amount)}</Text>
+                  </VStack>
+                </Td>
+                <Td>
+                  {
+                    delegatedDeposits[idx] === undefined ?
+                    <Spinner size="sm" /> :
+                    delegatedDeposits[idx] > 0 ?
+                    <Popover
+                      initialFocusRef={initialFocusRef}
+                      placement="bottom"
+                      isOpen={delegateMorePopoverOpen}
+                      onClose={setDelegateMorePopoverOpen.off}
+                      >
+                      <PopoverTrigger>
+                        <Button size="xs" colorScheme="octoColor" onClick={setDelegateMorePopoverOpen.toggle}
+                          isDisabled={delegateMorePopoverOpen} variant="outline">Delegate more</Button>
+                      </PopoverTrigger>
+                      <PopoverContent>
+                        <PopoverBody>
+                          <Flex p={2}>
+                            <Input placeholder="amount of OCT" ref={delegateAmountInputRef} onChange={e => setDelegateAmount(e.target.value)} />
+                          </Flex>
+                        </PopoverBody>
+                        <PopoverFooter d="flex" justifyContent="flex-end">
+                          <HStack spacing={3}>
+                            <Button size="sm" onClick={setDelegateMorePopoverOpen.off}>Cancel</Button>
+                            <Button size="sm" onClick={() => onIncreaseDelegation(v.validator_id)} colorScheme="octoColor" 
+                              isLoading={isDelegating} isDisabled={isDelegating}>Delegate</Button>
+                          </HStack>
+                        </PopoverFooter>
+                      </PopoverContent>
+                    </Popover> :
+                    <Button size="xs" colorScheme="octoColor" variant="outline" onClick={() => onRegisterDelegator(v.validator_id)}
+                      isDisabled={v.validator_id === window.accountId}>Delegate</Button>
+                  }
+                </Td>
+              </Tr>
+            ))
+          }
+        </Tbody>
+      </Table> :
+      <NoValidators />
+    }
+    </Skeleton>
+    <RegisterDelegatorModal isOpen={registerDelegatorModalOpen} anchor={anchor} validatorAccountId={selectedValidatorAccountId}
+      onClose={setRegisterDelegatorModalOpen.off} />
+    </>
   );
 }

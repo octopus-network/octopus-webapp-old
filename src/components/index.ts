@@ -6,6 +6,7 @@ export { LocaleModal } from './LocaleModal';
 export { ColorModeSwitcher } from './ColorModeSwitcher';
 export { NoData } from './NoData';
 export { RegisterValidatorModal } from './RegisterValidatorModal';
+export { RegisterDelegatorModal } from './RegisterDelegatorModal';
 export { ScoreChart } from './ScoreChart';
 export { StateBadge } from './StateBadge';
 export { TokenInfoModal } from './TokenInfoModal';
