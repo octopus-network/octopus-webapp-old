@@ -50,14 +50,18 @@ import RegisteredItem from './RegisteredItem';
 import Overview from './Overview';
 import { fromDecimals } from 'utils';
 
-const NoAppchains = () => (
-  <Box p={3} borderRadius={10} flex={1} bg="rgba(120, 120, 150, .04)">
-    <Flex color="gray" flexDirection="column" justifyContent="center" alignItems="center">
-      <InfoOutlineIcon w={5} h={5} color="gray.400" />
-      <Text mt={2} fontSize="xs">No appchains</Text>
-    </Flex>
-  </Box>
-);
+const NoAppchains = () => {
+  const { t } = useTranslation();
+
+  return (
+    <Box p={3} borderRadius={10} flex={1} bg="rgba(120, 120, 150, .04)">
+      <Flex color="gray" flexDirection="column" justifyContent="center" alignItems="center">
+        <InfoOutlineIcon w={5} h={5} color="gray.400" />
+        <Text mt={2} fontSize="xs">{t('No appchains')}</Text>
+      </Flex>
+    </Box>
+  )
+};
 
 const StatBox = ({
   title,
@@ -345,7 +349,7 @@ const Appchains = () => {
               <PopoverTrigger>
                 <Flex alignItems="center" color="gray" fontSize="sm" cursor="pointer">
                   <QuestionOutlineIcon />
-                  <Text ml="1">Voting rules</Text>
+                  <Text ml="1">{t('Voting rules')}</Text>
                 </Flex>
               </PopoverTrigger>
               <PopoverContent>
@@ -423,11 +427,11 @@ const Appchains = () => {
               <HStack>
                 <Flex alignItems="center">
                   <Box w="10px" h="10px" bg="#8884d8" borderRadius={2} />
-                  <Text fontSize="sm" ml={1} color="gray">Upvotes</Text>
+                  <Text fontSize="sm" ml={1} color="gray">{t('Upvotes')}</Text>
                 </Flex>
                 <Flex alignItems="center">
                   <Box w="10px" h="10px" bg="#82ca9d" borderRadius={2} />
-                  <Text fontSize="sm" ml={1} color="gray">Downvotes</Text>
+                  <Text fontSize="sm" ml={1} color="gray">{t('Downvotes')}</Text>
                 </Flex>
               </HStack>
             }

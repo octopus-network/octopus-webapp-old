@@ -19,6 +19,7 @@ import {
 import { MdKeyboardArrowRight } from 'react-icons/md';
 import { fromDecimals } from 'utils';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const StyledAppchainItem = styled(SimpleGrid)`
   overflow: hidden;
@@ -55,6 +56,7 @@ const InQueueItem = ({
   highestVotes: number;
   highestScore: number;
 }) => {
+  const { t } = useTranslation();
 
   const navigate = useNavigate();
   const [counterData, setCounterData] = useState();
@@ -155,11 +157,11 @@ const InQueueItem = ({
             <Box>
               <Flex alignItems="center">
                 <Box w="8px" h="8px" bg="#8884d8" borderRadius={2} />
-                <Text fontSize="xs" ml={1}>Upvotes: {upvotes.toFixed(2)}</Text>
+                <Text fontSize="xs" ml={1}>{t('Upvotes')}: {upvotes.toFixed(2)}</Text>
               </Flex>
               <Flex alignItems="center">
                 <Box w="8px" h="8px" bg="#82ca9d" borderRadius={2} />
-                <Text fontSize="xs" ml={1}>Downvotes: {downvotes.toFixed(2)}</Text>
+                <Text fontSize="xs" ml={1}>{t('Downvotes')}: {downvotes.toFixed(2)}</Text>
               </Flex>
             </Box>
           }>

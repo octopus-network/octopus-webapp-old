@@ -43,8 +43,10 @@ import { StateBadge, ScoreChart } from 'components';
 import StakingPanel from './StakingPanel';
 import Permissions from './Permissions';
 import octopusConfig from 'config/octopus';
+import { useTranslation } from 'react-i18next';
 
 const Overview = ({ appchainId, onDrawerClose }) => {
+  const { t } = useTranslation();
 
   const [appchainStatus, setAppchainStatus] = useState<any>();
   const { hasCopied, onCopy } = useClipboard(appchainStatus?.appchain_metadata?.contact_email);
@@ -244,7 +246,7 @@ const Overview = ({ appchainId, onDrawerClose }) => {
               <Flex justifyContent="space-between">
                 <HStack fontSize="sm" spacing={1}>
                   <Icon as={FaStar} />
-                  <Text>Total Score</Text>
+                  <Text>{t('Total Score')}</Text>
                 </HStack>
                 <Heading fontSize="md" fontWeight={500}>{fromDecimals(appchainStatus?.voting_score).toFixed(2)}</Heading>
               </Flex>
@@ -305,7 +307,7 @@ const Overview = ({ appchainId, onDrawerClose }) => {
             <Flex justifyContent="space-between">
               <HStack fontSize="sm" spacing={1}>
                 <Icon as={AttachmentIcon} />
-                <Text>Function Spec</Text>
+                <Text>{t('Function Spec')}</Text>
               </HStack>
               {
                 isEditing ?
@@ -350,7 +352,7 @@ const Overview = ({ appchainId, onDrawerClose }) => {
             <Flex justifyContent="space-between">
               <HStack fontSize="sm" spacing={1}>
                 <Icon as={AiOutlineFileZip} />
-                <Text>Release</Text>
+                <Text>{t('Release')}</Text>
               </HStack>
               {
                 isEditing ?
@@ -392,7 +394,7 @@ const Overview = ({ appchainId, onDrawerClose }) => {
             
             <List spacing={2} p={3} bg="#f9fafc" borderRadius={5} mt={4}>
               <Flex justifyContent="space-between" fontSize="sm">
-                <Text fontSize="xs">Premined Amount</Text>
+                <Text fontSize="xs">{t('Premined Amount')}</Text>
                 {
                   isEditing ?
                   <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.premined_wrapped_appchain_token} bg="white" 
@@ -405,7 +407,7 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                 }
               </Flex>
               <Flex justifyContent="space-between" fontSize="sm">
-                <Text fontSize="xs">Premined Beneficiary</Text>
+                <Text fontSize="xs">{t('Premined Beneficiary')}</Text>
                 {
                   isEditing ?
                   <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.premined_wrapped_appchain_token_beneficiary} bg="white" 
@@ -418,7 +420,7 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                 }
               </Flex>
               <Flex justifyContent="space-between" fontSize="sm">
-                <Text fontSize="xs">IDO Amount</Text>
+                <Text fontSize="xs">{t('IDO Amount')}</Text>
                 {
                   isEditing ?
                   <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.ido_amount_of_wrapped_appchain_token} bg="white"
@@ -431,7 +433,7 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                 }
               </Flex>
               <Flex justifyContent="space-between" fontSize="sm">
-                <Text fontSize="xs">Era Reward</Text>
+                <Text fontSize="xs">{t('Era Reward')}</Text>
                 {
                   isEditing ?
                   <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.initial_era_reward} bg="white"
@@ -445,7 +447,7 @@ const Overview = ({ appchainId, onDrawerClose }) => {
               </Flex>
               <Divider />
               <Flex justifyContent="space-between" fontSize="sm">
-                <Text fontSize="xs">Token Name</Text>
+                <Text fontSize="xs">{t('Token Name')}</Text>
                 {
                   isEditing ?
                   <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.fungible_token_metadata?.name} bg="white"
@@ -458,7 +460,7 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                 }
               </Flex>
               <Flex justifyContent="space-between" fontSize="sm">
-                <Text fontSize="xs">Token Symbol</Text>
+                <Text fontSize="xs">{t('Token Symbol')}</Text>
                 {
                   isEditing ?
                   <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.fungible_token_metadata?.symbol} bg="white"
@@ -472,7 +474,7 @@ const Overview = ({ appchainId, onDrawerClose }) => {
               </Flex>
             
               <Flex justifyContent="space-between" fontSize="sm">
-                <Text fontSize="xs">Icon</Text>
+                <Text fontSize="xs">{t('Icon')}</Text>
                 {
                   isEditing ?
                   <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.fungible_token_metadata?.icon} bg="white"
@@ -485,7 +487,7 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                 }
               </Flex>
               <Flex justifyContent="space-between" fontSize="sm">
-                <Text fontSize="xs">Decimals</Text>
+                <Text fontSize="xs">{t('Decimals')}</Text>
                 {
                   isEditing ?
                   <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.fungible_token_metadata?.decimals} bg="white"
@@ -517,24 +519,24 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                 { 
                   isOwner && 
                   <Tooltip label="Owner of this appchain">
-                    <Badge colorScheme="green">Owner</Badge>
+                    <Badge colorScheme="green">{t('Owner')}</Badge>
                   </Tooltip>
                 }
                 { 
                   isAdmin && 
                   <Tooltip label="Admin of Octopus Registry">
-                    <Badge colorScheme="purple">Admin</Badge>
+                    <Badge colorScheme="purple">{t('Admin')}</Badge>
                   </Tooltip>
                 }
               </HStack>
-              <Text fontSize="xs" color="gray">Balance: {accountBalance === undefined ? <Spinner size="sm" /> : accountBalance } OCT</Text>
+              <Text fontSize="xs" color="gray">{t('Balance')}: {accountBalance === undefined ? <Spinner size="sm" /> : accountBalance } OCT</Text>
             </VStack>
           </HStack>
           
         </VStack> :
         <Button size="sm" onClick={loginNear}>
           <Avatar size="xs" mr="1" />
-          <Text color="gray">Login</Text>
+          <Text color="gray">{t('Login')}</Text>
         </Button>
       }
     </DrawerFooter>

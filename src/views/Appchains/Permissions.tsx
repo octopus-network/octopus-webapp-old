@@ -227,7 +227,7 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
     return (
       status?.appchain_state === 'InQueue' ?
       (
-        <Button colorScheme="octoColor" variant="outline" onClick={loginNear}>Login to Vote</Button>
+        <Button colorScheme="octoColor" variant="outline" onClick={loginNear}>{t('Login to Vote')}</Button>
       ) : null
     );
   }
@@ -440,17 +440,17 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
                       {
                         upvoteDeposit > 0 ?
                         <Flex>
-                          <Text>Your Upvotes: {upvoteDeposit}</Text>
+                          <Text>{t('Your Upvotes')}: {upvoteDeposit}</Text>
                           <Button size="xs" colorScheme="octoColor" ml={2} variant="outline" isLoading={withdrawingUpvotes}
-                            isDisabled={withdrawingUpvotes || withdrawingDownvotes} onClick={onWithdrawUpvotes}>Withdraw</Button>
+                            isDisabled={withdrawingUpvotes || withdrawingDownvotes} onClick={onWithdrawUpvotes}>{t('Withdraw')}</Button>
                         </Flex> : null
                       }
                       {
                         downvoteDeposit > 0 ?
                         <Flex mt={3}>
-                          <Text>Your Downvotes: {downvoteDeposit}</Text>
+                          <Text>{t('Your Downvotes')}: {downvoteDeposit}</Text>
                           <Button size="xs" colorScheme="octoColor" ml={2} variant="outline" isLoading={withdrawingDownvotes}
-                            isDisabled={withdrawingUpvotes || withdrawingDownvotes} onClick={onWithdrawDownvotes}>Withdraw</Button>
+                            isDisabled={withdrawingUpvotes || withdrawingDownvotes} onClick={onWithdrawDownvotes}>{t('Withdraw')}</Button>
                         </Flex> : null
                       }
                       

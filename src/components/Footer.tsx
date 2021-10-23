@@ -25,15 +25,15 @@ export const Footer = () => {
         <Box p="4" bg="rgba(120, 120, 155, .06)" borderRadius="5">
           <Center whiteSpace="nowrap" overflow="hidden">
             <HStack spacing={4}>
-              <Link href="#">Term of service</Link>
+              <Link href="#">{t('Term of service')}</Link>
               <Text color="gray.300">|</Text>
-              <Link href="#">Privacy policy</Link>
-              <Text color="gray.300">|</Text>
-              <Link target="_blank"
-                href={`${octopusConfig.explorerUrl}/accounts/${octopusConfig.registryContractId}`}>Registry Contract</Link>
+              <Link href="#">{t('Privacy policy')}</Link>
               <Text color="gray.300">|</Text>
               <Link target="_blank"
-                href={`${octopusConfig.explorerUrl}/accounts/${octopusConfig.tokenContractId}`}>Token Contract</Link>
+                href={`${octopusConfig.explorerUrl}/accounts/${octopusConfig.registryContractId}`}>{t('Registry Contract')}</Link>
+              <Text color="gray.300">|</Text>
+              <Link target="_blank"
+                href={`${octopusConfig.explorerUrl}/accounts/${octopusConfig.tokenContractId}`}>{t('Token Contract')}</Link>
             </HStack>
           </Center>
         </Box>

@@ -216,15 +216,15 @@ const Register = () => {
                         </Box>
                         <VStack alignItems="flex-start" spacing={0}>
                           <Heading fontSize="sm" whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">
-                            {tokenInfo?.symbol || 'Token Symbol'}
+                            {tokenInfo?.symbol || t('Token Symbol')}
                           </Heading>
                           <Text fontSize="xs" whiteSpace="nowrap" overflow="hidden" color="gray" textOverflow="ellipsis">
-                            {tokenInfo?.name || 'Token Name'}
+                            {tokenInfo?.name || t('Token Name')}
                           </Text>
                         </VStack>
                       </HStack>
                       <Button onClick={setTokenInfoModalOpen.on} size="sm" ml={2}>
-                        <EditIcon mr={1} /> Edit
+                        <EditIcon mr={1} /> {t('Edit')}
                       </Button>
                     </Flex>
                   </FormControl>
@@ -360,10 +360,10 @@ const Register = () => {
                     <FormLabel>&nbsp;</FormLabel>
                     <VStack alignItems="flex-start" spacing="0">
                       <Flex alignItems="center">
-                        <Text mr="1" fontSize="sm">Auditing Fee:</Text>
+                        <Text mr="1" fontSize="sm">{t('Auditing Fee')}:</Text>
                         <Heading fontSize="md">{minimumRegisterDeposit} OCT</Heading>
                       </Flex>
-                      <Text color="gray" fontSize="xs">Balance: {accountBalance} OCT</Text>
+                      <Text color="gray" fontSize="xs">{t('Balance')}: {accountBalance} OCT</Text>
                     </VStack>
                   </FormControl>
                 </GridItem>

@@ -13,6 +13,7 @@ import {
 } from '@chakra-ui/react';
 
 import { HiOutlineArrowNarrowRight } from 'react-icons/hi';
+import { useTranslation } from 'react-i18next';
 
 const StyledAppchainItem = styled(SimpleGrid)`
   border-radius: 10px;
@@ -30,7 +31,7 @@ const BootingItem = ({
 }: {
   appchain: any;
 }) => {
- 
+  const { t } = useTranslation(); 
   const { appchain_id, validators } = appchain;
   
   return (
@@ -50,7 +51,7 @@ const BootingItem = ({
       </GridItem>
       
       <GridItem colSpan={4} textAlign="right" display={{ base: 'none', md: 'block' }}>
-        <Button>Enter <Icon as={HiOutlineArrowNarrowRight} ml="1" /></Button>
+        <Button>{t('Enter')} <Icon as={HiOutlineArrowNarrowRight} ml="1" /></Button>
       </GridItem>
      
     </StyledAppchainItem>
