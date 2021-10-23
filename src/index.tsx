@@ -9,7 +9,7 @@ import './common.css';
 import { App } from './App';
 
 // import locales
-const locales = ['en-US', 'zh-CN'];
+const locales = ['en-US', 'zh-CN', 'vi-VN'];
 const i18nResources = {};
 
 const defaultLocale = window.localStorage.getItem('locale') || locales[0];
