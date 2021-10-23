@@ -13,6 +13,7 @@ import {
   Text,
   Flex,
   Tooltip,
+  Avatar
 } from '@chakra-ui/react';
 
 import { MdKeyboardArrowRight } from 'react-icons/md';
@@ -21,12 +22,13 @@ import { fromDecimals } from 'utils';
 import { useNavigate } from 'react-router-dom';
 
 const StyledAppchainItem = styled(SimpleGrid)`
+  overflow: hidden;
+  position: relative;
   border-radius: 10px;
-  box-shadow: rgb(0 0 0 / 20%) 0px 0px 2px;
   transition: transform 0.2s ease-in-out 0s, box-shadow 0.2s ease-in-out 0s;
   cursor: pointer;
   &:hover {
-    box-shadow: rgb(0 0 0 / 15%) 0px 0px 10px;
+    box-shadow: rgb(0 0 0 / 15%) 0px 0px 10px!important;
     transform: scaleX(0.99);
   }
 `;
@@ -34,10 +36,11 @@ const StyledAppchainItem = styled(SimpleGrid)`
 const StyledBar = styled(Box)`
   border-radius: 5px;
   transition: width .8s ease-out;
+  min-width: 2%;
 `;
 
 const StyledBox = styled(Box)`
-  padding: 2px 8px;
+  
   transition: opacity .8s ease-out;
   white-space: nowrap;
 `;
@@ -67,7 +70,11 @@ const InQueueItem = ({
   const [userUpvoteDeposit, setUserUpvoteDeposit] = useState(0);
   const [userDownvoteDeposit, setUserDownvoteDeposit] = useState(0);
 
-  const backgrounds = ['yellow', 'blue', 'cyan', 'gray'];
+  const colors = [
+    '214,158,46',
+    '120,130,200',
+    '49,230,206',
+  ];
 
   useEffect(() => {
     setTimeout(() => {
@@ -120,12 +127,26 @@ const InQueueItem = ({
 
   return (
     <StyledAppchainItem columns={{ base: 9, md: 14 }} p={4} alignItems="center"
+      style={{
+        borderStyle: 'solid',
+        borderWidth: '1px',
+        borderColor: index < 3 ? `rgba(${colors[index]},.3)` : 'transparent',
+        boxShadow: index < 3 ? '' : 'rgb(0 0 0 / 20%) 0px 0px 2px'
+      }}
       onClick={() => navigate(`/appchains/overview/${appchain_id}`)}>
+      {
+        index < 3 ?
+        <Flex position="absolute" left={0} top={0} bg={`linear-gradient(to right bottom, rgba(${colors[index]},1), transparent 80%)}`}
+          alignItems="center" justifyContent="center" borderEndEndRadius="9px" style={{
+            width: '18px',
+            height: '18px',
+          }}>
+          <Heading fontSize="xs" color="white">{index+1}</Heading>
+        </Flex> : null
+      }
       <GridItem colSpan={4}>
         <HStack>
-          <Box w="24px" h="24px" borderRadius="12px" bg={`${backgrounds[index] || 'gray'}.500`} display="flex" alignItems="center" justifyContent="center">
-            <Heading size="sm" color="white">{index+1}</Heading>
-          </Box>
+          <Avatar name={appchain_id} size="xs" display={{ base: 'none', md: 'block' }} bg="blue.100" />
           <Heading fontSize="lg" ml={2} whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">{appchain_id}</Heading>
         </HStack>
       </GridItem>
@@ -144,18 +165,20 @@ const InQueueItem = ({
             </Box>
           }>
             <Box>
-              <Box bg="#f5f5fc" borderRadius={15} height="11px" overflow="hidden">
+              <Box borderRadius={15} height="10px" overflow="hidden">
                 <Box mt="-3px" position="relative">
                   <Flex alignItems="center">
-                    <StyledBar width={(upvotes ? 100*upvotes/highestVotes : 0) + '%'} h="8px" bg="#8884d8" />
+                    <StyledBar width={(upvotes ? 100*upvotes/highestVotes : 0) + '%'} h="6px" 
+                      bg="linear-gradient(to right, #3182CE, #EBF8FF)" />
                     <Text fontSize="xs" ml={1}>{upvotes.toFixed(2)}</Text>
                   </Flex>
                 </Box>
               </Box>
-              <Box bg="#f5faf5" borderRadius={15} mt={2} height="11px" overflow="hidden">
+              <Box borderRadius={15} mt={2} height="10px" overflow="hidden">
                 <Box mt="-3px" position="relative">
                   <Flex alignItems="center">
-                    <StyledBar width={(downvotes ? 100*downvotes/highestVotes : 0) + '%'} h="8px" bg="#82ca9d" />
+                    <StyledBar width={(downvotes ? 100*downvotes/highestVotes : 0) + '%'} h="6px" 
+                      bg="linear-gradient(to right, #68D391, #F0FFF4)" />
                     <Text fontSize="xs" ml={1}>{downvotes.toFixed(2)}</Text>
                   </Flex>
                 </Box>
@@ -189,17 +212,25 @@ const InQueueItem = ({
             <Text fontSize="xs" ml={1}>Pending Score: {(score+upvotes-downvotes).toFixed(2)}</Text>
           </Box>
         }>
-        <HStack spacing={-1}>
-          <StyledBox border="1px solid #ccc"
+        <HStack spacing={1}>
+          <StyledBox
             style={{ opacity: score ? '1' : '0', borderRadius: '30px' }}>
             <HStack spacing={1}>
-              <Icon as={FaStar} style={{ width: '12px', height: '12px' }} />
-              <Text fontSize="xs">{score.toFixed(2)}</Text>
+              <Text>{score.toFixed(2)}</Text>
             </HStack>
           </StyledBox>
-          <StyledBox border="1px dashed #ccc"
-            style={{ opacity: score ? '2' : '0', borderRadius: '0 30px 30px 0', color: '#9a9a9a', borderLeft: 0 }}>
-            <Text fontSize="xs">{(upvotes-downvotes).toFixed(2)}</Text>
+          <StyledBox style={{ 
+              marginTop: '-15px',
+              opacity: score ? '2' : '0',
+              padding: '0px 5px', 
+              borderRadius: '30px', 
+              color: '#9a9a9a', 
+              borderLeft: 0,
+              fontWeight: 600,
+              transform: 'scale(.9)',
+              border: '1px solid #eee'
+            }}>
+            <Text fontSize="10px">{(upvotes-downvotes > 0 ? '+' : '')}{(upvotes-downvotes).toFixed(2)}</Text>
           </StyledBox>
         </HStack>
         </Tooltip>

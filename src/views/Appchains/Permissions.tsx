@@ -19,15 +19,11 @@ import {
   Icon,
   Box,
   Spinner,
-  RadioGroup,
-  Radio,
   Flex,
-  useBoolean,
-  InputRightElement,
-  InputGroup
+  useBoolean
 } from '@chakra-ui/react';
 
-import { TriangleUpIcon, TriangleDownIcon } from '@chakra-ui/icons';
+import { TriangleUpIcon, TriangleDownIcon, ChevronRightIcon } from '@chakra-ui/icons';
 import { RiDeleteBin6Line } from 'react-icons/ri';
 import { loginNear } from 'utils';
 import { toDecimals, fromDecimals } from 'utils';
@@ -37,17 +33,11 @@ import { useNavigate } from 'react-router-dom';
 
 import { useTranslation } from 'react-i18next';
 
-const Permissions = ({ status, onEdit, onUpdate, onCancelEdit }) => {
+const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) => {
   const toast = useToast();
   const { t } = useTranslation();
 
-  // const isAdmin = window.accountId && (
-  //   new RegExp(`\.${window.accountId}`).test(octopusConfig.registryContractId) ||
-  //   window.accountId === octopusConfig.registryContractId
-  // );
   const [isAdmin, setIsAdmin] = useState(false);
-
-  const isOwner = window.accountId && status?.appchain_owner === window.accountId;
 
   const navigate = useNavigate();
   const [loadingType, setLoadingType] = useState('');
@@ -56,7 +46,7 @@ const Permissions = ({ status, onEdit, onUpdate, onCancelEdit }) => {
   const [passAuditingPopoverOpen, setPassAuditingPopoverOpen] = useBoolean(false);
   const [upvotePopoverOpen, setUpvotePopoverOpen] = useBoolean(false);
   const [downvotePopoverOpen, setDownvotePopoverOpen] = useBoolean(false);
-  const [isEditing, setIsEditing] = useState(false);
+  const [withdrawVotesPopoverOpen, setWithdrawVotesPopoverOpen] = useBoolean(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
 
   const [voteAction, setVoteAction] = useState('');
@@ -66,6 +56,8 @@ const Permissions = ({ status, onEdit, onUpdate, onCancelEdit }) => {
   const [accountBalance, setAccountBalance] = useState(0);
   const [upvoteDeposit, setUpvoteDeposit] = useState<any>();
   const [downvoteDeposit, setDownvoteDeposit] = useState<any>();
+  const [withdrawingUpvotes, setWithdrawingUpvotes] = useState(false);
+  const [withdrawingDownvotes, setWithdrawingDownvotes] = useState(false);
 
   const initialFocusRef = React.useRef();
   const upvoteInputRef = React.useRef();
@@ -90,6 +82,7 @@ const Permissions = ({ status, onEdit, onUpdate, onCancelEdit }) => {
       setDownvoteDeposit(fromDecimals(downvoteDeposit));
       setIsAdmin(owner === window.accountId);
     });
+
   }, [status]);
 
   const onStartAudit = () => {
@@ -283,61 +276,95 @@ const Permissions = ({ status, onEdit, onUpdate, onCancelEdit }) => {
       });
   }
 
+  const withdrawVotes = (type, amount) => {
+    const method = type === 'upvote' ? window.registryContract.withdraw_upvote_deposit_of :
+      window.registryContract.withdraw_downvote_deposit_of;
+   
+    method(
+      {
+        appchain_id: status.appchain_id,
+        amount: toDecimals(amount)
+      },
+      COMPLEX_CALL_GAS
+    ).then(() => {
+      window.location.reload();
+    }).catch(err => {
+      setIsWithdrawing(false);
+      toast({
+        position: 'top-right',
+        title: 'Error',
+        description: err.toString(),
+        status: 'error'
+      });
+    });
+  }
+  
   const onWithdrawVotes = () => {
     const voteType = upvotePopoverOpen ? 'upvote' : 'downvote';
     const voteAmount = voteType === 'upvote' ? upvoteAmount : downvoteAmount;
-    const method = voteType === 'upvote' ? 
-      window.registryContract.withdraw_upvote_deposit_of : 
-      window.registryContract.withdraw_downvote_deposit_of;
-
-    setIsWithdrawing(true);
-    method(
-        {
-          appchain_id: status.appchain_id,
-          amount: toDecimals(voteAmount)
-        },
-        COMPLEX_CALL_GAS
-      ).then(() => {
-        window.location.reload();
-      }).catch(err => {
-        setIsWithdrawing(false);
-        toast({
-          position: 'top-right',
-          title: 'Error',
-          description: err.toString(),
-          status: 'error'
-        });
-      });
+    withdrawVotes(voteType, voteAmount);
   }
 
-  const _onUpdate = async () => {
-    setLoadingType('update');
-
-    await onUpdate();
-    setLoadingType('');
-    setIsEditing(false);
+  const onWithdrawUpvotes = () => {
+    setWithdrawingUpvotes(true);
+    withdrawVotes('upvote', upvoteDeposit);
   }
 
-  const _onEdit = () => {
-    setIsEditing(true);
-    onEdit();
-  }
-
-  const _onCancelEdit = () => {
-    setIsEditing(false);
-    onCancelEdit();
+  const onWithdrawDownvotes = () => {
+    setWithdrawingDownvotes(true);
+    withdrawVotes('downvote', downvoteDeposit);
   }
 
   return (
-    <HStack spacing="2">
-    {
-      status?.appchain_state === 'Registered' ?
-      (
-        isAdmin ?
-        <>
-          <Button colorScheme="octoColor" isLoading={loadingType === 'audit'}
-            isDisabled={!!loadingType} onClick={onStartAudit}>Start Audit</Button>
+   
+      inStaking ?
+      <Button onClick={onCancelStake}>
+        Cancel
+      </Button> :
+    
+      <HStack spacing="2">
+      {
+        status?.appchain_state === 'Registered' ?
+        (
+          isAdmin ?
+          <>
+            <Button colorScheme="octoColor" isLoading={loadingType === 'audit'}
+              isDisabled={!!loadingType} onClick={onStartAudit}>Start Audit</Button>
 
+            <Popover
+              initialFocusRef={initialFocusRef}
+              placement="bottom"
+              isOpen={rejectPopoverOpen}
+              onClose={setRejectPopoverOpen.off}
+              >
+              <PopoverTrigger>
+                <Button colorScheme="red" isLoading={loadingType === 'reject'}
+                  isDisabled={!!loadingType || rejectPopoverOpen} onClick={setRejectPopoverOpen.toggle}>Reject</Button>
+              </PopoverTrigger>
+              <PopoverContent>
+                <PopoverBody>
+                  <Box p="2" d="flex">
+                    <Heading fontSize="lg">Are you confirm to reject this registration?</Heading>
+                  </Box>
+                </PopoverBody>
+                <PopoverFooter d="flex" justifyContent="flex-end">
+                  <HStack spacing={3}>
+                    <Button size="sm" onClick={setRejectPopoverOpen.off}>{t('Cancel')}</Button>
+                    <Button size="sm" onClick={onReject} colorScheme="octoColor">{t('Confirm')}</Button>
+                  </HStack>
+                </PopoverFooter>
+              </PopoverContent>
+            </Popover>
+            
+          </> : null
+        
+        ) : 
+        status?.appchain_state === 'Auditing' ?
+        (
+          isAdmin ?
+          <>
+          <Button colorScheme="octoColor" isLoading={loadingType === 'passAuditing'}
+            isDisabled={!!loadingType || passAuditingPopoverOpen} onClick={onPassAuditing}>Pass Auditing</Button>
           <Popover
             initialFocusRef={initialFocusRef}
             placement="bottom"
@@ -362,195 +389,199 @@ const Permissions = ({ status, onEdit, onUpdate, onCancelEdit }) => {
               </PopoverFooter>
             </PopoverContent>
           </Popover>
-          
-        </> : null
-        // isOwner ?
-        // isEditing ?
-        // <>
-        //   <Button onClick={_onCancelEdit} variant="ghost" isDisabled={!!loadingType}>Cancel</Button>
-        //   <Button onClick={_onUpdate} isDisabled={!!loadingType} 
-        //     isLoading={loadingType === 'update'} colorScheme="octoColor">
-        //     Update
-        //   </Button>
-        // </> :
-        // <Button onClick={_onEdit}>
-        //   <Icon as={AiOutlineEdit} mr="1" /> Edit
-        // </Button> : null
-        
-      ) : 
-      status?.appchain_state === 'Auditing' ?
-      (
-        isAdmin ?
-        <>
-        <Button colorScheme="octoColor" isLoading={loadingType === 'passAuditing'}
-          isDisabled={!!loadingType || passAuditingPopoverOpen} onClick={onPassAuditing}>Pass Auditing</Button>
-        <Popover
-          initialFocusRef={initialFocusRef}
-          placement="bottom"
-          isOpen={rejectPopoverOpen}
-          onClose={setRejectPopoverOpen.off}
-          >
-          <PopoverTrigger>
-            <Button colorScheme="red" isLoading={loadingType === 'reject'}
-              isDisabled={!!loadingType || rejectPopoverOpen} onClick={setRejectPopoverOpen.toggle}>Reject</Button>
-          </PopoverTrigger>
-          <PopoverContent>
-            <PopoverBody>
-              <Box p="2" d="flex">
-                <Heading fontSize="lg">Are you confirm to reject this registration?</Heading>
-              </Box>
-            </PopoverBody>
-            <PopoverFooter d="flex" justifyContent="flex-end">
-              <HStack spacing={3}>
-                <Button size="sm" onClick={setRejectPopoverOpen.off}>{t('Cancel')}</Button>
-                <Button size="sm" onClick={onReject} colorScheme="octoColor">{t('Confirm')}</Button>
-              </HStack>
-            </PopoverFooter>
-          </PopoverContent>
-        </Popover>
-        </> : null
-      ) : 
-      status?.appchain_state === 'Staging' ?
-      (
-        isAdmin ?
-        <>
-          <Popover
-            initialFocusRef={initialFocusRef}
-            placement="bottom"
-            isOpen={bootingPopoverOpen}
-            onClose={setBootingPopoverOpen.off}
+          </> : null
+        ) : 
+        status?.appchain_state === 'Staging' ?
+        (
+          isAdmin ?
+          <>
+            <Popover
+              initialFocusRef={initialFocusRef}
+              placement="bottom"
+              isOpen={bootingPopoverOpen}
+              onClose={setBootingPopoverOpen.off}
+              >
+              <PopoverTrigger>
+                <Button colorScheme="octoColor" isLoading={loadingType === 'booting'}
+                  isDisabled={!!loadingType || bootingPopoverOpen} onClick={setBootingPopoverOpen.toggle}>Go Booting</Button>
+              </PopoverTrigger>
+              <PopoverContent>
+                <PopoverBody>
+                  <Flex p={2}>
+                    <Heading fontSize="lg">Are you confirm to set this appchain status to 'Booting'?</Heading>
+                  </Flex>
+                </PopoverBody>
+                <PopoverFooter d="flex" justifyContent="flex-end">
+                  <HStack spacing={3}>
+                    <Button size="sm" onClick={setBootingPopoverOpen.off}>{t('Cancel')}</Button>
+                    <Button size="sm" onClick={onBooting} colorScheme="octoColor">{t('Confirm')}</Button>
+                  </HStack>
+                </PopoverFooter>
+              </PopoverContent>
+            </Popover>
+          </> :
+          <HStack>
+            {
+              upvoteDeposit || downvoteDeposit ?
+              <Popover
+                initialFocusRef={initialFocusRef}
+                placement="bottom"
+                isOpen={withdrawVotesPopoverOpen}
+                onClose={setWithdrawVotesPopoverOpen.off}
+                >
+                <PopoverTrigger>
+                  <Button onClick={setWithdrawVotesPopoverOpen.on} colorScheme="octoColor">
+                    Withdraw Votes
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent>
+                  <PopoverBody>
+                    <Box p={2}>
+                      {
+                        upvoteDeposit > 0 ?
+                        <Flex>
+                          <Text>Your Upvotes: {upvoteDeposit}</Text>
+                          <Button size="xs" colorScheme="octoColor" ml={2} variant="outline" isLoading={withdrawingUpvotes}
+                            isDisabled={withdrawingUpvotes || withdrawingDownvotes} onClick={onWithdrawUpvotes}>Withdraw</Button>
+                        </Flex> : null
+                      }
+                      {
+                        downvoteDeposit > 0 ?
+                        <Flex mt={3}>
+                          <Text>Your Downvotes: {downvoteDeposit}</Text>
+                          <Button size="xs" colorScheme="octoColor" ml={2} variant="outline" isLoading={withdrawingDownvotes}
+                            isDisabled={withdrawingUpvotes || withdrawingDownvotes} onClick={onWithdrawDownvotes}>Withdraw</Button>
+                        </Flex> : null
+                      }
+                      
+                    </Box>
+                  </PopoverBody>
+                </PopoverContent>
+              </Popover> : null
+            }
+            {
+              !!anchor ?
+              <Button colorScheme="octoColor"
+                onClick={onGoStake}>
+                Staking <ChevronRightIcon ml={1} />
+              </Button> : 
+              anchor === undefined ?
+              <Spinner size="sm" /> : null
+            }
+          </HStack>
+        ) :
+        status?.appchain_state === 'Dead' ?
+        (
+          isAdmin ?
+          <Button isLoading={loadingType === 'remove'}
+            isDisabled={!!loadingType} onClick={onRemove}>
+              Remove <Icon as={RiDeleteBin6Line} ml="1" />
+            </Button> : null
+        ) : 
+        status?.appchain_state === 'InQueue' ?
+        (
+          <>
+            <Popover
+              initialFocusRef={initialFocusRef}
+              placement="bottom"
+              isOpen={upvotePopoverOpen}
+              closeOnBlur={!loadingType}
+              onClose={setUpvotePopoverOpen.off}
             >
-            <PopoverTrigger>
-              <Button colorScheme="octoColor" isLoading={loadingType === 'booting'}
-                isDisabled={!!loadingType || bootingPopoverOpen} onClick={setBootingPopoverOpen.toggle}>Go Booting</Button>
-            </PopoverTrigger>
-            <PopoverContent>
-              <PopoverBody>
-                <Box p="2" d="flex">
-                  <Heading fontSize="lg">Are you confirm to set this appchain status to 'Booting'?</Heading>
-                </Box>
-              </PopoverBody>
-              <PopoverFooter d="flex" justifyContent="flex-end">
-                <HStack spacing={3}>
-                  <Button size="sm" onClick={setBootingPopoverOpen.off}>{t('Cancel')}</Button>
-                  <Button size="sm" onClick={onBooting} colorScheme="octoColor">{t('Confirm')}</Button>
-                </HStack>
-              </PopoverFooter>
-            </PopoverContent>
-          </Popover>
-        </> : null
-      ) :
-      status?.appchain_state === 'Dead' ?
-      (
-        isAdmin ?
-        <Button isLoading={loadingType === 'remove'}
-          isDisabled={!!loadingType} onClick={onRemove}>
-            Remove <Icon as={RiDeleteBin6Line} ml="1" />
-          </Button> : null
-      ) : 
-      status?.appchain_state === 'InQueue' ?
-      (
-        <>
-          <Popover
-            initialFocusRef={initialFocusRef}
-            placement="bottom"
-            isOpen={upvotePopoverOpen}
-            closeOnBlur={!loadingType}
-            onClose={setUpvotePopoverOpen.off}
-          >
-            <PopoverTrigger>
-              <Button mr="-px" variant="outline" colorScheme="octoColor"
-                disabled={upvotePopoverOpen}
-                onClick={setUpvotePopoverOpen.on}>
-                <TriangleUpIcon />
-                <Text fontSize="sm" ml="1">Upvote</Text>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent>
-              <PopoverCloseButton disabled={!!loadingType || isWithdrawing} />
-              <PopoverBody mt={3}>
-                <Box p={2}>
-                  <Box mt={3}>
-                    <Input ref={upvoteInputRef} placeholder={`amount of votes`} value={upvoteAmount}
-                      onChange={e => setUpvoteAmount(e.target.value)} />
-                    <Flex justifyContent="flex-end" mt={2}>
-                      <Text fontSize="sm" color="gray">Voted: {upvoteDeposit === undefined ? <Spinner size="xs" /> : upvoteDeposit } OCT</Text>
-                    </Flex>
-                  </Box>
-                  <Box mt={4}>
-                    <Grid templateColumns="repeat(5, 1fr)" gap={2}>
-                      <GridItem colSpan={upvoteDeposit <= 0 ? 5 : 3}>
-                        <Button colorScheme="octoColor" isFullWidth={true}
-                          isDisabled={!!loadingType || isWithdrawing || isNaN(upvoteAmount as any) || upvoteAmount as any <= 0} isLoading={loadingType === 'upvote'}
-                          onClick={onDepositVotes}>Upvote</Button>
-                      </GridItem>
-                      {
-                        upvoteDeposit > 0 &&
-                        <GridItem colSpan={2}>
-                          <Button isFullWidth={true}
-                            isDisabled={isWithdrawing || isNaN(upvoteAmount as any) || upvoteAmount as any <= 0} isLoading={isWithdrawing}
-                            onClick={onWithdrawVotes}>Recall</Button>
+              <PopoverTrigger>
+                <Button mr="-px" variant="outline" colorScheme="octoColor"
+                  disabled={upvotePopoverOpen}
+                  onClick={setUpvotePopoverOpen.on}>
+                  <TriangleUpIcon />
+                  <Text fontSize="sm" ml="1">Upvote</Text>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent>
+                <PopoverCloseButton disabled={!!loadingType || isWithdrawing} />
+                <PopoverBody mt={3}>
+                  <Box p={2}>
+                    <Box mt={3}>
+                      <Input ref={upvoteInputRef} placeholder={`amount of votes`} value={upvoteAmount}
+                        onChange={e => setUpvoteAmount(e.target.value)} />
+                      <Flex justifyContent="flex-end" mt={2}>
+                        <Text fontSize="sm" color="gray">Voted: {upvoteDeposit === undefined ? <Spinner size="xs" /> : upvoteDeposit } OCT</Text>
+                      </Flex>
+                    </Box>
+                    <Box mt={4}>
+                      <Grid templateColumns="repeat(5, 1fr)" gap={2}>
+                        <GridItem colSpan={upvoteDeposit <= 0 ? 5 : 3}>
+                          <Button colorScheme="octoColor" isFullWidth={true}
+                            isDisabled={!!loadingType || isWithdrawing || isNaN(upvoteAmount as any) || upvoteAmount as any <= 0} isLoading={loadingType === 'upvote'}
+                            onClick={onDepositVotes}>Upvote</Button>
                         </GridItem>
-                      }
-                    </Grid>
+                        {
+                          upvoteDeposit > 0 &&
+                          <GridItem colSpan={2}>
+                            <Button isFullWidth={true}
+                              isDisabled={isWithdrawing || isNaN(upvoteAmount as any) || upvoteAmount as any <= 0} isLoading={isWithdrawing}
+                              onClick={onWithdrawVotes}>Recall</Button>
+                          </GridItem>
+                        }
+                      </Grid>
+                    </Box>
                   </Box>
-                </Box>
-              </PopoverBody>
-            </PopoverContent>  
-          </Popover>
-          
-          <Popover
-            initialFocusRef={initialFocusRef}
-            placement="bottom"
-            isOpen={downvotePopoverOpen}
-            closeOnBlur={!loadingType}
-            onClose={setDownvotePopoverOpen.off}
-          >
-            <PopoverTrigger>
-              <Button mr="-px" variant="outline" colorScheme="octoColor"
-                disabled={downvotePopoverOpen}
-                onClick={setDownvotePopoverOpen.on}>
-                <TriangleDownIcon />
-                <Text fontSize="sm" ml="1">Downvote</Text>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent>
-              <PopoverCloseButton disabled={!!loadingType || isWithdrawing} />
-              <PopoverBody mt={3}>
-                <Box p={2}>
-                  <Box mt={3}>
-                    <Input ref={downvoteInputRef} placeholder={`amount of votes`} value={downvoteAmount}
-                      onChange={e => setDownvoteAmount(e.target.value)} />
-                    <Flex justifyContent="flex-end" mt={2}>
-                      <Text fontSize="sm" color="gray">Voted: {downvoteDeposit === undefined ? <Spinner size="xs" /> : downvoteDeposit } OCT</Text>
-                    </Flex>
-                  </Box>
-                  <Box mt={4}>
-                    <Grid templateColumns="repeat(5, 1fr)" gap={2}>
-                      <GridItem colSpan={downvoteDeposit <= 0 ? 5 : 3}>
-                        <Button colorScheme="octoColor" isFullWidth={true}
-                          isDisabled={!!loadingType || isWithdrawing || isNaN(downvoteAmount as any) || downvoteAmount as any <= 0} isLoading={loadingType === 'downvote'}
-                          onClick={onDepositVotes}>Downvote</Button>
-                      </GridItem>
-                      {
-                        downvoteDeposit > 0 &&
-                        <GridItem colSpan={2}>
-                          <Button isFullWidth={true}
-                            isDisabled={isWithdrawing || isNaN(downvoteAmount as any) || downvoteAmount as any <= 0} isLoading={isWithdrawing}
-                            onClick={onWithdrawVotes}>Recall</Button>
+                </PopoverBody>
+              </PopoverContent>  
+            </Popover>
+            
+            <Popover
+              initialFocusRef={initialFocusRef}
+              placement="bottom"
+              isOpen={downvotePopoverOpen}
+              closeOnBlur={!loadingType}
+              onClose={setDownvotePopoverOpen.off}
+            >
+              <PopoverTrigger>
+                <Button mr="-px" variant="outline" colorScheme="octoColor"
+                  disabled={downvotePopoverOpen}
+                  onClick={setDownvotePopoverOpen.on}>
+                  <TriangleDownIcon />
+                  <Text fontSize="sm" ml="1">Downvote</Text>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent>
+                <PopoverCloseButton disabled={!!loadingType || isWithdrawing} />
+                <PopoverBody mt={3}>
+                  <Box p={2}>
+                    <Box mt={3}>
+                      <Input ref={downvoteInputRef} placeholder={`amount of votes`} value={downvoteAmount}
+                        onChange={e => setDownvoteAmount(e.target.value)} />
+                      <Flex justifyContent="flex-end" mt={2}>
+                        <Text fontSize="sm" color="gray">Voted: {downvoteDeposit === undefined ? <Spinner size="xs" /> : downvoteDeposit } OCT</Text>
+                      </Flex>
+                    </Box>
+                    <Box mt={4}>
+                      <Grid templateColumns="repeat(5, 1fr)" gap={2}>
+                        <GridItem colSpan={downvoteDeposit <= 0 ? 5 : 3}>
+                          <Button colorScheme="octoColor" isFullWidth={true}
+                            isDisabled={!!loadingType || isWithdrawing || isNaN(downvoteAmount as any) || downvoteAmount as any <= 0} isLoading={loadingType === 'downvote'}
+                            onClick={onDepositVotes}>Downvote</Button>
                         </GridItem>
-                      }
-                    </Grid>
+                        {
+                          downvoteDeposit > 0 &&
+                          <GridItem colSpan={2}>
+                            <Button isFullWidth={true}
+                              isDisabled={isWithdrawing || isNaN(downvoteAmount as any) || downvoteAmount as any <= 0} isLoading={isWithdrawing}
+                              onClick={onWithdrawVotes}>Recall</Button>
+                          </GridItem>
+                        }
+                      </Grid>
+                    </Box>
                   </Box>
-                </Box>
-              </PopoverBody>
-            </PopoverContent>  
-          </Popover>
-          
-        </>
-      ) : null
-    }
-    </HStack>
+                </PopoverBody>
+              </PopoverContent>  
+            </Popover>
+            
+          </>
+        ) : null
+      }
+      </HStack>
+
   );
 }
 

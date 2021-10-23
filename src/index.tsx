@@ -31,12 +31,27 @@ const initNear = async () => {
     octopusConfig.registryContractId,
     {
       viewMethods: [
-        'get_minimum_register_deposit', 'get_appchains_with_state_of', 'get_appchain_status_of', 'get_registry_settings',
-        'get_upvote_deposit_for', 'get_downvote_deposit_for', 'get_appchains_count_of', 'get_total_stake', 'get_owner'
+        'get_minimum_register_deposit', 
+        'get_appchains_with_state_of', 
+        'get_appchain_status_of', 
+        'get_registry_settings',
+        'get_upvote_deposit_for', 
+        'get_downvote_deposit_for', 
+        'get_appchains_count_of', 
+        'get_total_stake', 
+        'get_owner'
       ],
       changeMethods: [
-        'start_auditing_appchain', 'reject_appchain', 'remove_appchain', 'pass_auditing_appchain', 'update_appchain_metadata',
-        'withdraw_upvote_deposit_of', 'withdraw_downvote_deposit_of', 'count_voting_score', 'conclude_voting_score', 'go_booting'
+        'start_auditing_appchain', 
+        'reject_appchain', 
+        'remove_appchain', 
+        'pass_auditing_appchain', 
+        'update_appchain_metadata',
+        'withdraw_upvote_deposit_of', 
+        'withdraw_downvote_deposit_of', 
+        'count_voting_score', 
+        'conclude_voting_score', 
+        'go_booting'
       ]
     }
   );

@@ -39,7 +39,7 @@ const StagingItem = ({
       onClick={() => navigate(`/appchains/overview/${appchain_id}`)}>
       <GridItem colSpan={5}>
         <HStack>
-          <Avatar name={appchain_id} size="sm" display={{ base: 'none', md: 'block' }} bg="blue.100" />
+          <Avatar name={appchain_id} size="xs" display={{ base: 'none', md: 'block' }} bg="blue.100" />
           <Heading fontSize="lg">{appchain_id}</Heading>
         </HStack>
       </GridItem>

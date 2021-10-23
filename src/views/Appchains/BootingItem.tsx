@@ -12,7 +12,6 @@ import {
   Icon
 } from '@chakra-ui/react';
 
-import { Link as RouterLink } from 'react-router-dom';
 import { HiOutlineArrowNarrowRight } from 'react-icons/hi';
 
 const StyledAppchainItem = styled(SimpleGrid)`
@@ -39,7 +38,7 @@ const BootingItem = ({
     <StyledAppchainItem boxShadow="octoShadow" columns={{ base: 13, md: 17 }} p={4} alignItems="center">
       <GridItem colSpan={5}>
         <HStack>
-          <Avatar name={appchain_id} size="sm" display={{ base: 'none', md: 'block' }} bg="blue.100" />
+          <Avatar name={appchain_id} size="xs" display={{ base: 'none', md: 'block' }} bg="blue.100" />
           <Heading fontSize="lg">{appchain_id}</Heading>
         </HStack>
       </GridItem>

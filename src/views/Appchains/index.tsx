@@ -556,13 +556,7 @@ const Appchains = () => {
     <Drawer placement="right" isOpen={!isLoadingList && !!id} onClose={onDrawerClose} size="lg">
       <DrawerOverlay />
       <DrawerContent>
-        <DrawerHeader borderBottomWidth="0">
-          <Flex justifyContent="space-between" alignItems="center">
-            <Heading fontSize="xl"></Heading>
-            <CloseButton onClick={onDrawerClose} />
-          </Flex>
-        </DrawerHeader>
-        <Overview appchainId={id} />
+        <Overview appchainId={id} onDrawerClose={onDrawerClose} />
       </DrawerContent>
     </Drawer>
     </>
