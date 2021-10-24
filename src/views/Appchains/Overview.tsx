@@ -215,7 +215,8 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                   <Text>{appchainStatus?.appchain_owner || 'loading...'}</Text>
                 </HStack>
               </Link>
-              <HStack spacing={1}>
+              
+              <HStack spacing={1} display={{ base: 'none', lg: 'flex' }}>
                 <Icon as={IoMdTime} />
                 <Text>
                   {
@@ -225,6 +226,7 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                   }
                 </Text>
               </HStack>
+             
             </HStack>
           </Skeleton>
         </VStack>

@@ -135,7 +135,7 @@ export const ValidatorsTable = ({ anchor }) => {
         <Thead>
           <Tr>
             <Th>Validator Id</Th>
-            <Th textAlign="center">Delegators</Th>
+            <Th textAlign="center" display={{ base: 'none', lg: 'block' }}>Delegators</Th>
             <Th textAlign="center">Total Stake</Th>
             <Th>Action</Th>
           </Tr>
@@ -151,7 +151,7 @@ export const ValidatorsTable = ({ anchor }) => {
                       {v.validator_id}
                     </Link>
                   </Td>
-                  <Td textAlign="center">{v.delegators_count}</Td>
+                  <Td textAlign="center" display={{ base: 'none', lg: 'block' }}>{v.delegators_count}</Td>
                   <Td>
                     <VStack spacing={0} justifyContent="flex-start">
                       <Text>{fromDecimals(v.total_stake)} OCT</Text>

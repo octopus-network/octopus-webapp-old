@@ -93,9 +93,19 @@ export const Header = () => {
                 <Button variant="outline" onClick={loginNear}>{t('Login')}</Button>
               }
             </HStack>
-            <IconButton aria-label="menu" variant="unstyled" display={{ base: 'block', lg: 'none' }}>
-              <Icon w="6" h="6" as={FiMenu} />
-            </IconButton>
+            <Menu placement="top-end">
+              <MenuButton as={IconButton} aria-label="menu" variant="unstyled" display={{ base: 'block', lg: 'none' }}>
+                <Icon w="6" h="6" as={FiMenu} />
+              </MenuButton>
+              <MenuList>
+                <RouterLink to="/home">
+                  <MenuItem>{t('Home')}</MenuItem>
+                </RouterLink>
+                <RouterLink to="/appchains">
+                  <MenuItem>{t('Appchains')}</MenuItem>
+                </RouterLink>
+              </MenuList>
+            </Menu>
           </Flex>
         </Container>
         

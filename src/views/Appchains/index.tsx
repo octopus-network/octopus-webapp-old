@@ -83,10 +83,9 @@ const StatBox = ({
           <Icon as={icon} w={7} h={7} color="rgba(255, 255, 255, 1)" />
         </Box>
         
-        <VStack alignItems="start" spacing={0} cursor="pointer">
-          <HStack>
-            <Text color="rgba(255, 255, 255, .7)" fontSize="xs">{title}</Text>
-          </HStack>
+        <VStack alignItems="start" spacing={0} cursor="pointer" w="100%">
+          <Text color="rgba(255, 255, 255, .7)" w="100%" fontSize="xs" whiteSpace="nowrap" 
+            overflow="hidden" textOverflow="ellipsis">{title}</Text>
           <Heading color="white" fontWeight={600} fontSize={{ base: 'lg', md: '2xl' }}>
             {value !== '' ? value : <Spinner size="xs" />}
           </Heading>
