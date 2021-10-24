@@ -391,7 +391,8 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
           </Popover>
           </> : null
         ) : 
-        status?.appchain_state === 'Staging' ?
+        status?.appchain_state === 'Staging' ||
+        status?.appchain_state === 'Booting' ?
         (
           isAdmin ?
           <>
