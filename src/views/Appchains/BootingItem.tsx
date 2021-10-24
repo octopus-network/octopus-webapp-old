@@ -14,6 +14,7 @@ import {
 
 import { HiOutlineArrowNarrowRight } from 'react-icons/hi';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 const StyledAppchainItem = styled(SimpleGrid)`
   border-radius: 10px;
@@ -32,11 +33,13 @@ const BootingItem = ({
   appchain: any;
 }) => {
   const { t } = useTranslation(); 
+  const navigate = useNavigate();
   const { appchain_id, validators } = appchain;
   
   return (
    
-    <StyledAppchainItem boxShadow="octoShadow" columns={{ base: 13, md: 17 }} p={4} alignItems="center">
+    <StyledAppchainItem boxShadow="octoShadow" columns={{ base: 13, md: 17 }} p={4} alignItems="center"
+      onClick={() => navigate(`/appchains/overview/${appchain_id}`)}>
       <GridItem colSpan={5}>
         <HStack>
           <Avatar name={appchain_id} size="xs" display={{ base: 'none', md: 'block' }} bg="blue.100" />

@@ -35,6 +35,7 @@ import { Contract } from 'near-api-js';
 import { loginNear, fromDecimals } from 'utils';
 import { AiOutlineUser, AiOutlineGlobal, AiFillGithub, AiOutlineFileZip } from 'react-icons/ai';
 import { FaStar } from 'react-icons/fa';
+import { FiAnchor } from 'react-icons/fi';
 import { IoMdTime } from 'react-icons/io';
 import { ExternalLinkIcon, CopyIcon, CheckIcon, AttachmentIcon } from '@chakra-ui/icons';
 import { HiOutlineMail } from 'react-icons/hi';
@@ -217,7 +218,8 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                   <Text>{appchainStatus?.appchain_owner || 'loading...'}</Text>
                 </HStack>
               </Link>
-              <HStack spacing={1}>
+              
+              <HStack spacing={1} display={{ base: 'none', lg: 'flex' }}>
                 <Icon as={IoMdTime} />
                 <Text>
                   {
@@ -227,6 +229,7 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                   }
                 </Text>
               </HStack>
+             
             </HStack>
           </Skeleton>
         </VStack>
@@ -299,6 +302,26 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                   </HStack>
                 </Link>
               }
+            </Flex>
+            <Divider mt={3} mb={3} />
+            </>
+          }
+          {
+            !!anchor &&
+            <>
+            <Flex justifyContent="space-between">
+              <HStack fontSize="sm" spacing={1}>
+                <Icon as={FiAnchor} />
+                <Text>Anchor</Text>
+              </HStack>
+              <Link href={`${octopusConfig.explorerUrl}/accounts/${appchainId}.${octopusConfig.registryContractId}`} isExternal>
+                <HStack>
+                  <Heading fontSize="md" fontWeight={500} maxW="240px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
+                    {appchainId}.{octopusConfig.registryContractId}
+                  </Heading>
+                  <ExternalLinkIcon mx="2px" />
+                </HStack>
+              </Link>
             </Flex>
             <Divider mt={3} mb={3} />
             </>

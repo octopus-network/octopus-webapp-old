@@ -33,7 +33,7 @@ const StagingItem = ({
 }) => {
   const navigate = useNavigate();
   const { appchain_id, validators } = appchain;
-
+ 
   return (
     <StyledAppchainItem columns={{ base: 14, md: 14 }} p={4} alignItems="center"
       onClick={() => navigate(`/appchains/overview/${appchain_id}`)}>
