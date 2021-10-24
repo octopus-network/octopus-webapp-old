@@ -136,62 +136,65 @@ export const ValidatorsTable = ({ anchor }) => {
           <Tr>
             <Th>Validator Id</Th>
             <Th textAlign="center">Delegators</Th>
-            <Th textAlign="center">Staked</Th>
+            <Th textAlign="center">Total Stake</Th>
             <Th>Action</Th>
           </Tr>
         </Thead>
         <Tbody>
           {
-            validatorList.map((v, idx) => (
-              <Tr key={`validator-${idx}`}>
-                <Td>
-                  <Link href={`${octopusConfig.explorerUrl}/accounts/${v.validator_id}`} isExternal>
-                    {v.validator_id}
-                  </Link>
-                </Td>
-                <Td textAlign="center">{v.delegators_count}</Td>
-                <Td>
-                  <VStack spacing={0} justifyContent="flex-start">
-                    <Text>{fromDecimals(v.total_stake)} OCT</Text>
-                    <Text fontSize="xs" color="gray">Self: {fromDecimals(v.deposit_amount)}</Text>
-                  </VStack>
-                </Td>
-                <Td>
-                  {
-                    delegatedDeposits[idx] === undefined ?
-                    <Spinner size="sm" /> :
-                    delegatedDeposits[idx] > 0 ?
-                    <Popover
-                      initialFocusRef={initialFocusRef}
-                      placement="bottom"
-                      isOpen={delegateMorePopoverOpen}
-                      onClose={setDelegateMorePopoverOpen.off}
-                      >
-                      <PopoverTrigger>
-                        <Button size="xs" colorScheme="octoColor" onClick={setDelegateMorePopoverOpen.toggle}
-                          isDisabled={delegateMorePopoverOpen} variant="outline">Delegate more</Button>
-                      </PopoverTrigger>
-                      <PopoverContent>
-                        <PopoverBody>
-                          <Flex p={2}>
-                            <Input placeholder="amount of OCT" ref={delegateAmountInputRef} onChange={e => setDelegateAmount(e.target.value)} />
-                          </Flex>
-                        </PopoverBody>
-                        <PopoverFooter d="flex" justifyContent="flex-end">
-                          <HStack spacing={3}>
-                            <Button size="sm" onClick={setDelegateMorePopoverOpen.off}>Cancel</Button>
-                            <Button size="sm" onClick={() => onIncreaseDelegation(v.validator_id)} colorScheme="octoColor" 
-                              isLoading={isDelegating} isDisabled={isDelegating}>Delegate</Button>
-                          </HStack>
-                        </PopoverFooter>
-                      </PopoverContent>
-                    </Popover> :
-                    <Button size="xs" colorScheme="octoColor" variant="outline" onClick={() => onRegisterDelegator(v.validator_id)}
-                      isDisabled={v.validator_id === window.accountId}>Delegate</Button>
-                  }
-                </Td>
-              </Tr>
-            ))
+            validatorList.map((v, idx) => {
+              const canDelegate = v.can_be_delegated_to && v.validator_id !== window.accountId;
+              return (
+                <Tr key={`validator-${idx}`}>
+                  <Td>
+                    <Link href={`${octopusConfig.explorerUrl}/accounts/${v.validator_id}`} isExternal>
+                      {v.validator_id}
+                    </Link>
+                  </Td>
+                  <Td textAlign="center">{v.delegators_count}</Td>
+                  <Td>
+                    <VStack spacing={0} justifyContent="flex-start">
+                      <Text>{fromDecimals(v.total_stake)} OCT</Text>
+                      <Text fontSize="xs" color="gray">Own: {fromDecimals(v.deposit_amount)}</Text>
+                    </VStack>
+                  </Td>
+                  <Td>
+                    {
+                      delegatedDeposits[idx] === undefined ?
+                      <Spinner size="sm" /> :
+                      delegatedDeposits[idx] > 0 ?
+                      <Popover
+                        initialFocusRef={initialFocusRef}
+                        placement="bottom"
+                        isOpen={delegateMorePopoverOpen}
+                        onClose={setDelegateMorePopoverOpen.off}
+                        >
+                        <PopoverTrigger>
+                          <Button size="xs" colorScheme="octoColor" onClick={setDelegateMorePopoverOpen.toggle}
+                            isDisabled={delegateMorePopoverOpen || !canDelegate} variant="outline">Delegate more</Button>
+                        </PopoverTrigger>
+                        <PopoverContent>
+                          <PopoverBody>
+                            <Flex p={2}>
+                              <Input placeholder="amount of OCT" ref={delegateAmountInputRef} onChange={e => setDelegateAmount(e.target.value)} />
+                            </Flex>
+                          </PopoverBody>
+                          <PopoverFooter d="flex" justifyContent="flex-end">
+                            <HStack spacing={3}>
+                              <Button size="sm" onClick={setDelegateMorePopoverOpen.off}>Cancel</Button>
+                              <Button size="sm" onClick={() => onIncreaseDelegation(v.validator_id)} colorScheme="octoColor" 
+                                isLoading={isDelegating} isDisabled={isDelegating}>Delegate</Button>
+                            </HStack>
+                          </PopoverFooter>
+                        </PopoverContent>
+                      </Popover> :
+                      <Button size="xs" colorScheme="octoColor" variant="outline" onClick={() => onRegisterDelegator(v.validator_id)}
+                        isDisabled={!canDelegate}>Delegate</Button>
+                    }
+                  </Td>
+                </Tr>
+              )
+            })
           }
         </Tbody>
       </Table> :
