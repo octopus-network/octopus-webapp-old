@@ -37,7 +37,7 @@ export const RegisterValidatorModal = ({
   anchor: any;
 }) => {
   const toast = useToast();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [amount, setAmount] = useState<any>('');
   const [validatorId, setValidatorId] = useState<any>('');
   const [canBeDelegatedTo, setCanBeDelegatedTo] = useState(true);

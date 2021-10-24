@@ -8,7 +8,6 @@ import {
   Progress,
   Flex,
   Text,
-  HStack,
   Icon,
   Tooltip,
   Tag,

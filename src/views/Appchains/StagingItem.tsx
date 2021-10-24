@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 
 import { 
@@ -8,7 +8,6 @@ import {
   Heading,
   Text,
   SimpleGrid,
-  Button,
   Icon
 } from '@chakra-ui/react';
 
@@ -32,7 +31,7 @@ const StagingItem = ({
   appchain: any;
 }) => {
   const navigate = useNavigate();
-  const { appchain_id, validators } = appchain;
+  const { appchain_id } = appchain;
  
   return (
     <StyledAppchainItem columns={{ base: 14, md: 14 }} p={4} alignItems="center"

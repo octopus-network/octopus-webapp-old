@@ -26,7 +26,7 @@ import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FaChevronDown } from 'react-icons/fa';
 import { FiMenu } from 'react-icons/fi';
-import { LocaleModal, ColorModeSwitcher } from 'components';
+import { LocaleModal } from 'components';
 
 import { loginNear, logoutNear } from 'utils';
 import logo from 'assets/logo.png';
@@ -52,7 +52,7 @@ export const Header = () => {
           <Flex justify="space-between" alignItems="center">
             <HStack spacing="12">
               <RouterLink to="/">
-                <Image src={colorMode == 'light' ? logo : logoWhite} width="90px" />
+                <Image src={colorMode === 'light' ? logo : logoWhite} width="90px" />
               </RouterLink>
               <HStack spacing="5" display={{ base: 'none', lg: 'flex' }}>
                 <Link as={RouterLink} to="/home"_selected={selectedLinkStyle}

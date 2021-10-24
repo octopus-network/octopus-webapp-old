@@ -29,7 +29,7 @@ export const TokenInfoModal = ({
   tokenInfo: any;
   onUpdate: Function;
 }) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const onSubmit = (values) => {
     onUpdate(values);
   }

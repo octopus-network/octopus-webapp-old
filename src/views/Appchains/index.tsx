@@ -18,8 +18,6 @@ import {
   DrawerOverlay,
   DrawerContent,
   Spinner,
-  DrawerHeader,
-  CloseButton,
   PopoverTrigger,
   PopoverContent,
   UnorderedList,
@@ -36,7 +34,7 @@ import { COMPLEX_CALL_GAS } from 'config/constants';
 import { FiEdit, FiCheckCircle, FiPlus } from 'react-icons/fi';
 import { AiOutlineAudit, AiOutlineInbox, AiOutlineDashboard } from 'react-icons/ai';
 import { BiBadgeCheck } from 'react-icons/bi';
-import { BsFillStopFill, BsPeople } from 'react-icons/bs';
+import { BsFillStopFill } from 'react-icons/bs';
 import { VscServerProcess } from 'react-icons/vsc';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';

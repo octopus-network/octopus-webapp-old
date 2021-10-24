@@ -104,7 +104,7 @@ const Dashboard = () => {
                 tokenList.length ?
                 tokenList.map((token, idx) => (
                   <TokenItem token={token} key={`token-item-${idx}`} boxShadow={
-                    idx == tokenList.length - 1 ? '' : 'inset 0 -1px #eaeaea'
+                    idx === tokenList.length - 1 ? '' : 'inset 0 -1px #eaeaea'
                   } />
                 )) :
                 <Skeleton borderRadius="5px" isLoaded={!!tokenList?.length}>
@@ -124,7 +124,7 @@ const Dashboard = () => {
                 activityList.length ?
                 activityList.map((activity, idx) => (
                   <ActivityItem activity={activity} key={`activity-item-${idx}`} boxShadow={
-                    idx == activity.length - 1 ? '' : 'inset 0 -1px #eaeaea'
+                    idx === activity.length - 1 ? '' : 'inset 0 -1px #eaeaea'
                   } />
                 )) :
                 <Skeleton borderRadius="5px" isLoaded={!!activityList?.length}>

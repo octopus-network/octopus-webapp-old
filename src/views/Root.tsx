@@ -93,13 +93,12 @@ const Root = () => {
     }
 
     // clear message
-    const { protocol, host, pathname, search, hash } = window.location;
+    const { protocol, host, pathname, hash } = window.location;
     urlParams.delete('errorMessage');
     urlParams.delete('transactionHashes');
     const params = urlParams.toString();
     const newUrl = `${protocol}//${host}${pathname}${params ? '?' + params : ''}${hash}`;
     window.history.pushState({ path: newUrl }, '', newUrl);
-
   }, [errorMessage, transactionHashes]);
 
   return (

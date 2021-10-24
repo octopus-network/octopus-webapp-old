@@ -9,7 +9,6 @@ import {
   FormLabel,
   InputGroup,
   Input,
-  InputRightElement,
   FormErrorMessage,
   Box,
   List,
@@ -66,7 +65,7 @@ const Register = () => {
   }
 
   const validateEmail = (value) => {
-    const reg = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,15})$/;
+    const reg = /^([a-zA-Z]|[0-9])(\w|-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,15})$/;
     if (!reg.test(value)) {
       return 'Invalid email';
     }

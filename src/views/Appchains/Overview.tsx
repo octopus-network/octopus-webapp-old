@@ -24,7 +24,6 @@ import {
   useToast,
   Tooltip,
   Spinner,
-  Fade,
   DrawerHeader,
   CloseButton
 } from '@chakra-ui/react';
