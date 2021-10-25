@@ -2,6 +2,8 @@ import { BigNumber } from 'bignumber.js';
 
 import octopusConfig from 'config/octopus';
 
+export * from './number-utils';
+
 export function fromDecimals(numStr, decimals = 18) {
   return new BigNumber(numStr).div(Math.pow(10, decimals)).toNumber();
 }
