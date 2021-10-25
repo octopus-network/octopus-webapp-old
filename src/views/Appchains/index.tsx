@@ -18,8 +18,6 @@ import {
   DrawerOverlay,
   DrawerContent,
   Spinner,
-  DrawerHeader,
-  CloseButton,
   PopoverTrigger,
   PopoverContent,
   UnorderedList,

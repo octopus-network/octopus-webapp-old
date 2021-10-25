@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 
 import { 
@@ -32,7 +32,6 @@ const StagingItem = ({
   appchain: any;
 }) => {
   const navigate = useNavigate();
-  console.log(appchain);
   const { appchain_id, validator_count, total_stake } = appchain;
  
   return (

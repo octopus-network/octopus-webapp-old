@@ -15,6 +15,7 @@ import {
 
 import { useTranslation } from 'react-i18next';
 import { ValidatorsTable } from 'components';
+import { COMPLEX_CALL_GAS } from 'config/constants';
 
 export const ConfirmBootingModal = ({ 
   isOpen, 
@@ -33,7 +34,10 @@ export const ConfirmBootingModal = ({
   const onBooting = () => {
     setIsSubmiting(true);
     anchor
-      .go_booting()
+      .go_booting(
+        {},
+        COMPLEX_CALL_GAS
+      )
       .then(() => {
         window.location.reload();
       }).catch(err => {

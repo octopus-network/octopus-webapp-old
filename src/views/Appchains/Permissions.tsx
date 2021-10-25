@@ -130,24 +130,6 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
       });
   }
 
-  const onBooting = () => {
-    setLoadingType('booting');
- 
-    anchor
-      .go_booting()
-      .then(() => {
-        window.location.reload();
-      }).catch(err => {
-        setLoadingType('');
-        toast({
-          position: 'top-right',
-          title: 'Error',
-          description: err?.kind?.ExecutionError || err.toString(),
-          status: 'error'
-        });
-      });
-  }
-
   const onRemove = () => {
     setLoadingType('remove');
     setRejectPopoverOpen.off();
