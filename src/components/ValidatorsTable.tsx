@@ -41,7 +41,13 @@ const NoValidators = () => (
   </Box>
 );
 
-export const ValidatorsTable = ({ anchor }) => {
+export const ValidatorsTable = ({ 
+  anchor,
+  noAction
+}: {
+  anchor: any;
+  noAction?: boolean;
+}) => {
 
   const toast = useToast();
   const [validatorList, setValidatorList] = useState<any>();
@@ -133,9 +139,12 @@ export const ValidatorsTable = ({ anchor }) => {
         <Thead>
           <Tr>
             <Th>Validator Id</Th>
-            <Th textAlign="center" display={{ base: 'none', lg: 'block' }}>Delegators</Th>
+            <Th textAlign="center" display={{ base: 'none', lg: 'table-cell' }}>Delegators</Th>
             <Th textAlign="center">Total Stake</Th>
-            <Th>Action</Th>
+            {
+              noAction !== true ?
+              <Th>Action</Th> : null
+            }
           </Tr>
         </Thead>
         <Tbody>
@@ -149,47 +158,50 @@ export const ValidatorsTable = ({ anchor }) => {
                       {v.validator_id}
                     </Link>
                   </Td>
-                  <Td textAlign="center" display={{ base: 'none', lg: 'block' }}>{v.delegators_count}</Td>
+                  <Td textAlign="center" display={{ base: 'none', lg: 'table-cell' }}>{v.delegators_count}</Td>
                   <Td>
                     <VStack spacing={0} justifyContent="flex-start">
                       <Text>{fromDecimals(v.total_stake)} OCT</Text>
                       <Text fontSize="xs" color="gray">Own: {fromDecimals(v.deposit_amount)}</Text>
                     </VStack>
                   </Td>
-                  <Td>
-                    {
-                      delegatedDeposits[idx] === undefined ?
-                      <Spinner size="sm" /> :
-                      delegatedDeposits[idx] > 0 ?
-                      <Popover
-                        initialFocusRef={initialFocusRef}
-                        placement="bottom"
-                        isOpen={delegateMorePopoverOpen}
-                        onClose={setDelegateMorePopoverOpen.off}
-                        >
-                        <PopoverTrigger>
-                          <Button size="xs" colorScheme="octoColor" onClick={setDelegateMorePopoverOpen.toggle}
-                            isDisabled={delegateMorePopoverOpen || !canDelegate} variant="outline">Delegate more</Button>
-                        </PopoverTrigger>
-                        <PopoverContent>
-                          <PopoverBody>
-                            <Flex p={2}>
-                              <Input placeholder="amount of OCT" ref={delegateAmountInputRef} onChange={e => setDelegateAmount(e.target.value)} />
-                            </Flex>
-                          </PopoverBody>
-                          <PopoverFooter d="flex" justifyContent="flex-end">
-                            <HStack spacing={3}>
-                              {/* <Button size="sm" onClick={setDelegateMorePopoverOpen.off}>Cancel</Button> */}
-                              <Button size="sm" onClick={() => onIncreaseDelegation(v.validator_id)} colorScheme="octoColor" 
-                                isLoading={isDelegating} isDisabled={isDelegating}>Delegate</Button>
-                            </HStack>
-                          </PopoverFooter>
-                        </PopoverContent>
-                      </Popover> :
-                      <Button size="xs" colorScheme="octoColor" variant="outline" onClick={() => onRegisterDelegator(v.validator_id)}
-                        isDisabled={!canDelegate}>Delegate</Button>
-                    }
-                  </Td>
+                  {
+                    noAction !== true ?
+                    <Td>
+                      {
+                        delegatedDeposits[idx] === undefined ?
+                        <Spinner size="sm" /> :
+                        delegatedDeposits[idx] > 0 ?
+                        <Popover
+                          initialFocusRef={initialFocusRef}
+                          placement="bottom"
+                          isOpen={delegateMorePopoverOpen}
+                          onClose={setDelegateMorePopoverOpen.off}
+                          >
+                          <PopoverTrigger>
+                            <Button size="xs" colorScheme="octoColor" onClick={setDelegateMorePopoverOpen.toggle}
+                              isDisabled={delegateMorePopoverOpen || !canDelegate} variant="outline">Delegate more</Button>
+                          </PopoverTrigger>
+                          <PopoverContent>
+                            <PopoverBody>
+                              <Flex p={2}>
+                                <Input placeholder="amount of OCT" ref={delegateAmountInputRef} onChange={e => setDelegateAmount(e.target.value)} />
+                              </Flex>
+                            </PopoverBody>
+                            <PopoverFooter d="flex" justifyContent="flex-end">
+                              <HStack spacing={3}>
+                                {/* <Button size="sm" onClick={setDelegateMorePopoverOpen.off}>Cancel</Button> */}
+                                <Button size="sm" onClick={() => onIncreaseDelegation(v.validator_id)} colorScheme="octoColor" 
+                                  isLoading={isDelegating} isDisabled={isDelegating}>Delegate</Button>
+                              </HStack>
+                            </PopoverFooter>
+                          </PopoverContent>
+                        </Popover> :
+                        <Button size="xs" colorScheme="octoColor" variant="outline" onClick={() => onRegisterDelegator(v.validator_id)}
+                          isDisabled={!canDelegate}>Delegate</Button>
+                      }
+                    </Td> : false
+                  }
                 </Tr>
               )
             })

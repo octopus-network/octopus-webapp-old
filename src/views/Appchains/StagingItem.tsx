@@ -8,12 +8,12 @@ import {
   Heading,
   Text,
   SimpleGrid,
-  Button,
   Icon
 } from '@chakra-ui/react';
 
 import { MdKeyboardArrowRight } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
+import { NumberUtils, fromDecimals } from 'utils';
 
 const StyledAppchainItem = styled(SimpleGrid)`
   border-radius: 10px;
@@ -32,7 +32,8 @@ const StagingItem = ({
   appchain: any;
 }) => {
   const navigate = useNavigate();
-  const { appchain_id, validators } = appchain;
+  console.log(appchain);
+  const { appchain_id, validator_count, total_stake } = appchain;
  
   return (
     <StyledAppchainItem columns={{ base: 14, md: 14 }} p={4} alignItems="center"
@@ -44,10 +45,10 @@ const StagingItem = ({
         </HStack>
       </GridItem>
       <GridItem colSpan={4}>
-        <Text fontSize="xl">{0}</Text>
+        <Text fontSize="xl">{validator_count}</Text>
       </GridItem>
       <GridItem colSpan={4}>
-        <Text fontSize="md">{0} OCT</Text>
+        <Text fontSize="md">{NumberUtils.showWithCommas(fromDecimals(total_stake))} OCT</Text>
       </GridItem>
       
       <GridItem colSpan={1} textAlign="right">

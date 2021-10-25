@@ -11,4 +11,5 @@ export { ScoreChart } from './ScoreChart';
 export { StateBadge } from './StateBadge';
 export { TokenInfoModal } from './TokenInfoModal';
 export { ValidatorsTable } from './ValidatorsTable';
+export { ConfirmBootingModal } from './ConfirmBootingModal';
 export { Votes } from './Votes';
