@@ -138,7 +138,7 @@ export const RegisterValidatorModal = ({
               <FormHelperText>minimum deposit: {minimumDeposit} OCT</FormHelperText>
             </FormControl>
             <HStack>
-              <Text>{t('Can Be Delegated To?')}</Text>
+              <Text>{t('Can be delegated to?')}</Text>
               <Switch onChange={e => setCanBeDelegatedTo(e.target.checked)} defaultChecked={canBeDelegatedTo} />
             </HStack>
             

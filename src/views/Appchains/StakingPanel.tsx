@@ -154,7 +154,7 @@ const StakingPanel = ({ status, anchor }) => {
                 </PopoverBody>
                 <PopoverFooter d="flex" justifyContent="flex-end">
                   <HStack spacing={3}>
-                    <Button size="sm" onClick={setStakeMorePopoverOpen.off}>{t('Cancel')}</Button>
+                    {/* <Button size="sm" onClick={setStakeMorePopoverOpen.off}>{t('Cancel')}</Button> */}
                     <Button size="sm" onClick={onIncreaseStake} colorScheme="octoColor" 
                       isLoading={isStaking} isDisabled={isStaking}>{t('Stake')}</Button>
                   </HStack>
@@ -183,7 +183,7 @@ const StakingPanel = ({ status, anchor }) => {
                     </PopoverBody>
                     <PopoverFooter d="flex" justifyContent="flex-end">
                       <HStack spacing={3}>
-                        <Button size="sm" onClick={setUnbondPopoverOpen.off}>{t('Cancel')}</Button>
+                        {/* <Button size="sm" onClick={setUnbondPopoverOpen.off}>{t('Cancel')}</Button> */}
                         <Button size="sm" onClick={onUnbond} colorScheme="octoColor" 
                           isLoading={isUnbonding} isDisabled={isUnbonding}>{t('Confirm')}</Button>
                       </HStack>

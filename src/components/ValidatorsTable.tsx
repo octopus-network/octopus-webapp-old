@@ -60,7 +60,6 @@ export const ValidatorsTable = ({ anchor }) => {
     anchor
       .get_validator_list_of()
       .then(res => {
-        console.log(res);
         setValidatorList(res);
       });
   }, [anchor]);
@@ -85,7 +84,6 @@ export const ValidatorsTable = ({ anchor }) => {
         validator_id: v.validator_id
       }).then(amount => fromDecimals(amount)))
     ).then(deposits => {
-      console.log(deposits);
       setDelegatedDeposits(deposits);
     });
   }, [validatorList]);
@@ -181,7 +179,7 @@ export const ValidatorsTable = ({ anchor }) => {
                           </PopoverBody>
                           <PopoverFooter d="flex" justifyContent="flex-end">
                             <HStack spacing={3}>
-                              <Button size="sm" onClick={setDelegateMorePopoverOpen.off}>Cancel</Button>
+                              {/* <Button size="sm" onClick={setDelegateMorePopoverOpen.off}>Cancel</Button> */}
                               <Button size="sm" onClick={() => onIncreaseDelegation(v.validator_id)} colorScheme="octoColor" 
                                 isLoading={isDelegating} isDisabled={isDelegating}>Delegate</Button>
                             </HStack>

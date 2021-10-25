@@ -124,7 +124,8 @@ const Overview = ({ appchainId, onDrawerClose }) => {
             'get_delegator_deposit_of'
           ],
           changeMethods: [
-            'unbond_stake'
+            'unbond_stake',
+            'go_booting'
           ]
         }
       );

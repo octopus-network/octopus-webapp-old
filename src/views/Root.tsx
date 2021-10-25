@@ -78,7 +78,7 @@ const Root = () => {
         }).catch(err => {
           setTimeout(() => {
             toast.update(toastIdRef.current, {
-              description: err.toString(),
+              description: err?.kind?.ExecutionError || err.toString(),
               duration: 2500,
               status: 'error'
             });

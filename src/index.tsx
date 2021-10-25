@@ -50,8 +50,7 @@ const initNear = async () => {
         'withdraw_upvote_deposit_of', 
         'withdraw_downvote_deposit_of', 
         'count_voting_score', 
-        'conclude_voting_score', 
-        'go_booting'
+        'conclude_voting_score'
       ]
     }
   );

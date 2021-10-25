@@ -23,7 +23,7 @@ import {
   useBoolean
 } from '@chakra-ui/react';
 
-import { TriangleUpIcon, TriangleDownIcon, ChevronRightIcon } from '@chakra-ui/icons';
+import { TriangleUpIcon, TriangleDownIcon, ChevronRightIcon, ChevronLeftIcon } from '@chakra-ui/icons';
 import { RiDeleteBin6Line } from 'react-icons/ri';
 import { loginNear } from 'utils';
 import { toDecimals, fromDecimals } from 'utils';
@@ -134,21 +134,16 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
   const onBooting = () => {
     setLoadingType('booting');
     setBootingPopoverOpen.off();
-    window
-      .registryContract
-      .go_booting(
-        {
-          appchain_id: status.appchain_id
-        },
-        SIMPLE_CALL_GAS
-      ).then(() => {
+    anchor
+      .go_booting()
+      .then(() => {
         window.location.reload();
       }).catch(err => {
         setLoadingType('');
         toast({
           position: 'top-right',
           title: 'Error',
-          description: err.toString(),
+          description: err?.kind?.ExecutionError || err.toString(),
           status: 'error'
         });
       });
@@ -319,7 +314,7 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
    
       inStaking ?
       <Button onClick={onCancelStake}>
-        Cancel
+        <ChevronLeftIcon mr={1} /> Back
       </Button> :
     
       <HStack spacing="2">
@@ -404,12 +399,12 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
               >
               <PopoverTrigger>
                 <Button colorScheme="octoColor" isLoading={loadingType === 'booting'}
-                  isDisabled={!!loadingType || bootingPopoverOpen} onClick={setBootingPopoverOpen.toggle}>Go Booting</Button>
+                  isDisabled={!!loadingType || bootingPopoverOpen || !!!anchor} onClick={setBootingPopoverOpen.toggle}>Go Booting</Button>
               </PopoverTrigger>
               <PopoverContent>
                 <PopoverBody>
                   <Flex p={2}>
-                    <Heading fontSize="lg">Are you confirm to set this appchain status to 'Booting'?</Heading>
+                    <Heading fontSize="lg">Are you confirm to let this appchain to go 'Booting'?</Heading>
                   </Flex>
                 </PopoverBody>
                 <PopoverFooter d="flex" justifyContent="flex-end">
