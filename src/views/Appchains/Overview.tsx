@@ -32,7 +32,7 @@ import {
 import dayjs from 'dayjs';
 import axios from 'axios';
 import { Contract } from 'near-api-js';
-import { loginNear, fromDecimals } from 'utils';
+import { loginNear, fromDecimals, NumberUtils } from 'utils';
 import { AiOutlineUser, AiOutlineGlobal, AiFillGithub, AiOutlineFileZip } from 'react-icons/ai';
 import { FaStar } from 'react-icons/fa';
 import { FiAnchor } from 'react-icons/fi';
@@ -250,7 +250,7 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                   <Icon as={FaStar} />
                   <Text>Total Score</Text>
                 </HStack>
-                <Heading fontSize="md" fontWeight={500}>{fromDecimals(appchainStatus?.voting_score).toFixed(2)}</Heading>
+                <Heading fontSize="md" fontWeight={500}>{NumberUtils.showWithCommas(fromDecimals(appchainStatus?.voting_score))}</Heading>
               </Flex>
               <Skeleton isLoaded={counterData}>
               <Box width="100%" height="80px" mt={4}>

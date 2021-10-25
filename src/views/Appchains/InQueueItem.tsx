@@ -17,7 +17,7 @@ import {
 } from '@chakra-ui/react';
 
 import { MdKeyboardArrowRight } from 'react-icons/md';
-import { fromDecimals } from 'utils';
+import { fromDecimals, NumberUtils } from 'utils';
 import { useNavigate } from 'react-router-dom';
 
 const StyledAppchainItem = styled(SimpleGrid)`
@@ -155,11 +155,11 @@ const InQueueItem = ({
             <Box>
               <Flex alignItems="center">
                 <Box w="8px" h="8px" bg="#8884d8" borderRadius={2} />
-                <Text fontSize="xs" ml={1}>Upvotes: {upvotes.toFixed(2)}</Text>
+                <Text fontSize="xs" ml={1}>Upvotes: {NumberUtils.showWithCommas(upvotes)}</Text>
               </Flex>
               <Flex alignItems="center">
                 <Box w="8px" h="8px" bg="#82ca9d" borderRadius={2} />
-                <Text fontSize="xs" ml={1}>Downvotes: {downvotes.toFixed(2)}</Text>
+                <Text fontSize="xs" ml={1}>Downvotes: {NumberUtils.showWithCommas(downvotes)}</Text>
               </Flex>
             </Box>
           }>
@@ -169,7 +169,7 @@ const InQueueItem = ({
                   <Flex alignItems="center">
                     <StyledBar width={(upvotes ? 100*upvotes/highestVotes : 0) + '%'} h="6px" 
                       bg="linear-gradient(to right, #3182CE, #EBF8FF)" />
-                    <Text fontSize="xs" ml={1}>{upvotes.toFixed(2)}</Text>
+                    <Text fontSize="xs" ml={1}>{NumberUtils.showWithCommas(upvotes)}</Text>
                   </Flex>
                 </Box>
               </Box>
@@ -178,7 +178,7 @@ const InQueueItem = ({
                   <Flex alignItems="center">
                     <StyledBar width={(downvotes ? 100*downvotes/highestVotes : 0) + '%'} h="6px" 
                       bg="linear-gradient(to right, #68D391, #F0FFF4)" />
-                    <Text fontSize="xs" ml={1}>{downvotes.toFixed(2)}</Text>
+                    <Text fontSize="xs" ml={1}>{NumberUtils.showWithCommas(downvotes)}</Text>
                   </Flex>
                 </Box>
               </Box>
@@ -207,15 +207,15 @@ const InQueueItem = ({
       <GridItem colSpan={3} textAlign="center">
         <Tooltip label={
           <Box>
-            <Text fontSize="xs" ml={1}>Total Score: {score.toFixed(2)}</Text>
-            <Text fontSize="xs" ml={1}>Pending Score: {(score+upvotes-downvotes).toFixed(2)}</Text>
+            <Text fontSize="xs" ml={1}>Total Score: {NumberUtils.showWithCommas(score)}</Text>
+            <Text fontSize="xs" ml={1}>Pending Score: {NumberUtils.showWithCommas(score+upvotes-downvotes)}</Text>
           </Box>
         }>
         <HStack spacing={1}>
           <StyledBox
             style={{ opacity: score ? '1' : '0', borderRadius: '30px' }}>
             <HStack spacing={1}>
-              <Text>{score.toFixed(2)}</Text>
+              <Text>{NumberUtils.showWithCommas(score)}</Text>
             </HStack>
           </StyledBox>
           <StyledBox style={{ 
@@ -229,7 +229,7 @@ const InQueueItem = ({
               transform: 'scale(.9)',
               border: '1px solid #eee'
             }}>
-            <Text fontSize="10px">{(upvotes-downvotes > 0 ? '+' : '')}{(upvotes-downvotes).toFixed(2)}</Text>
+            <Text fontSize="10px">{(upvotes-downvotes > 0 ? '+' : '')}{NumberUtils.showWithCommas(upvotes-downvotes)}</Text>
           </StyledBox>
         </HStack>
         </Tooltip>
