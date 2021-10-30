@@ -51,8 +51,8 @@ export function ScoreChart({ data, lowest, highest, showDate }: {
         <YAxis hide={true} domain={[lowest, highest]} />
         {
           showDate !== undefined && 
-          <XAxis axisLine={false} tickLine={false} height={20} dataKey="date" interval="preserveStartEnd" 
-            tick={{ fontSize: '13px', fill: '#9c9c9c' }} />
+          <XAxis axisLine={false} tickLine={false} height={20} dataKey="date" 
+            tick={{ fontSize: '13px', fill: '#9c9c9c' }} interval="preserveStartEnd" />
         }
         <ChartTooltip position={{ y: 0 }} content={<CustomTooltip  />} />
         <Area type="monotone" strokeWidth={2} dataKey="score"

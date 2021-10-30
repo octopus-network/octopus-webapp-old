@@ -14,6 +14,9 @@ const i18nResources = {};
 
 const defaultLocale = window.localStorage.getItem('locale') || locales[0];
 
+// reset colormode
+window.localStorage.removeItem('chakra-ui-color-mode');
+
 const initNear = async () => {
   const near = await connect(
     Object.assign(

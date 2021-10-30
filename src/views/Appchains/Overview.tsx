@@ -53,7 +53,7 @@ const Overview = ({ appchainId, onDrawerClose }) => {
   const [accountBalance, setAccountBalance] = useState<any>();
   const toast = useToast();
 
-  const [counterData, setCounterData] = useState();
+  const [counterData, setCounterData] = useState<any>();
   const highestScore = useRef(0);
   const lowestScore = useRef(Number.MAX_SAFE_INTEGER);
 
@@ -71,18 +71,22 @@ const Overview = ({ appchainId, onDrawerClose }) => {
       .then(res => res.data)
       .then((data: any) => {
         if (data.success) {
-          setCounterData(data.data.map(({ voting_score, created_at }) => {
+          const tmpObj = {}
+          data.data.forEach(({ voting_score, created_at }) => {
             const score = fromDecimals(voting_score);
             if (score < lowestScore.current) {
               lowestScore.current = score;
             } else if (score > highestScore.current) {
               highestScore.current = score;
             }
-            return {
-              date: dayjs(created_at).format('MM-DD'),
-              score
-            }
-          }));
+            tmpObj[dayjs(created_at).format('MM-DD')] = score;
+           
+          });
+         
+          setCounterData(
+            Object.entries(tmpObj).slice(-7).map(([date, score]) => ({date, score}))
+          );
+          
         }
       });
 

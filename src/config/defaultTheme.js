@@ -1,6 +1,7 @@
 import { extendTheme, withDefaultColorScheme } from '@chakra-ui/react';
 
 const defaultTheme = {
+  
   colors: {
     octoColor: {
       50: '#629fff',
