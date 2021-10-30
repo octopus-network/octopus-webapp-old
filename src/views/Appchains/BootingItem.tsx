@@ -32,7 +32,7 @@ const BootingItem = ({
   appchain: any;
 }) => {
   const navigate = useNavigate();
-  const { appchain_id, validators } = appchain;
+  const { appchain_id, validators, appchain_metadata } = appchain;
   
   return (
    
@@ -40,7 +40,8 @@ const BootingItem = ({
       onClick={() => navigate(`/appchains/overview/${appchain_id}`)}>
       <GridItem colSpan={5}>
         <HStack>
-          <Avatar name={appchain_id} size="xs" display={{ base: 'none', md: 'block' }} bg="blue.100" />
+          <Avatar name={appchain_id} size="xs" display={{ base: 'none', md: 'block' }} bg="blue.100"
+            src={appchain_metadata?.fungible_token_metadata?.icon} />
           <Heading fontSize="lg">{appchain_id}</Heading>
         </HStack>
       </GridItem>

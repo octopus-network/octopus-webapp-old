@@ -32,14 +32,15 @@ const StagingItem = ({
   appchain: any;
 }) => {
   const navigate = useNavigate();
-  const { appchain_id, validator_count, total_stake } = appchain;
+  const { appchain_id, validator_count, total_stake, appchain_metadata } = appchain;
  
   return (
     <StyledAppchainItem columns={{ base: 14, md: 14 }} p={4} alignItems="center"
       onClick={() => navigate(`/appchains/overview/${appchain_id}`)}>
       <GridItem colSpan={5}>
         <HStack>
-          <Avatar name={appchain_id} size="xs" display={{ base: 'none', md: 'block' }} bg="blue.100" />
+          <Avatar name={appchain_id} size="xs" display={{ base: 'none', md: 'block' }} bg="blue.100"
+            src={appchain_metadata?.fungible_token_metadata?.icon} />
           <Heading fontSize="lg">{appchain_id}</Heading>
         </HStack>
       </GridItem>

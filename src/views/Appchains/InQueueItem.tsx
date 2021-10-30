@@ -65,7 +65,7 @@ const InQueueItem = ({
   const highest = useRef(0);
   const lowest = useRef(0);
 
-  const { appchain_id, downvote_deposit, upvote_deposit, voting_score } = appchain;
+  const { appchain_id, downvote_deposit, upvote_deposit, voting_score, appchain_metadata } = appchain;
   const [userUpvoteDeposit, setUserUpvoteDeposit] = useState(0);
   const [userDownvoteDeposit, setUserDownvoteDeposit] = useState(0);
 
@@ -145,7 +145,7 @@ const InQueueItem = ({
       }
       <GridItem colSpan={4}>
         <HStack>
-          <Avatar name={appchain_id} size="xs" display={{ base: 'none', md: 'block' }} bg="blue.100" />
+          <Avatar name={appchain_id} size="xs" display={{ base: 'none', md: 'block' }} bg="blue.100" src={appchain_metadata?.fungible_token_metadata?.icon} />
           <Heading fontSize="lg" ml={2} whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">{appchain_id}</Heading>
         </HStack>
       </GridItem>
@@ -164,7 +164,7 @@ const InQueueItem = ({
             </Box>
           }>
             <Box>
-              <Box borderRadius={15} height="10px" overflow="hidden">
+              <Box height="10px">
                 <Box mt="-3px" position="relative">
                   <Flex alignItems="center">
                     <StyledBar width={(upvotes ? 100*upvotes/highestVotes : 0) + '%'} h="6px" 
@@ -173,7 +173,7 @@ const InQueueItem = ({
                   </Flex>
                 </Box>
               </Box>
-              <Box borderRadius={15} mt={2} height="10px" overflow="hidden">
+              <Box mt={2} height="10px">
                 <Box mt="-3px" position="relative">
                   <Flex alignItems="center">
                     <StyledBar width={(downvotes ? 100*downvotes/highestVotes : 0) + '%'} h="6px" 

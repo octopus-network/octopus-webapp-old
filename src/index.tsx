@@ -2,7 +2,7 @@ import * as React from 'react';
 import ReactDOM from 'react-dom';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import { connect, keyStores, WalletConnection, Contract } from "near-api-js";
+import { connect, keyStores, WalletConnection, Contract } from 'near-api-js';
 
 import octopusConfig from 'config/octopus';
 import './common.css';
