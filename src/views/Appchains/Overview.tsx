@@ -427,7 +427,7 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                     onChange={e => onAppchainMetadataChange('premined_wrapped_appchain_token', e.target.value, true)} width="auto" size="sm" /> :
                   <HStack>
                     <Heading fontSize="sm" fontWeight={500}>
-                      {appchainStatus?.appchain_metadata?.premined_wrapped_appchain_token}
+                      {NumberUtils.showWithCommas(Number.parseFloat(appchainStatus?.appchain_metadata?.premined_wrapped_appchain_token), 0)}
                     </Heading>
                   </HStack>
                 }
@@ -453,7 +453,7 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                     onChange={e => onAppchainMetadataChange('ido_amount_of_wrapped_appchain_token', e.target.value, true)} width="auto" size="sm" /> :
                   <HStack>
                     <Heading fontSize="sm" fontWeight={500}>
-                      {appchainStatus?.appchain_metadata?.ido_amount_of_wrapped_appchain_token}
+                      {NumberUtils.showWithCommas(Number.parseFloat(appchainStatus?.appchain_metadata?.ido_amount_of_wrapped_appchain_token), 0)}
                     </Heading>
                   </HStack>
                 }
@@ -466,7 +466,7 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                     onChange={e => onAppchainMetadataChange('initial_era_reward', e.target.value, true)} width="auto" size="sm" /> :
                   <HStack>
                     <Heading fontSize="sm" fontWeight={600}>
-                      {appchainStatus?.appchain_metadata?.initial_era_reward}
+                      {NumberUtils.showWithCommas(Number.parseFloat(appchainStatus?.appchain_metadata?.initial_era_reward), 0)}
                     </Heading>
                   </HStack>
                 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import {
   Box,
@@ -7,6 +7,7 @@ import {
   Flex,
   Skeleton
 } from '@chakra-ui/react';
+import { NumberUtils } from 'utils';
 
 const StatCard = ({
   title,
@@ -17,8 +18,11 @@ const StatCard = ({
   value: string|number;
   icon: any;
 }) => {
+  const isValueValid = useMemo(() => value >= 0, [value]); 
+  const valueLabel = useMemo(() => NumberUtils.showWithCommas(+value, 0) , [value]);
+
   return (
-    <Skeleton isLoaded={value >= 0} borderRadius="10">
+    <Skeleton isLoaded={isValueValid} borderRadius="10">
     <Box p="5" boxShadow="octoShadow" borderRadius="10" bg="rgba(255, 255, 255, .05)"
       overflow="hidden" position="relative">
       <Flex alignItems="center" justifyContent="space-between">
@@ -26,7 +30,7 @@ const StatCard = ({
         {icon}
       </Flex>
       <Box mt="4">
-        <Heading fontSize="2xl">{value >= 0 ? value : 'loading'}</Heading>
+        <Heading fontSize="2xl">{isValueValid ? valueLabel : 'loading'}</Heading>
       </Box>
       <Box position="absolute" transform="scale(4.6)" 
         bottom="0" right="0" opacity=".08">
