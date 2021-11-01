@@ -24,7 +24,6 @@ import {
   useToast,
   Tooltip,
   Spinner,
-  Fade,
   DrawerHeader,
   CloseButton
 } from '@chakra-ui/react';
@@ -192,7 +191,6 @@ const Overview = ({ appchainId, onDrawerClose }) => {
   return (
 
     <>
-    
     <DrawerHeader borderBottomWidth="0">
       <Flex justifyContent="space-between" alignItems="center">
         <Heading fontSize="xl"></Heading>

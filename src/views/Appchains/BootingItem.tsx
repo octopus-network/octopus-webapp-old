@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 
 import { 
@@ -32,7 +32,7 @@ const BootingItem = ({
   appchain: any;
 }) => {
   const navigate = useNavigate();
-  const { appchain_id, validators, appchain_metadata } = appchain;
+  const { appchain_id, appchain_metadata } = appchain;
   
   return (
    

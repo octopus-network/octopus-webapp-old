@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+
 import {
   Container,
   Flex,
@@ -9,7 +10,6 @@ import {
   FormLabel,
   InputGroup,
   Input,
-  InputRightElement,
   FormErrorMessage,
   Box,
   List,
@@ -30,7 +30,7 @@ import { FAILED_TO_REDIRECT_MESSAGE, COMPLEX_CALL_GAS } from 'config/constants';
 import octopusConfig from 'config/octopus';
 import { TokenInfoModal } from 'components';
 
-const Register = () => {
+export const Register: React.FC = () => {
 
   const { t } = useTranslation();
   const [minimumRegisterDeposit, setMinimumRegisterDeposit] = useState(0);
@@ -66,7 +66,7 @@ const Register = () => {
   }
 
   const validateEmail = (value) => {
-    const reg = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,15})$/;
+    const reg = /^([a-zA-Z]|[0-9])(\w)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,15})$/;
     if (!reg.test(value)) {
       return 'Invalid email';
     }
@@ -394,5 +394,3 @@ const Register = () => {
     </>
   );
 }
-
-export default Register;

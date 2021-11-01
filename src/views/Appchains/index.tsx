@@ -34,7 +34,7 @@ import { COMPLEX_CALL_GAS } from 'config/constants';
 import { FiEdit, FiCheckCircle, FiPlus } from 'react-icons/fi';
 import { AiOutlineAudit, AiOutlineInbox, AiOutlineDashboard } from 'react-icons/ai';
 import { BiBadgeCheck } from 'react-icons/bi';
-import { BsFillStopFill, BsPeople } from 'react-icons/bs';
+import { BsFillStopFill } from 'react-icons/bs';
 import { VscServerProcess } from 'react-icons/vsc';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -47,6 +47,8 @@ import RegisteredItem from './RegisteredItem';
 
 import Overview from './Overview';
 import { fromDecimals } from 'utils';
+
+export { Register } from './Register';
 
 const NoAppchains = () => (
   <Box p={3} borderRadius={10} flex={1} bg="rgba(120, 120, 150, .04)">
@@ -95,7 +97,7 @@ const StatBox = ({
   );
 }
 
-const Appchains = () => {
+export const Appchains: React.FC = () => {
   
   const { id } = useParams();
 
@@ -117,8 +119,7 @@ const Appchains = () => {
   const [countPopoverOpen, setCountPopoverOpen] = useBoolean(false);
   const [concludePopoverOpen, setConcludePopoverOpen] = useBoolean(false);
   const [highestVotes, setHighestVotes] = useState(0);
-  const [highestScore, setHighestScore] = useState(0);
-  
+ 
   const [isLoadingList, setIsLoadingList] = useState(false);
   const [preAuditAppchains, setPreAuditAppchains] = useState<undefined|any[]>();
   const [auditingAppchains, setAuditingAppchains] = useState<undefined|any[]>();
@@ -196,9 +197,7 @@ const Appchains = () => {
         }
         setHighestVotes(highest);
       }
-      if (voting.length) {
-        setHighestScore(fromDecimals(voting[0].voting_score));
-      }
+      
     });
   }
 
@@ -445,8 +444,7 @@ const Appchains = () => {
                 <List spacing={3}>
                 {
                   votingAppchains.map((appchain, idx) => (
-                    <InQueueItem index={idx} appchain={appchain} key={`appchain-${idx}`} highestVotes={highestVotes} 
-                      highestScore={highestScore} /> 
+                    <InQueueItem index={idx} appchain={appchain} key={`appchain-${idx}`} highestVotes={highestVotes} /> 
                   ))
                 }
                 </List>
@@ -559,5 +557,3 @@ const Appchains = () => {
     </>
   );
 }
-
-export default Appchains;

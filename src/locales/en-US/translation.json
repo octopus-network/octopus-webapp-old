@@ -40,5 +40,12 @@
     "Email": "Email",
     "Submit": "Submit",
     "Count score": "Count score",
-    "Conclude score": "Conclude score"
+    "Conclude score": "Conclude score",
+    "Pre-Audit": "Pre-Audit",
+    "Registered": "Registered",
+    "Auditing": "Auditing",
+    "Voting": "Voting",
+    "Staking": "Staking",
+    "Booting": "Booting",
+    "Running": "Running"
 }

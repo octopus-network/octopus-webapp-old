@@ -10,7 +10,6 @@ import {
   PopoverBody,
   PopoverFooter,
   PopoverCloseButton,
-  VStack,
   Grid,
   GridItem,
   Heading,
@@ -48,7 +47,6 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
   const [withdrawVotesPopoverOpen, setWithdrawVotesPopoverOpen] = useBoolean(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
 
-  const [voteAction, setVoteAction] = useState('');
   const [upvoteAmount, setUpvoteAmount] = useState('');
   const [downvoteAmount, setDownvoteAmount] = useState('');
 
@@ -183,14 +181,12 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
 
   useEffect(() => {
     if (upvotePopoverOpen) {
-      setVoteAction('deposit');
       if (upvoteInputRef.current) {
         setTimeout(() => {
           (upvoteInputRef.current as any).focus();
         }, 200);
       }
     } else if (downvotePopoverOpen) {
-      setVoteAction('deposit');
       if (downvoteInputRef.current) {
         setTimeout(() => {
           (downvoteInputRef.current as any).focus();

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo, useCallback } from 'react';
 
 import {
   useToast,
@@ -26,9 +26,12 @@ const Loading = () => {
   );
 }
 
-const Root = () => {
+export const Root: React.FC = () => {
   const toast = useToast();
-  const urlParams = new URLSearchParams(window.location.search);
+  const urlParams = useMemo(() => 
+    new URLSearchParams(window.location.search)
+    , []);
+
   const transactionHashes = urlParams.get('transactionHashes') || '';
   const errorMessage = urlParams.get('errorMessage') || '';
 
@@ -37,11 +40,11 @@ const Root = () => {
   const navigate = useNavigate();
   const toastIdRef = useRef<any>();
 
-  const checkRedirect = () => {
+  const checkRedirect = useCallback(() => {
     if (/appchains\/join/.test(location.pathname)) {
       navigate('/appchains/registered');
     }
-  }
+  }, [location.pathname, navigate]);
 
   useEffect(() => {
     if (transactionHashes) {
@@ -93,14 +96,14 @@ const Root = () => {
     }
 
     // clear message
-    const { protocol, host, pathname, search, hash } = window.location;
+    const { protocol, host, pathname, hash } = window.location;
     urlParams.delete('errorMessage');
     urlParams.delete('transactionHashes');
     const params = urlParams.toString();
     const newUrl = `${protocol}//${host}${pathname}${params ? '?' + params : ''}${hash}`;
     window.history.pushState({ path: newUrl }, '', newUrl);
 
-  }, [errorMessage, transactionHashes]);
+  }, [errorMessage, transactionHashes, checkRedirect, toast, urlParams]);
 
   return (
     <div style={{ 
@@ -115,5 +118,3 @@ const Root = () => {
     </div>
   );
 }
-
-export default Root;

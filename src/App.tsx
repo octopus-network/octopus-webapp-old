@@ -5,12 +5,16 @@ import { ChakraProvider } from '@chakra-ui/react';
 
 import defaultTheme from 'config/defaultTheme';
 
-import Root from 'views/Root';
-import Home from 'views/Home';
-import Appchains from 'views/Appchains';
-import AppchainRegister from 'views/Appchains/Register';
-import Appchain from 'views/Appchain';
-import UserView from 'views/User';
+import { 
+  Bridge,
+  Home,
+  Root,
+  AppchainRegister,
+  Appchains,
+  Appchain,
+  User
+} from 'views';
+
 import Dashboard from 'views/User/Dashboard';
 import { useTranslation } from 'react-i18next';
 
@@ -33,9 +37,10 @@ export const App = () => {
               <Route path="appchains/booting" element={<Appchains />} />
               <Route path="appchains/overview/:id" element={<Appchains />} />
               <Route path="appchains/:id" element={<Appchain />} />
-              <Route path="user" element={<UserView />}>
+              <Route path="user" element={<User />}>
                 <Route path="dashboard" element={<Dashboard />} />
               </Route>
+              <Route path="bridge" element={<Bridge />} />
             </Route>
           </Routes>
         </Router>

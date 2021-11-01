@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Outlet } from 'react-router-dom';
 
-const User = () => {
+export const User: React.FC = () => {
   const { t } = useTranslation();
 
   return (
@@ -29,5 +29,3 @@ const User = () => {
     </>
   );
 }
-
-export default User;

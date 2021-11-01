@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 
 import {
   Box,
@@ -30,7 +30,7 @@ import { utils } from 'near-api-js';
 import { HiOutlineArrowNarrowRight } from 'react-icons/hi';
 import { FcComboChart, FcCurrencyExchange, FcOrgUnit } from 'react-icons/fc';
 import { Link as RouterLink } from 'react-router-dom';
-import StatCard from './StatCard';
+import { StatCard } from './StatCard';
 import globe from 'assets/globe.svg';
 
 const StyledAppchainItem = styled(SimpleGrid)`
@@ -92,7 +92,7 @@ const AppchainItem = ({
   );
 }
 
-const Home = () => {
+export const Home: React.FC = () => {
   
   const [isDesktop] = useMediaQuery('(min-width: 62em)');
   const { t } = useTranslation();
@@ -149,7 +149,7 @@ const Home = () => {
     return () => {
       clearInterval(timer);
     };
-  }, []);
+  }, [isFetching]);
 
   return (
     <>
@@ -223,5 +223,3 @@ const Home = () => {
     </>
   );
 }
-
-export default Home;

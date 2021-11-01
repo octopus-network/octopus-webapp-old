@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
 import {
-  List,
   Flex,
   Heading,
   Button,
@@ -14,13 +13,6 @@ import {
   PopoverContent,
   PopoverBody,
   PopoverFooter,
-  Table,
-  Thead,
-  Tbody,
-  Tfoot,
-  Tr,
-  Th,
-  Td,
   Input,
   useToast,
   Skeleton,
@@ -32,12 +24,11 @@ import { RegisterValidatorModal, ValidatorsTable } from 'components';
 import { FAILED_TO_REDIRECT_MESSAGE, COMPLEX_CALL_GAS } from 'config/constants';
 
 const StakingPanel = ({ status, anchor }) => {
-  const { appchain_id, appchain_state } = status;
+  const { appchain_state } = status;
   const toast = useToast();
   const [depositAmount, setDepositAmount] = useState<any>();
   const [inputAmount, setInputAmount] = useState<any>();
-  const [unboundedStakes, setUnboundedStakes] = useState<any>();
-
+ 
   const [registerModalOpen, setRegsiterModalOpen] = useBoolean(false);
   const [unbondPopoverOpen, setUnbondPopoverOpen] = useBoolean(false);
   const [stakeMorePopoverOpen, setStakeMorePopoverOpen] = useBoolean(false);
@@ -61,7 +52,6 @@ const StakingPanel = ({ status, anchor }) => {
         })
     ]).then(([deposit, unbonded]) => {
       setDepositAmount(fromDecimals(deposit));
-      setUnboundedStakes(unbonded);
     });
     
   }, [anchor]);

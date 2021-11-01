@@ -8,7 +8,7 @@ import {
   Skeleton
 } from '@chakra-ui/react';
 
-const StatCard = ({
+export const StatCard = ({
   title,
   value,
   icon
@@ -36,5 +36,3 @@ const StatCard = ({
     </Skeleton>
   );
 }
-
-export default StatCard;

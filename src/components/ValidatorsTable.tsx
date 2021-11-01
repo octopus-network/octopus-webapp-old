@@ -92,7 +92,7 @@ export const ValidatorsTable = ({
     ).then(deposits => {
       setDelegatedDeposits(deposits);
     });
-  }, [validatorList]);
+  }, [validatorList, anchor]);
 
   const onRegisterDelegator = (id) => {
     setSelectedValidatorAccountId(id);

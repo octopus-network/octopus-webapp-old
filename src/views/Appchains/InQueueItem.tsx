@@ -1,7 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import axios from 'axios';
-import dayjs from 'dayjs';
 
 import { 
   GridItem,
@@ -47,23 +45,18 @@ const StyledBox = styled(Box)`
 const InQueueItem = ({
   appchain,
   index,
-  highestVotes,
-  highestScore
+  highestVotes
 }: {
   appchain: any;
   index: number;
   highestVotes: number;
-  highestScore: number;
 }) => {
 
   const navigate = useNavigate();
-  const [counterData, setCounterData] = useState();
+ 
   const [upvotes, setUpvotes] = useState(0);
   const [downvotes, setDownvotes] = useState(0);
   const [score, setScore] = useState(0);
-
-  const highest = useRef(0);
-  const lowest = useRef(0);
 
   const { appchain_id, downvote_deposit, upvote_deposit, voting_score, appchain_metadata } = appchain;
   const [userUpvoteDeposit, setUserUpvoteDeposit] = useState(0);
@@ -81,7 +74,7 @@ const InQueueItem = ({
       setDownvotes(fromDecimals(downvote_deposit));
       setScore(fromDecimals(voting_score));
     }, 10);
-  }, [downvote_deposit, upvote_deposit]);
+  }, [downvote_deposit, upvote_deposit, voting_score]);
 
   useEffect(() => {
     if (!appchain_id) {
@@ -102,27 +95,6 @@ const InQueueItem = ({
       setUserDownvoteDeposit(fromDecimals(downvoteDeposit));
     });
   }, [appchain_id]);
-
-  useEffect(() => {
-    axios.get( `/api/counter?appchain=${appchain_id}`)
-      .then(res => res.data)
-      .then((data: any) => {
-        if (data.success) {
-          setCounterData(data.data.map(({ voting_score, created_at }) => {
-            const score = fromDecimals(voting_score);
-            if (score < lowest.current) {
-              lowest.current = score;
-            } else if (score > highest.current) {
-              highest.current = score;
-            }
-            return {
-              date: dayjs(created_at).format('MM-DD'),
-              score: score.toFixed(2)
-            }
-          }));
-        }
-      });
-  }, []);
 
   return (
     <StyledAppchainItem columns={{ base: 9, md: 14 }} p={4} alignItems="center"

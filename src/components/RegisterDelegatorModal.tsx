@@ -9,18 +9,13 @@ import {
   FormControl,
   FormLabel,
   FormHelperText,
-  Switch,
   Input,
   Box,
   List,
   Button,
-  useToast,
-  HStack,
-  Text
+  useToast
 } from '@chakra-ui/react';
 
-import { decodeAddress } from '@polkadot/util-crypto';
-import { u8aToHex } from '@polkadot/util';
 import { useTranslation } from 'react-i18next';
 import { fromDecimals, toDecimals } from 'utils';
 import { FAILED_TO_REDIRECT_MESSAGE, COMPLEX_CALL_GAS } from 'config/constants';
@@ -37,7 +32,7 @@ export const RegisterDelegatorModal = ({
   anchor: any;
 }) => {
   const toast = useToast();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [amount, setAmount] = useState<any>('');
   
   const [minimumDeposit, setMinimumDeposit] = useState<any>();

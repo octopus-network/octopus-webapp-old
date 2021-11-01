@@ -1,15 +1,13 @@
 import React from 'react';
+
 import {
-  Box, 
   Container
 } from '@chakra-ui/react';
 
-const Appchain = () => {
+export const Appchain: React.FC = () => {
   return (
     <Container>
       appchain
     </Container>
   );
 }
-
-export default Appchain;

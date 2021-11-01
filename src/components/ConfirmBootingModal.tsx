@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { 
   Modal, 
   ModalBody, 
@@ -13,7 +13,6 @@ import {
   Button
 } from '@chakra-ui/react';
 
-import { useTranslation } from 'react-i18next';
 import { ValidatorsTable } from 'components';
 import { COMPLEX_CALL_GAS } from 'config/constants';
 
@@ -27,8 +26,7 @@ export const ConfirmBootingModal = ({
   anchor: any;
 }) => {
   const toast = useToast();
-  const { t, i18n } = useTranslation();
-  const [amount, setAmount] = useState<any>('');
+  
   const [isSubmiting, setIsSubmiting] = useState(false);
   
   const onBooting = () => {

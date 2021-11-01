@@ -40,5 +40,13 @@
     "Email": "邮箱",
     "Submit": "提交",
     "Count score": "计分",
-    "Conclude score": "结束计分"
+    "Conclude score": "结束计分",
+    "Pre-Audit": "未审计",
+    "Registered": "已注册",
+    "Auditing": "审计中",
+    "Voting": "投票中",
+    "Staking": "质押中",
+    "Booting": "启动中",
+    "Running": "正在运行"
+
 }

@@ -37,10 +37,6 @@ export class Ball extends React.Component<Props> {
     height: 320
   }
 
-  constructor(props) {
-    super(props);
-  }
-
   componentDidMount() {
     this.animate(this.canvasRef.current);
     this.isMounted = true;
@@ -184,7 +180,7 @@ export class Ball extends React.Component<Props> {
   }
 
   fin(p) {
-    if (this._arr.first == p) {
+    if (this._arr.first === p) {
       if (p.next != null) {
         p.next.prev = null;
         this._arr.first = p.next;
