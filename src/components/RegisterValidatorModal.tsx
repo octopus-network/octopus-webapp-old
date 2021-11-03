@@ -44,6 +44,8 @@ export const RegisterValidatorModal = ({
   const [minimumDeposit, setMinimumDeposit] = useState<any>();
   const [accountBalance, setAccountBalance] = useState<any>();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [socialLink, setSocialLink] = useState('');
+  const [email, setEmail] = useState('');
 
   useEffect(() => {
     Promise.all([
@@ -99,7 +101,11 @@ export const RegisterValidatorModal = ({
           msg: JSON.stringify({
             RegisterValidator: {
               validator_id_in_appchain: hexId,
-              can_be_delegated_to: canBeDelegatedTo
+              can_be_delegated_to: canBeDelegatedTo,
+              profile: {
+                socialLink,
+                email
+              }
             }
           })
         },
@@ -137,6 +143,15 @@ export const RegisterValidatorModal = ({
               <Input id="amount" placeholder="deposit amount" onChange={onChangeAmount} defaultValue={amount} type="number" />
               <FormHelperText>minimum deposit: {minimumDeposit} OCT</FormHelperText>
             </FormControl>
+            <FormControl isRequired>
+              <FormLabel htmlFor="socialLink">{t('Social Link')}</FormLabel>
+              <Input id="socialLink" placeholder="twitter/website/facebook" 
+                onChange={(e) => setSocialLink(e.target.value)} type="text" />
+            </FormControl>
+            <FormControl isRequired>
+              <FormLabel htmlFor="email">{t('Email')}</FormLabel>
+              <Input id="email" placeholder="email" onChange={(e) => setEmail(e.target.value)} type="text" />
+            </FormControl>
             <HStack>
               <Text>{t('Can be delegated to?')}</Text>
               <Switch onChange={e => setCanBeDelegatedTo(e.target.checked)} defaultChecked={canBeDelegatedTo} />
@@ -144,7 +159,8 @@ export const RegisterValidatorModal = ({
             
           </List>
           <Button mt={8} isFullWidth colorScheme="octoColor" type="submit" isLoading={isSubmitting} disabled={
-            (!amount || !validatorId) || amount < minimumDeposit || amount > accountBalance || isSubmitting
+            (!amount || !validatorId) || amount < minimumDeposit || amount > accountBalance || 
+            isSubmitting || !socialLink || !email
           } onClick={onSubmit}>
             {
               (!amount || !validatorId) ?

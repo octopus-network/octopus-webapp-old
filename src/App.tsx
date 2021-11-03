@@ -12,7 +12,8 @@ import {
   AppchainRegister,
   Appchains,
   Appchain,
-  User
+  User,
+  Profile
 } from 'views';
 
 import Dashboard from 'views/User/Dashboard';
@@ -40,6 +41,7 @@ export const App = () => {
               <Route path="user" element={<User />}>
                 <Route path="dashboard" element={<Dashboard />} />
               </Route>
+              <Route path="profile/:id" element={<Profile />} />
               <Route path="bridge" element={<Bridge />} />
             </Route>
           </Routes>

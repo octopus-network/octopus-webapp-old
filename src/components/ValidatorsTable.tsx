@@ -11,7 +11,6 @@ import {
   Box,
   Flex,
   Text,
-  Link,
   VStack,
   Button,
   useBoolean,
@@ -26,9 +25,9 @@ import {
   Spinner
 } from '@chakra-ui/react';
 
+import { Link as RouterLink } from 'react-router-dom';
 import { fromDecimals, toDecimals } from 'utils';
 import { InfoOutlineIcon } from '@chakra-ui/icons';
-import octopusConfig from 'config/octopus';
 import { RegisterDelegatorModal } from 'components';
 import { FAILED_TO_REDIRECT_MESSAGE, COMPLEX_CALL_GAS } from 'config/constants';
 
@@ -154,15 +153,15 @@ export const ValidatorsTable = ({
               return (
                 <Tr key={`validator-${idx}`}>
                   <Td>
-                    <Link href={`${octopusConfig.explorerUrl}/accounts/${v.validator_id}`} isExternal>
+                    <RouterLink to={`/profile/${v.validator_id}@${anchor?.contractId?.split('.')[0]}`}>
                       {v.validator_id}
-                    </Link>
+                    </RouterLink>
                   </Td>
                   <Td textAlign="center" display={{ base: 'none', lg: 'table-cell' }}>{v.delegators_count}</Td>
                   <Td>
                     <VStack spacing={0} justifyContent="flex-start">
-                      <Text>{fromDecimals(v.total_stake)} OCT</Text>
-                      <Text fontSize="xs" color="gray">Own: {fromDecimals(v.deposit_amount)}</Text>
+                      <Text>{fromDecimals(v.total_stake).toFixed(2)} OCT</Text>
+                      <Text fontSize="xs" color="gray">Own: {fromDecimals(v.deposit_amount).toFixed(2)}</Text>
                     </VStack>
                   </Td>
                   {
@@ -185,7 +184,8 @@ export const ValidatorsTable = ({
                           <PopoverContent>
                             <PopoverBody>
                               <Flex p={2}>
-                                <Input placeholder="amount of OCT" ref={delegateAmountInputRef} onChange={e => setDelegateAmount(e.target.value)} />
+                                <Input placeholder="amount of OCT" ref={delegateAmountInputRef} 
+                                  onChange={e => setDelegateAmount(e.target.value)} />
                               </Flex>
                             </PopoverBody>
                             <PopoverFooter d="flex" justifyContent="flex-end">
