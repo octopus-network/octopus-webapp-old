@@ -78,9 +78,17 @@ export const Profile: React.FC = () => {
         setOCTBalance(fromDecimals(balance, 18));
       });
 
-    const anchorContractId = `${appchain}.${octopusConfig.registryContractId}`;
+    let anchorContractId = '';
+    if (appchain === 'vchain') {
+      anchorContractId = 'dev-1635959524124-80134611678101';
+    } else if (appchain === 'uchain') {
+      anchorContractId = 'dev-1635959574555-28745383096667';
+    } else {
+      anchorContractId = `${appchain}.${octopusConfig.registryContractId}`;
+    }
+
     const provider = window.walletConnection._near.connection.provider;
-    console.log(anchorContractId);
+  
     provider.query({
       request_type: 'view_code',
       account_id: anchorContractId,
@@ -119,7 +127,7 @@ export const Profile: React.FC = () => {
         setValidatorProfile({
           validatorId: validator_id_in_appchain,
           email: profile?.email,
-          socialLink: profile?.socialLink
+          socialMediaHandle: profile?.socialMediaHandle
         });
       });
   }, [anchor, account]);
@@ -139,7 +147,7 @@ export const Profile: React.FC = () => {
       .set_validator_profile({
         profile: {
           email: validatorProfile.email,
-          socialLink: validatorProfile.socialLink
+          socialMediaHandle: validatorProfile.socialMediaHandle
         }
       })
       .then(res => {
@@ -242,19 +250,19 @@ export const Profile: React.FC = () => {
         </Flex>
         <Divider mt={3} mb={3} />
         <Flex alignItems="center" justifyContent="space-between">
-          <Heading fontSize="md">Social Link</Heading>
+          <Heading fontSize="md">Social Media Handle</Heading>
           {
             validatorProfile === undefined ?
             <Spinner size="xs" /> :
             isEditing ?
-            <Input placeholder="twitter/facebook/website etc." defaultValue={validatorProfile?.socialLink}
-              onChange={e => onChangeProfile('socialLink', e.target.value)} width="auto" /> :
+            <Input placeholder="twitter/facebook, etc." defaultValue={validatorProfile?.socialMediaHandle}
+              onChange={e => onChangeProfile('socialMediaHandle', e.target.value)} width="auto" /> :
 
-            validatorProfile?.socialLink ?
+            validatorProfile?.socialMediaHandle ?
             <Link isExternal>
               <HStack>
                 <Text maxW="200px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
-                  {validatorProfile?.socialLink}
+                  {validatorProfile?.socialMediaHandle}
                 </Text>
                 <ExternalLinkIcon />
               </HStack>

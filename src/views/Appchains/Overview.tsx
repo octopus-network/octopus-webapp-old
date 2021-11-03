@@ -105,7 +105,16 @@ const Overview = ({ appchainId, onDrawerClose }) => {
       });
 
     const provider = window.walletConnection._near.connection.provider;
-    const anchorContractId = `${appchainId}.${octopusConfig.registryContractId}`;
+    
+    let anchorContractId = '';
+    if (appchainId === 'vchain') {
+      anchorContractId = 'dev-1635959524124-80134611678101';
+    } else if (appchainId === 'uchain') {
+      anchorContractId = 'dev-1635959574555-28745383096667';
+    } else {
+      anchorContractId = `${appchainId}.${octopusConfig.registryContractId}`;
+    }
+   
     provider.query({
       request_type: 'view_code',
       account_id: anchorContractId,

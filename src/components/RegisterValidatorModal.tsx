@@ -9,14 +9,14 @@ import {
   FormControl,
   FormLabel,
   FormHelperText,
-  Switch,
+  Alert,
+  AlertIcon,
   Input,
   Box,
+  Text,
   List,
   Button,
   useToast,
-  HStack,
-  Text
 } from '@chakra-ui/react';
 
 import { decodeAddress } from '@polkadot/util-crypto';
@@ -40,11 +40,11 @@ export const RegisterValidatorModal = ({
   const { t } = useTranslation();
   const [amount, setAmount] = useState<any>('');
   const [validatorId, setValidatorId] = useState<any>('');
-  const [canBeDelegatedTo, setCanBeDelegatedTo] = useState(true);
+  const [canBeDelegatedTo, setCanBeDelegatedTo] = useState(false);
   const [minimumDeposit, setMinimumDeposit] = useState<any>();
   const [accountBalance, setAccountBalance] = useState<any>();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [socialLink, setSocialLink] = useState('');
+  const [socialMediaHandle, setSocialMediaHandle] = useState('');
   const [email, setEmail] = useState('');
 
   useEffect(() => {
@@ -103,7 +103,7 @@ export const RegisterValidatorModal = ({
               validator_id_in_appchain: hexId,
               can_be_delegated_to: canBeDelegatedTo,
               profile: {
-                socialLink,
+                socialMediaHandle: socialMediaHandle || '',
                 email
               }
             }
@@ -133,7 +133,13 @@ export const RegisterValidatorModal = ({
         <ModalHeader></ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <List spacing={4}>
+          <Alert status="warning">
+            <AlertIcon />
+            <Text fontSize="sm">
+              PLEASE CONTACT Julian Sun#9436 ON DISCORD BEFORE REGISTERING
+            </Text>
+          </Alert>
+          <List spacing={4} mt={4}>
             <FormControl isRequired>
               <FormLabel htmlFor="validatorId">{t('Validator Id')}</FormLabel>
               <Input id="validatorId" placeholder="appchain base58 address, eg: 5CaLqqE3..." onChange={onChangeValidatorId} autoFocus />
@@ -143,24 +149,25 @@ export const RegisterValidatorModal = ({
               <Input id="amount" placeholder="deposit amount" onChange={onChangeAmount} defaultValue={amount} type="number" />
               <FormHelperText>minimum deposit: {minimumDeposit} OCT</FormHelperText>
             </FormControl>
-            <FormControl isRequired>
-              <FormLabel htmlFor="socialLink">{t('Social Link')}</FormLabel>
-              <Input id="socialLink" placeholder="twitter/website/facebook" 
-                onChange={(e) => setSocialLink(e.target.value)} type="text" />
-            </FormControl>
+            
             <FormControl isRequired>
               <FormLabel htmlFor="email">{t('Email')}</FormLabel>
               <Input id="email" placeholder="email" onChange={(e) => setEmail(e.target.value)} type="text" />
             </FormControl>
-            <HStack>
+            <FormControl>
+              <FormLabel htmlFor="socialLink">{t('Social Media Handle')}</FormLabel>
+              <Input id="socialMediaHandle" placeholder="twitter/facebook, etc." 
+                onChange={(e) => setSocialMediaHandle(e.target.value)} type="text" />
+            </FormControl>
+            {/* <HStack>
               <Text>{t('Can be delegated to?')}</Text>
               <Switch onChange={e => setCanBeDelegatedTo(e.target.checked)} defaultChecked={canBeDelegatedTo} />
-            </HStack>
+            </HStack> */}
             
           </List>
           <Button mt={8} isFullWidth colorScheme="octoColor" type="submit" isLoading={isSubmitting} disabled={
             (!amount || !validatorId) || amount < minimumDeposit || amount > accountBalance || 
-            isSubmitting || !socialLink || !email
+            isSubmitting || !email
           } onClick={onSubmit}>
             {
               (!amount || !validatorId) ?

@@ -213,7 +213,7 @@ const StakingPanel = ({ status, anchor }) => {
       </Flex>
       </Skeleton>
       <Box mt={4} p={2} borderWidth={1} borderRadius={10}>
-        <ValidatorsTable anchor={anchor} />
+        <ValidatorsTable anchor={anchor} appchainId={status.appchain_id} />
       </Box>
       
     </Box>

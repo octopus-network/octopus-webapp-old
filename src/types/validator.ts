@@ -1,5 +1,5 @@
 export type ValidatorProfile = {
-  socialLink: string;
+  socialMediaHandle: string;
   validatorId: string;
   email: string;
 }

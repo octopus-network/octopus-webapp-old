@@ -42,10 +42,12 @@ const NoValidators = () => (
 
 export const ValidatorsTable = ({ 
   anchor,
-  noAction
+  noAction,
+  appchainId,
 }: {
   anchor: any;
   noAction?: boolean;
+  appchainId: string;
 }) => {
 
   const toast = useToast();
@@ -153,7 +155,7 @@ export const ValidatorsTable = ({
               return (
                 <Tr key={`validator-${idx}`}>
                   <Td>
-                    <RouterLink to={`/profile/${v.validator_id}@${anchor?.contractId?.split('.')[0]}`}>
+                    <RouterLink to={`/profile/${v.validator_id}@${appchainId}`}>
                       {v.validator_id}
                     </RouterLink>
                   </Td>
