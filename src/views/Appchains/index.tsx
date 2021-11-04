@@ -334,7 +334,7 @@ export const Appchains: React.FC = () => {
         </Box>
       </Box>
       <Box mt={8}>
-        <Flex justifyContent="space-between">
+        <Flex justifyContent="space-between" alignItems="start">
           <HStack spacing={2}>
             <Heading fontSize="xl" color="gray" id="voting">{t('Voting')}</Heading>
             <Popover trigger="hover" placement="top">
@@ -357,7 +357,7 @@ export const Appchains: React.FC = () => {
               </PopoverContent>
             </Popover>
           </HStack>
-          <HStack spacing={3}>
+          <HStack spacing={{ base: 0, sm: 3 }} display="flex" flexDirection={{ base: "column", sm: "row" }}>
             {
               isCounter ?
               <Popover
@@ -418,7 +418,7 @@ export const Appchains: React.FC = () => {
               </Popover> : null
             }
             
-            <Flex alignItems="center">
+            <Flex w="100%" alignItems="center">
               <Box w="10px" h="10px" bg="#8884d8" borderRadius={2} />
               <Text fontSize="sm" ml={1} color="gray">Upvotes</Text>
             </Flex>
@@ -426,7 +426,6 @@ export const Appchains: React.FC = () => {
               <Box w="10px" h="10px" bg="#82ca9d" borderRadius={2} />
               <Text fontSize="sm" ml={1} color="gray">Downvotes</Text>
             </Flex>
-          
           </HStack>
         </Flex>
         <Box mt={4}>

@@ -288,8 +288,8 @@ const Overview = ({ appchainId, onDrawerClose }) => {
           {
             appchainStatus?.appchain_metadata?.website_url &&
             <>
-            <Flex justifyContent="space-between">
-              <HStack fontSize="sm" spacing={1}>
+            <Flex direction={{ base: "column", sm: "row" }} justifyContent="space-between">
+              <HStack fontSize="sm" spacing={1} minW="130px" mr={2}>
                 <Icon as={AiOutlineGlobal} />
                 <Text>Website</Text>
               </HStack>
@@ -297,9 +297,9 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                 isEditing ?
                 <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.website_url} 
                   onChange={e => onAppchainMetadataChange('website_url', e.target.value)} width="auto" /> :
-                <Link href={appchainStatus?.appchain_metadata?.website_url} isExternal>
-                  <HStack>
-                    <Heading fontSize="md" fontWeight={500} maxW="240px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
+                <Link href={appchainStatus?.appchain_metadata?.website_url} isExternal flex={1} overflow="hidden">
+                  <HStack justifyContent={{ base: "start", sm: "end" }}>
+                    <Heading fontSize="md" fontWeight={500} maxW="100%" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
                       {appchainStatus?.appchain_metadata?.website_url}
                     </Heading>
                     <ExternalLinkIcon mx="2px" />
@@ -314,13 +314,13 @@ const Overview = ({ appchainId, onDrawerClose }) => {
             !!anchor &&
             <>
             <Flex justifyContent="space-between">
-              <HStack fontSize="sm" spacing={1}>
+              <HStack fontSize="sm" spacing={1} minW="130px" mr={2}>
                 <Icon as={FiAnchor} />
                 <Text>Anchor</Text>
               </HStack>
-              <Link href={`${octopusConfig.explorerUrl}/accounts/${appchainId}.${octopusConfig.registryContractId}`} isExternal>
-                <HStack>
-                  <Heading fontSize="md" fontWeight={500} maxW="240px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
+              <Link href={`${octopusConfig.explorerUrl}/accounts/${appchainId}.${octopusConfig.registryContractId}`} isExternal flex={1} overflow="hidden">
+                <HStack justifyContent={{ base: "start", sm: "end" }}>
+                  <Heading fontSize="md" fontWeight={500} maxW="100%" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
                     {appchainId}.{octopusConfig.registryContractId}
                   </Heading>
                   <ExternalLinkIcon mx="2px" />
@@ -331,8 +331,8 @@ const Overview = ({ appchainId, onDrawerClose }) => {
             </>
           }
           <Skeleton isLoaded={!!appchainStatus}>
-            <Flex justifyContent="space-between">
-              <HStack fontSize="sm" spacing={1}>
+            <Flex direction={{ base: "column", sm: "row" }} justifyContent="space-between">
+              <HStack fontSize="sm" spacing={1} minW="130px" mr={2}>
                 <Icon as={AttachmentIcon} />
                 <Text>Function Spec</Text>
               </HStack>
@@ -341,9 +341,9 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                 <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.function_spec_url} 
                   onChange={e => onAppchainMetadataChange('function_spec_url', e.target.value)} width="auto" /> :
                 appchainStatus?.appchain_metadata?.function_spec_url ?
-                <Link href={appchainStatus?.appchain_metadata?.function_spec_url} isExternal>
-                  <HStack>
-                    <Heading fontSize="md" fontWeight={500} maxW="240px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
+                <Link href={appchainStatus?.appchain_metadata?.function_spec_url} isExternal flex={1} overflow="hidden">
+                  <HStack justifyContent={{ base: "start", sm: "end" }}>
+                    <Heading fontSize="md" fontWeight={500} maxW="100%" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
                       {appchainStatus?.appchain_metadata?.function_spec_url}
                     </Heading>
                     <ExternalLinkIcon mx="2px" />
@@ -354,8 +354,8 @@ const Overview = ({ appchainId, onDrawerClose }) => {
           </Skeleton>
           <Divider mt={3} mb={3} />
           <Skeleton isLoaded={!!appchainStatus}>
-            <Flex justifyContent="space-between">
-              <HStack fontSize="sm" spacing={1}>
+            <Flex direction={{ base: "column", sm: "row" }} justifyContent="space-between">
+              <HStack fontSize="sm" spacing={1} minW="130px" mr={2}>
                 <Icon as={AiFillGithub} />
                 <Text>Github</Text>
               </HStack>
@@ -363,9 +363,9 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                 isEditing ?
                 <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.github_address} 
                   onChange={e => onAppchainMetadataChange('github_address', e.target.value)} width="auto" /> :
-                <Link href={appchainStatus?.appchain_metadata?.github_address} isExternal>
-                  <HStack>
-                    <Heading fontSize="md" fontWeight={500} maxW="240px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
+                <Link href={appchainStatus?.appchain_metadata?.github_address} isExternal flex={1} overflow="hidden">
+                  <HStack justifyContent={{ base: "start", sm: "end" }}>
+                    <Heading fontSize="md" fontWeight={500} maxW="100%" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
                       {appchainStatus?.appchain_metadata?.github_address}
                     </Heading>
                     <ExternalLinkIcon mx="2px" />
@@ -376,8 +376,8 @@ const Overview = ({ appchainId, onDrawerClose }) => {
           </Skeleton>
           <Divider mt={3} mb={3} />
           <Skeleton isLoaded={!!appchainStatus}>
-            <Flex justifyContent="space-between">
-              <HStack fontSize="sm" spacing={1}>
+            <Flex direction={{ base: "column", sm: "row" }} justifyContent="space-between">
+              <HStack fontSize="sm" spacing={1} minW="130px" mr={2}>
                 <Icon as={AiOutlineFileZip} />
                 <Text>Release</Text>
               </HStack>
@@ -385,9 +385,9 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                 isEditing ?
                 <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.github_release} 
                   onChange={e => onAppchainMetadataChange('github_release', e.target.value)} width="auto" /> :
-                <Link href={appchainStatus?.appchain_metadata?.github_release} isExternal>
-                  <HStack>
-                    <Heading fontSize="md" fontWeight={500} maxW="240px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
+                <Link href={appchainStatus?.appchain_metadata?.github_release} isExternal flex={1} overflow="hidden">
+                  <HStack justifyContent={{ base: "start", sm: "end" }}>
+                    <Heading fontSize="md" fontWeight={500} overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
                       {appchainStatus?.appchain_metadata?.github_release}
                     </Heading>
                     <ExternalLinkIcon mx="2px" />
@@ -398,8 +398,8 @@ const Overview = ({ appchainId, onDrawerClose }) => {
           </Skeleton>
           <Divider mt={3} mb={3} />
           <Skeleton isLoaded={!!appchainStatus}>
-            <Flex justifyContent="space-between"c>
-              <HStack fontSize="sm" spacing={1}>
+            <Flex direction={{ base: "column", sm: "row" }} justifyContent="space-between"c>
+              <HStack fontSize="sm" spacing={1} minW="130px" mr={2}>
                 <Icon as={HiOutlineMail} />
                 <Text>Email</Text>
               </HStack>
@@ -407,7 +407,7 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                 isEditing ?
                 <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.contact_email} 
                   onChange={e => onAppchainMetadataChange('contact_email', e.target.value)} width="auto" /> :
-                <HStack>
+                <HStack flex={1} overflow="hidden" justifyContent={{ base: "start", sm: "end" }}>
                   <Heading fontSize="md" fontWeight={500}>{appchainStatus?.appchain_metadata?.contact_email}</Heading>
                   <IconButton size="sm" aria-label="Copy" icon={
                     hasCopied ? <CheckIcon />: <CopyIcon />
