@@ -14,6 +14,7 @@ import {
 
 import { HiOutlineArrowNarrowRight } from 'react-icons/hi';
 import { useNavigate } from 'react-router-dom';
+import { NumberUtils, fromDecimals } from 'utils';
 
 const StyledAppchainItem = styled(SimpleGrid)`
   border-radius: 10px;
@@ -32,7 +33,7 @@ const BootingItem = ({
   appchain: any;
 }) => {
   const navigate = useNavigate();
-  const { appchain_id, appchain_metadata } = appchain;
+  const { appchain_id, appchain_metadata, validator_count, total_stake } = appchain;
   
   return (
    
@@ -46,10 +47,10 @@ const BootingItem = ({
         </HStack>
       </GridItem>
       <GridItem colSpan={4}>
-        <Text fontSize="xl">{0}</Text>
+        <Text fontSize="xl">{validator_count}</Text>
       </GridItem>
       <GridItem colSpan={4}>
-        <Text fontSize="md">{0} OCT</Text>
+        <Text fontSize="md">{NumberUtils.showWithCommas(fromDecimals(total_stake))} OCT</Text>
       </GridItem>
       
       <GridItem colSpan={4} textAlign="right" display={{ base: 'none', md: 'block' }}>

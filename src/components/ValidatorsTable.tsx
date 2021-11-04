@@ -11,6 +11,7 @@ import {
   Box,
   Flex,
   Text,
+  Link,
   VStack,
   Button,
   useBoolean,
@@ -22,13 +23,15 @@ import {
   Input,
   HStack,
   useToast,
-  Spinner
+  Spinner,
+  Icon
 } from '@chakra-ui/react';
 
 import { Link as RouterLink } from 'react-router-dom';
 import { fromDecimals, toDecimals } from 'utils';
 import { InfoOutlineIcon } from '@chakra-ui/icons';
 import { RegisterDelegatorModal } from 'components';
+import { CgProfile } from 'react-icons/cg';
 import { FAILED_TO_REDIRECT_MESSAGE, COMPLEX_CALL_GAS } from 'config/constants';
 
 const NoValidators = () => (
@@ -155,9 +158,10 @@ export const ValidatorsTable = ({
               return (
                 <Tr key={`validator-${idx}`}>
                   <Td>
-                    <RouterLink to={`/profile/${v.validator_id}@${appchainId}`}>
-                      {v.validator_id}
-                    </RouterLink>
+                    <Link as={RouterLink} to={`/profile/${v.validator_id}@${appchainId}`} 
+                      _hover={{ textDecoration: 'underline' }}>
+                      <Icon as={CgProfile} w={3} h={3} /> {v.validator_id}
+                    </Link>
                   </Td>
                   <Td textAlign="center" display={{ base: 'none', lg: 'table-cell' }}>{v.delegators_count}</Td>
                   <Td>

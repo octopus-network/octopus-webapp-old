@@ -78,14 +78,7 @@ export const Profile: React.FC = () => {
         setOCTBalance(fromDecimals(balance, 18));
       });
 
-    let anchorContractId = '';
-    if (appchain === 'vchain') {
-      anchorContractId = 'dev-1635959524124-80134611678101';
-    } else if (appchain === 'uchain') {
-      anchorContractId = 'dev-1635959574555-28745383096667';
-    } else {
-      anchorContractId = `${appchain}.${octopusConfig.registryContractId}`;
-    }
+    const anchorContractId = `${appchain}.${octopusConfig.registryContractId}`;
 
     const provider = window.walletConnection._near.connection.provider;
   
@@ -94,7 +87,6 @@ export const Profile: React.FC = () => {
       account_id: anchorContractId,
       finality: 'optimistic',
     }).then(res => {
-      console.log(res);
       const contract = new Contract(
         window.walletConnection.account(),
         anchorContractId,
