@@ -66,10 +66,6 @@ const StakingPanel = ({ status, anchor }) => {
     }
   }, [stakeMorePopoverOpen]);
 
-  const onRegisterSuccess = () => {
-
-  }
-
   const onUnbond = () => {
     setIsUnbonding(true);
     anchor
@@ -218,7 +214,7 @@ const StakingPanel = ({ status, anchor }) => {
       
     </Box>
     <RegisterValidatorModal isOpen={registerModalOpen} onClose={setRegsiterModalOpen.off}
-      anchor={anchor} onSuccess={onRegisterSuccess} />
+      anchor={anchor} />
     </>
   );
 }

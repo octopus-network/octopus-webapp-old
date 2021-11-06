@@ -10,6 +10,8 @@ import {
   Icon,
   SimpleGrid,
 } from '@chakra-ui/react';
+
+import { appchainStates } from 'utils';
 import { StateBadge } from 'components';
 import { MdKeyboardArrowRight } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
@@ -46,7 +48,7 @@ const BootingItem = ({
         <Text fontSize="lg">{appchain_owner}</Text>
       </GridItem>
       <GridItem colSpan={4}>
-        <StateBadge state={appchain_state} />
+        <StateBadge state={appchainStates[appchain_state] || 'Unknown'} />
       </GridItem>
       <GridItem colSpan={1} textAlign="right">
         <Icon as={MdKeyboardArrowRight} color="rgba(0, 0, 0, .3)" w={6} h={6} />

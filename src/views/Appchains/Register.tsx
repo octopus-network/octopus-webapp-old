@@ -178,7 +178,6 @@ export const Register: React.FC = () => {
           websiteUrl: '',
           githubAddress: '',
           githubRelease: '',
-          commitId: '',
           email: '',
           preminedAmount: 0,
           preminedBeneficiary: '',
@@ -230,15 +229,6 @@ export const Register: React.FC = () => {
                   </FormControl>
                 </GridItem>
               </Grid>
-              <Field name="functionSpecUrl">
-                {({ field, form }) => (
-                  <FormControl isInvalid={form.errors.functionSpecUrl && form.touched.functionSpecUrl} isRequired>
-                    <FormLabel htmlFor="functionSpecUrl">{t('Function Spec')}</FormLabel>
-                    <Input {...field} id="githubRelease" placeholder="function spec url" />
-                    <FormErrorMessage>{form.errors.functionSpecUrl}</FormErrorMessage>
-                  </FormControl>
-                )}
-              </Field>
               <Grid templateColumns="repeat(6, 1fr)" gap="6">
                 <GridItem colSpan={3}>
                   <Field name="websiteUrl">
@@ -252,6 +242,19 @@ export const Register: React.FC = () => {
                   </Field>
                 </GridItem>
                 <GridItem colSpan={3}>
+                  <Field name="functionSpecUrl">
+                    {({ field, form }) => (
+                      <FormControl isInvalid={form.errors.functionSpecUrl && form.touched.functionSpecUrl} isRequired>
+                        <FormLabel htmlFor="functionSpecUrl">{t('Function Spec')}</FormLabel>
+                        <Input {...field} id="githubRelease" placeholder="function spec url" />
+                        <FormErrorMessage>{form.errors.functionSpecUrl}</FormErrorMessage>
+                      </FormControl>
+                    )}
+                  </Field>
+                </GridItem>
+              </Grid>
+              <Grid templateColumns="repeat(6, 1fr)" gap="6">
+                <GridItem colSpan={3}>
                   <Field name="githubAddress">
                     {({ field, form }) => (
                       <FormControl isInvalid={form.errors.githubAddress && form.touched.githubAddress} isRequired>
@@ -262,8 +265,6 @@ export const Register: React.FC = () => {
                     )}
                   </Field>
                 </GridItem>
-              </Grid>
-              <Grid templateColumns="repeat(6, 1fr)" gap="6">
                 <GridItem colSpan={3}>
                   <Field name="githubRelease">
                     {({ field, form }) => (
@@ -275,18 +276,8 @@ export const Register: React.FC = () => {
                     )}
                   </Field>
                 </GridItem>
-                <GridItem colSpan={3}>
-                  <Field name="commitId">
-                    {({ field, form }) => (
-                      <FormControl isInvalid={form.errors.commitId && form.touched.commitId} isRequired>
-                        <FormLabel htmlFor="commitId">{t('Commit ID')}</FormLabel>
-                        <Input {...field} id="commitId" placeholder="eg. a49ca413ab9862149676d9579333e24c64613e3a" />
-                        <FormErrorMessage>{form.errors.commitId}</FormErrorMessage>
-                      </FormControl>
-                    )}
-                  </Field>
-                </GridItem>
               </Grid>
+             
               <Grid templateColumns="repeat(5, 1fr)" gap={6}>
                 <GridItem colSpan={2}>
                   <Field name="preminedAmount">

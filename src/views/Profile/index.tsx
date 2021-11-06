@@ -134,7 +134,6 @@ export const Profile: React.FC = () => {
 
   const onUpdateProfile = () => {
     setIsSubmiting.on();
-    console.log(validatorProfile);
     anchor
       .set_validator_profile({
         profile: {
@@ -206,7 +205,7 @@ export const Profile: React.FC = () => {
         </Flex>
         <Divider mt={3} mb={3} />
         <Flex alignItems="center" justifyContent="space-between">
-          <Heading fontSize="md">Validator ID (in Appchain)</Heading>
+          <Heading fontSize="md">Validator Account (in Appchain)</Heading>
           {
             validatorProfile === undefined ?
             <Spinner size="xs" /> :
@@ -242,7 +241,7 @@ export const Profile: React.FC = () => {
         </Flex>
         <Divider mt={3} mb={3} />
         <Flex alignItems="center" justifyContent="space-between">
-          <Heading fontSize="md">Social Media Handle</Heading>
+          <Heading fontSize="md">Twitter</Heading>
           {
             validatorProfile === undefined ?
             <Spinner size="xs" /> :
@@ -251,7 +250,7 @@ export const Profile: React.FC = () => {
               onChange={e => onChangeProfile('socialMediaHandle', e.target.value)} width="auto" /> :
 
             validatorProfile?.socialMediaHandle ?
-            <Link isExternal>
+            <Link isExternal href={`https://twitter.com/${validatorProfile?.socialMediaHandle}`}>
               <HStack>
                 <Text maxW="200px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
                   {validatorProfile?.socialMediaHandle}

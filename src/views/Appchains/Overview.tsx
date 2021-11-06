@@ -31,7 +31,7 @@ import {
 import dayjs from 'dayjs';
 import axios from 'axios';
 import { Contract } from 'near-api-js';
-import { loginNear, fromDecimals, NumberUtils } from 'utils';
+import { loginNear, fromDecimals, NumberUtils, appchainStates } from 'utils';
 import { AiOutlineUser, AiOutlineGlobal, AiFillGithub, AiOutlineFileZip } from 'react-icons/ai';
 import { FaStar } from 'react-icons/fa';
 import { FiAnchor } from 'react-icons/fi';
@@ -212,7 +212,10 @@ const Overview = ({ appchainId, onDrawerClose }) => {
             <Skeleton isLoaded={!!appchainStatus}>
               <Heading fontSize="3xl">{appchainStatus?.appchain_id || 'loading...'}</Heading>
             </Skeleton>
-            <StateBadge state={appchainStatus?.appchain_state} />
+            {
+              appchainStatus ?
+              <StateBadge state={appchainStates[appchainStatus.appchain_state] || 'Unknown'} /> : null
+            }
           </HStack>
           <Skeleton isLoaded={!!appchainStatus}>
             <HStack color="gray" spacing={5} fontSize="sm">

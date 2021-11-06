@@ -39,3 +39,14 @@ export function loginNear() {
     "Octopus Webapp"
   );
 }
+
+
+export const appchainStates = {
+  'Registered': 'Pre-Audit',
+  'Dead': 'Pre-Audit',
+  'Auditing': 'Auditing',
+  'InQueue': 'Voting',
+  'Staging': 'Staking',
+  'Booting': 'Booting',
+  'Active': 'Running'
+}

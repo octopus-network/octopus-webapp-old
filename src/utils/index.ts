@@ -4,7 +4,8 @@ export {
   readableAppchain, 
   readableAppchains,
   loginNear,
-  logoutNear
+  logoutNear,
+  appchainStates
 } from './common';
 
 export { NumberUtils } from './number-utils';

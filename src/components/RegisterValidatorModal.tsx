@@ -9,14 +9,16 @@ import {
   FormControl,
   FormLabel,
   FormHelperText,
-  Alert,
-  AlertIcon,
+  HStack,
+  Switch,
   Input,
   Box,
   Text,
   List,
   Button,
+  Flex,
   useToast,
+  Link
 } from '@chakra-ui/react';
 
 import { decodeAddress } from '@polkadot/util-crypto';
@@ -28,12 +30,10 @@ import { FAILED_TO_REDIRECT_MESSAGE, COMPLEX_CALL_GAS } from 'config/constants';
 export const RegisterValidatorModal = ({ 
   isOpen, 
   onClose,
-  onSuccess,
   anchor
 }: {
   isOpen: boolean;
   onClose: VoidFunction;
-  onSuccess: Function;
   anchor: any;
 }) => {
   const toast = useToast();
@@ -133,15 +133,15 @@ export const RegisterValidatorModal = ({
         <ModalHeader></ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Alert status="warning">
-            <AlertIcon />
-            <Text fontSize="sm">
-              PLEASE CONTACT Julian Sun#9436 ON DISCORD BEFORE REGISTERING
-            </Text>
-          </Alert>
+          
           <List spacing={4} mt={4}>
             <FormControl isRequired>
-              <FormLabel htmlFor="validatorId">{t('Validator Id')}</FormLabel>
+              <Flex alignItems="center" justifyContent="space-between">
+                <FormLabel htmlFor="validatorId">{t('Validator Account')}</FormLabel>
+                <Link isExternal href="https://docs.oct.network/maintain/validator-generate-keys.html#generate-validator-account">
+                  <Text fontSize="sm" color="octoColor.500">How to?</Text>
+                </Link>
+              </Flex>
               <Input id="validatorId" placeholder="appchain base58 address, eg: 5CaLqqE3..." onChange={onChangeValidatorId} autoFocus />
             </FormControl>
             <FormControl isRequired>
@@ -155,14 +155,14 @@ export const RegisterValidatorModal = ({
               <Input id="email" placeholder="email" onChange={(e) => setEmail(e.target.value)} type="text" />
             </FormControl>
             <FormControl>
-              <FormLabel htmlFor="socialLink">{t('Social Media Handle')}</FormLabel>
-              <Input id="socialMediaHandle" placeholder="twitter/facebook, etc." 
+              <FormLabel htmlFor="socialLink">{t('Twitter ID')}</FormLabel>
+              <Input id="socialMediaHandle" placeholder="your twitter id" 
                 onChange={(e) => setSocialMediaHandle(e.target.value)} type="text" />
             </FormControl>
-            {/* <HStack>
+            <HStack>
               <Text>{t('Can be delegated to?')}</Text>
               <Switch onChange={e => setCanBeDelegatedTo(e.target.checked)} defaultChecked={canBeDelegatedTo} />
-            </HStack> */}
+            </HStack>
             
           </List>
           <Button mt={8} isFullWidth colorScheme="octoColor" type="submit" isLoading={isSubmitting} disabled={

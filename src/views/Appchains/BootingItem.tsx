@@ -8,11 +8,10 @@ import {
   Heading,
   Text,
   SimpleGrid,
-  Button,
   Icon
 } from '@chakra-ui/react';
 
-import { HiOutlineArrowNarrowRight } from 'react-icons/hi';
+import { MdKeyboardArrowRight } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
 import { NumberUtils, fromDecimals } from 'utils';
 
@@ -37,7 +36,7 @@ const BootingItem = ({
   
   return (
    
-    <StyledAppchainItem boxShadow="octoShadow" columns={{ base: 13, md: 17 }} p={4} alignItems="center"
+    <StyledAppchainItem boxShadow="octoShadow" columns={{ base: 10, md: 14 }} p={4} alignItems="center"
       onClick={() => navigate(`/appchains/overview/${appchain_id}`)}>
       <GridItem colSpan={5}>
         <HStack>
@@ -53,8 +52,8 @@ const BootingItem = ({
         <Text fontSize="md">{NumberUtils.showWithCommas(fromDecimals(total_stake))} OCT</Text>
       </GridItem>
       
-      <GridItem colSpan={4} textAlign="right" display={{ base: 'none', md: 'block' }}>
-        <Button>Enter <Icon as={HiOutlineArrowNarrowRight} ml="1" /></Button>
+      <GridItem colSpan={1} textAlign="right">
+        <Icon as={MdKeyboardArrowRight} color="rgba(0, 0, 0, .3)" w={6} h={6} />
       </GridItem>
      
     </StyledAppchainItem>

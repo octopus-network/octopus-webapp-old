@@ -421,6 +421,101 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
               }
             </HStack>
           ) :
+
+          status?.appchan_state === 'Booting' ?
+          (
+            isAdmin ?
+            <Button>
+              Go Live
+            </Button> :
+            <HStack>
+            {
+              upvoteDeposit || downvoteDeposit ?
+              <Popover
+                initialFocusRef={initialFocusRef}
+                placement="bottom"
+                isOpen={withdrawVotesPopoverOpen}
+                onClose={setWithdrawVotesPopoverOpen.off}
+                >
+                <PopoverTrigger>
+                  <Button onClick={setWithdrawVotesPopoverOpen.on} colorScheme="octoColor">
+                    Withdraw Votes
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent>
+                  <PopoverBody>
+                    <Box p={2}>
+                      {
+                        upvoteDeposit > 0 ?
+                        <Flex>
+                          <Text>Your Upvotes: {upvoteDeposit}</Text>
+                          <Button size="xs" colorScheme="octoColor" ml={2} variant="outline" isLoading={withdrawingUpvotes}
+                            isDisabled={withdrawingUpvotes || withdrawingDownvotes} onClick={onWithdrawUpvotes}>Withdraw</Button>
+                        </Flex> : null
+                      }
+                      {
+                        downvoteDeposit > 0 ?
+                        <Flex mt={3}>
+                          <Text>Your Downvotes: {downvoteDeposit}</Text>
+                          <Button size="xs" colorScheme="octoColor" ml={2} variant="outline" isLoading={withdrawingDownvotes}
+                            isDisabled={withdrawingUpvotes || withdrawingDownvotes} onClick={onWithdrawDownvotes}>Withdraw</Button>
+                        </Flex> : null
+                      }
+                      
+                    </Box>
+                  </PopoverBody>
+                </PopoverContent>
+              </Popover> : null
+            }
+            </HStack>
+          ) :
+
+          status?.appchan_state === 'Active' ?
+          (
+            isAdmin ?
+            null :
+            <HStack>
+            {
+              upvoteDeposit || downvoteDeposit ?
+              <Popover
+                initialFocusRef={initialFocusRef}
+                placement="bottom"
+                isOpen={withdrawVotesPopoverOpen}
+                onClose={setWithdrawVotesPopoverOpen.off}
+                >
+                <PopoverTrigger>
+                  <Button onClick={setWithdrawVotesPopoverOpen.on} colorScheme="octoColor">
+                    Withdraw Votes
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent>
+                  <PopoverBody>
+                    <Box p={2}>
+                      {
+                        upvoteDeposit > 0 ?
+                        <Flex>
+                          <Text>Your Upvotes: {upvoteDeposit}</Text>
+                          <Button size="xs" colorScheme="octoColor" ml={2} variant="outline" isLoading={withdrawingUpvotes}
+                            isDisabled={withdrawingUpvotes || withdrawingDownvotes} onClick={onWithdrawUpvotes}>Withdraw</Button>
+                        </Flex> : null
+                      }
+                      {
+                        downvoteDeposit > 0 ?
+                        <Flex mt={3}>
+                          <Text>Your Downvotes: {downvoteDeposit}</Text>
+                          <Button size="xs" colorScheme="octoColor" ml={2} variant="outline" isLoading={withdrawingDownvotes}
+                            isDisabled={withdrawingUpvotes || withdrawingDownvotes} onClick={onWithdrawDownvotes}>Withdraw</Button>
+                        </Flex> : null
+                      }
+                      
+                    </Box>
+                  </PopoverBody>
+                </PopoverContent>
+              </Popover> : null
+            }
+            </HStack>
+          ) :
+          
           status?.appchain_state === 'Dead' ?
           (
             isAdmin ?
@@ -429,6 +524,7 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
                 Remove <Icon as={RiDeleteBin6Line} ml="1" />
               </Button> : null
           ) : 
+
           status?.appchain_state === 'InQueue' ?
           (
             <>
