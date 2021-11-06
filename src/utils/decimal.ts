@@ -24,9 +24,8 @@ export class DecimalUtils {
       throw new Error(`Negative decimal value ${input} cannot be converted to u64.`);
     }
 
-    const shiftedValue = input.mul(new Decimal(10).pow(shift));
-    const zeroDecimalValue = shiftedValue.trunc();
-    return new BN(zeroDecimalValue.toString());
+    const shiftedValue = new BN(input.toString()).mul(new BN(10).pow(new BN(shift)));
+    return shiftedValue;
   }
 
   public static beautify(input: Decimal, fixed?: number): string {

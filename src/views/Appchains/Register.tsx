@@ -81,7 +81,7 @@ export const Register: React.FC = () => {
   const onSubmit = (values, actions) => {
 
     const {
-      appchainId, websiteUrl, githubAddress, githubRelease, commitId, email,
+      appchainId, websiteUrl, githubAddress, githubRelease, email,
       preminedAmount, idoAmount, eraReward, preminedBeneficiary, functionSpecUrl
     } = values;
 
@@ -124,6 +124,8 @@ export const Register: React.FC = () => {
       return;
     }
 
+    console.log(minimumRegisterDeposit.toString());
+
     window
       .tokenContract
       .ft_transfer_call(
@@ -136,7 +138,7 @@ export const Register: React.FC = () => {
               "website_url": websiteUrl,
               "github_address": githubAddress,
               "github_release": githubRelease,
-              "commit_id": commitId,
+              "commit_id": "",
               "contact_email": email,
               "function_spec_url": functionSpecUrl,
               "premined_wrapped_appchain_token_beneficiary": preminedBeneficiary,
@@ -159,6 +161,7 @@ export const Register: React.FC = () => {
         COMPLEX_CALL_GAS,
         1,
       ).catch((err) => {
+        console.log(err);
         if (err.message === FAILED_TO_REDIRECT_MESSAGE) {
           return;
         }
