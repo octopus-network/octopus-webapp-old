@@ -13,7 +13,8 @@ import {
 
 import { MdKeyboardArrowRight } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
-import { NumberUtils, fromDecimals } from 'utils';
+import { DecimalUtils } from 'utils';
+import { OCT_TOKEN_DECIMALS } from 'config/constants';
 
 const StyledAppchainItem = styled(SimpleGrid)`
   border-radius: 10px;
@@ -49,7 +50,13 @@ const BootingItem = ({
         <Text fontSize="xl">{validator_count}</Text>
       </GridItem>
       <GridItem colSpan={4}>
-        <Text fontSize="md">{NumberUtils.showWithCommas(fromDecimals(total_stake))} OCT</Text>
+        <Text fontSize="md">
+          {
+            DecimalUtils.beautify(
+              DecimalUtils.fromString(total_stake, OCT_TOKEN_DECIMALS)
+            )
+          } OCT
+        </Text>
       </GridItem>
       
       <GridItem colSpan={1} textAlign="right">

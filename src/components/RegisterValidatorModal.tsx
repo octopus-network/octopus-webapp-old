@@ -24,8 +24,10 @@ import {
 import { decodeAddress } from '@polkadot/util-crypto';
 import { u8aToHex } from '@polkadot/util';
 import { useTranslation } from 'react-i18next';
-import { fromDecimals, toDecimals } from 'utils';
-import { FAILED_TO_REDIRECT_MESSAGE, COMPLEX_CALL_GAS } from 'config/constants';
+import { FAILED_TO_REDIRECT_MESSAGE, COMPLEX_CALL_GAS, OCT_TOKEN_DECIMALS } from 'config/constants';
+
+import Decimal from 'decimal.js';
+import { ZERO_DECIMAL, DecimalUtils } from 'utils';
 
 export const RegisterValidatorModal = ({ 
   isOpen, 
@@ -38,11 +40,11 @@ export const RegisterValidatorModal = ({
 }) => {
   const toast = useToast();
   const { t } = useTranslation();
-  const [amount, setAmount] = useState<any>('');
+  const [amount, setAmount] = useState<Decimal>(ZERO_DECIMAL);
   const [validatorId, setValidatorId] = useState<any>('');
   const [canBeDelegatedTo, setCanBeDelegatedTo] = useState(false);
-  const [minimumDeposit, setMinimumDeposit] = useState<any>();
-  const [accountBalance, setAccountBalance] = useState<any>();
+  const [minimumDeposit, setMinimumDeposit] = useState<Decimal>(ZERO_DECIMAL);
+  const [accountBalance, setAccountBalance] = useState<Decimal>(ZERO_DECIMAL);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [socialMediaHandle, setSocialMediaHandle] = useState('');
   const [email, setEmail] = useState('');
@@ -58,15 +60,15 @@ export const RegisterValidatorModal = ({
           account_id: window.accountId
         })
     ]).then(([{ minimum_validator_deposit }, balance]) => {
-      setMinimumDeposit(fromDecimals(minimum_validator_deposit));
-      setAccountBalance(fromDecimals(balance));
-      setAmount(fromDecimals(minimum_validator_deposit));
+      setMinimumDeposit(DecimalUtils.fromString(minimum_validator_deposit, OCT_TOKEN_DECIMALS));
+      setAccountBalance(DecimalUtils.fromString(balance, OCT_TOKEN_DECIMALS));
+      setAmount(DecimalUtils.fromString(minimum_validator_deposit, OCT_TOKEN_DECIMALS));
     });
     
   }, [anchor]);
 
   const onChangeAmount = ({ target: { value } }) => {
-    setAmount(value * 1);
+    setAmount(DecimalUtils.fromString(value));
   }
 
   const onChangeValidatorId = ({ target: { value } }) => {
@@ -97,7 +99,7 @@ export const RegisterValidatorModal = ({
       .ft_transfer_call(
         {
           receiver_id: anchor.contractId,
-          amount: toDecimals(amount),
+          amount: DecimalUtils.toU64(amount, OCT_TOKEN_DECIMALS).toString(),
           msg: JSON.stringify({
             RegisterValidator: {
               validator_id_in_appchain: hexId,
@@ -146,8 +148,11 @@ export const RegisterValidatorModal = ({
             </FormControl>
             <FormControl isRequired>
               <FormLabel htmlFor="amount">{t('Deposit Amount')}</FormLabel>
-              <Input id="amount" placeholder="deposit amount" onChange={onChangeAmount} defaultValue={amount} type="number" />
-              <FormHelperText>minimum deposit: {minimumDeposit} OCT</FormHelperText>
+              <Input id="amount" placeholder="deposit amount" onChange={onChangeAmount} 
+                defaultValue={amount.toNumber() || ''} type="number" />
+              <FormHelperText>
+                minimum deposit: { DecimalUtils.beautify(minimumDeposit) } OCT
+              </FormHelperText>
             </FormControl>
             
             <FormControl isRequired>
@@ -166,15 +171,15 @@ export const RegisterValidatorModal = ({
             
           </List>
           <Button mt={8} isFullWidth colorScheme="octoColor" type="submit" isLoading={isSubmitting} disabled={
-            (!amount || !validatorId) || amount < minimumDeposit || amount > accountBalance || 
+           !validatorId || amount.lt(minimumDeposit) || amount.gt(accountBalance) || 
             isSubmitting || !email
           } onClick={onSubmit}>
             {
               (!amount || !validatorId) ?
               'Register' :
               (
-                amount < minimumDeposit ? 'Minimum Limit' :
-                amount > accountBalance ? 'Insufficient Balance' :
+                amount.lt(minimumDeposit) ? 'Minimum Limit' :
+                amount.gt(accountBalance) ? 'Insufficient Balance' :
                 'Register'
               )
               

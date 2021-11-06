@@ -28,14 +28,15 @@ import {
 } from '@chakra-ui/react';
 
 import { Link as RouterLink } from 'react-router-dom';
-import { fromDecimals, toDecimals } from 'utils';
 import { InfoOutlineIcon } from '@chakra-ui/icons';
 import { RegisterDelegatorModal } from 'components';
 import { CgProfile } from 'react-icons/cg';
-import { FAILED_TO_REDIRECT_MESSAGE, COMPLEX_CALL_GAS } from 'config/constants';
+import { FAILED_TO_REDIRECT_MESSAGE, COMPLEX_CALL_GAS, OCT_TOKEN_DECIMALS } from 'config/constants';
+import Decimal from 'decimal.js';
+import { DecimalUtils, ZERO_DECIMAL } from 'utils';
 
 const NoValidators = () => (
-  <Box p={3} borderRadius={10}  w="100%">
+  <Box p={3} borderRadius={10} w="100%">
     <Flex color="gray" flexDirection="column" justifyContent="center" alignItems="center">
       <InfoOutlineIcon w={5} h={5} color="gray.400" />
       <Text mt={2} fontSize="xs">No Validators</Text>
@@ -43,7 +44,7 @@ const NoValidators = () => (
   </Box>
 );
 
-export const ValidatorsTable = ({ 
+export const ValidatorsTable = ({
   anchor,
   noAction,
   appchainId,
@@ -57,9 +58,9 @@ export const ValidatorsTable = ({
   const [validatorList, setValidatorList] = useState<any>();
   const [selectedValidatorAccountId, setSelectedValidatorAccountId] = useState('');
   const [registerDelegatorModalOpen, setRegisterDelegatorModalOpen] = useBoolean(false);
-  const [delegatedDeposits, setDelegatedDeposits] = useState([]);
-  
-  const [delegateAmount, setDelegateAmount] = useState<any>();
+  const [delegatedDeposits, setDelegatedDeposits] = useState<Decimal[]>([]);
+
+  const [delegateAmount, setDelegateAmount] = useState<Decimal>(ZERO_DECIMAL);
   const [delegateMorePopoverOpen, setDelegateMorePopoverOpen] = useBoolean(false);
   const [isDelegating, setIsDelegating] = useState(false);
 
@@ -76,11 +77,11 @@ export const ValidatorsTable = ({
 
   useEffect(() => {
     if (delegateMorePopoverOpen) {
-        setTimeout(() => {
-          if (delegateAmountInputRef.current) {
-            delegateAmountInputRef.current.focus();
-          }
-        }, 200);
+      setTimeout(() => {
+        if (delegateAmountInputRef.current) {
+          delegateAmountInputRef.current.focus();
+        }
+      }, 200);
     }
   }, [delegateMorePopoverOpen]);
 
@@ -92,8 +93,8 @@ export const ValidatorsTable = ({
       validatorList.map(v => anchor.get_delegator_deposit_of({
         delegator_id: window.accountId,
         validator_id: v.validator_id
-      }).then(amount => fromDecimals(amount)))
-    ).then(deposits => {
+      }).then(amount => DecimalUtils.fromString(amount, OCT_TOKEN_DECIMALS)))
+    ).then((deposits: any[]) => {
       setDelegatedDeposits(deposits);
     });
   }, [validatorList, anchor]);
@@ -110,7 +111,7 @@ export const ValidatorsTable = ({
       .ft_transfer_call(
         {
           receiver_id: anchor.contractId,
-          amount: toDecimals(delegateAmount),
+          amount: delegateAmount.toString(),
           msg: JSON.stringify({
             IncreaseDelegation: {
               validator_id: id
@@ -134,91 +135,107 @@ export const ValidatorsTable = ({
       });
   }
 
+  const onDelegateAmountChange = ({ target: { value } }) => {
+    setDelegateAmount(DecimalUtils.fromString(value));
+  }
+
   return (
     <>
-    <Skeleton isLoaded={validatorList !== undefined}>
-    {
-      validatorList?.length > 0 ?
-      <Table variant="simple" size="sm">
-        <Thead>
-          <Tr>
-            <Th>Validator Id</Th>
-            <Th textAlign="center" display={{ base: 'none', lg: 'table-cell' }}>Delegators</Th>
-            <Th textAlign="center">Total Stake</Th>
-            {
-              noAction !== true ?
-              <Th>Action</Th> : null
-            }
-          </Tr>
-        </Thead>
-        <Tbody>
-          {
-            validatorList.map((v, idx) => {
-              const canDelegate = v.can_be_delegated_to && v.validator_id !== window.accountId;
-              return (
-                <Tr key={`validator-${idx}`}>
-                  <Td>
-                    <Link as={RouterLink} to={`/profile/${v.validator_id}@${appchainId}`} 
-                      _hover={{ textDecoration: 'underline' }}>
-                      <Icon as={CgProfile} w={3} h={3} /> {v.validator_id}
-                    </Link>
-                  </Td>
-                  <Td textAlign="center" display={{ base: 'none', lg: 'table-cell' }}>{v.delegators_count}</Td>
-                  <Td>
-                    <VStack spacing={0} justifyContent="flex-start">
-                      <Text>{fromDecimals(v.total_stake).toFixed(2)} OCT</Text>
-                      <Text fontSize="xs" color="gray">Own: {fromDecimals(v.deposit_amount).toFixed(2)}</Text>
-                    </VStack>
-                  </Td>
+      <Skeleton isLoaded={validatorList !== undefined}>
+        {
+          validatorList?.length > 0 ?
+            <Table variant="simple" size="sm">
+              <Thead>
+                <Tr>
+                  <Th>Validator Id</Th>
+                  <Th textAlign="center" display={{ base: 'none', lg: 'table-cell' }}>Delegators</Th>
+                  <Th textAlign="center">Total Stake</Th>
                   {
                     noAction !== true ?
-                    <Td>
-                      {
-                        delegatedDeposits[idx] === undefined ?
-                        <Spinner size="sm" /> :
-                        delegatedDeposits[idx] > 0 ?
-                        <Popover
-                          initialFocusRef={initialFocusRef}
-                          placement="bottom"
-                          isOpen={delegateMorePopoverOpen}
-                          onClose={setDelegateMorePopoverOpen.off}
-                          >
-                          <PopoverTrigger>
-                            <Button size="xs" colorScheme="octoColor" onClick={setDelegateMorePopoverOpen.toggle}
-                              isDisabled={delegateMorePopoverOpen || !canDelegate} variant="outline">Delegate more</Button>
-                          </PopoverTrigger>
-                          <PopoverContent>
-                            <PopoverBody>
-                              <Flex p={2}>
-                                <Input placeholder="amount of OCT" ref={delegateAmountInputRef} 
-                                  onChange={e => setDelegateAmount(e.target.value)} />
-                              </Flex>
-                            </PopoverBody>
-                            <PopoverFooter d="flex" justifyContent="flex-end">
-                              <HStack spacing={3}>
-                                {/* <Button size="sm" onClick={setDelegateMorePopoverOpen.off}>Cancel</Button> */}
-                                <Button size="sm" onClick={() => onIncreaseDelegation(v.validator_id)} colorScheme="octoColor" 
-                                  isLoading={isDelegating} isDisabled={isDelegating}>Delegate</Button>
-                              </HStack>
-                            </PopoverFooter>
-                          </PopoverContent>
-                        </Popover> :
-                        <Button size="xs" colorScheme="octoColor" variant="outline" onClick={() => onRegisterDelegator(v.validator_id)}
-                          isDisabled={!canDelegate}>Delegate</Button>
-                      }
-                    </Td> : false
+                      <Th>Action</Th> : null
                   }
                 </Tr>
-              )
-            })
-          }
-        </Tbody>
-      </Table> :
-      <NoValidators />
-    }
-    </Skeleton>
-    <RegisterDelegatorModal isOpen={registerDelegatorModalOpen} anchor={anchor} validatorAccountId={selectedValidatorAccountId}
-      onClose={setRegisterDelegatorModalOpen.off} />
+              </Thead>
+              <Tbody>
+                {
+                  validatorList.map((v, idx) => {
+                    const canDelegate = v.can_be_delegated_to && v.validator_id !== window.accountId;
+                    return (
+                      <Tr key={`validator-${idx}`}>
+                        <Td>
+                          <Link as={RouterLink} to={`/profile/${v.validator_id}@${appchainId}`}
+                            _hover={{ textDecoration: 'underline' }}>
+                            <Icon as={CgProfile} w={3} h={3} /> {v.validator_id}
+                          </Link>
+                        </Td>
+                        <Td textAlign="center" display={{ base: 'none', lg: 'table-cell' }}>{v.delegators_count}</Td>
+                        <Td>
+                          <VStack spacing={0} justifyContent="flex-start">
+                            <Text>
+                              {
+                                DecimalUtils.beautify(
+                                  DecimalUtils.fromString(v.total_stake, OCT_TOKEN_DECIMALS)
+                                )
+                              } OCT
+                            </Text>
+                            <Text fontSize="xs" color="gray">
+                              Own: {
+                                DecimalUtils.beautify(
+                                  DecimalUtils.fromString(v.deposit_amount, OCT_TOKEN_DECIMALS)
+                                )
+                              }
+                            </Text>
+                          </VStack>
+                        </Td>
+                        {
+                          noAction !== true ?
+                            <Td>
+                              {
+                                delegatedDeposits[idx] === undefined ?
+                                  <Spinner size="sm" /> :
+                                  delegatedDeposits[idx].gt(ZERO_DECIMAL) ?
+                                    <Popover
+                                      initialFocusRef={initialFocusRef}
+                                      placement="bottom"
+                                      isOpen={delegateMorePopoverOpen}
+                                      onClose={setDelegateMorePopoverOpen.off}
+                                    >
+                                      <PopoverTrigger>
+                                        <Button size="xs" colorScheme="octoColor" onClick={setDelegateMorePopoverOpen.toggle}
+                                          isDisabled={delegateMorePopoverOpen || !canDelegate} variant="outline">Delegate more</Button>
+                                      </PopoverTrigger>
+                                      <PopoverContent>
+                                        <PopoverBody>
+                                          <Flex p={2}>
+                                            <Input placeholder="amount of OCT" ref={delegateAmountInputRef}
+                                              onChange={onDelegateAmountChange} />
+                                          </Flex>
+                                        </PopoverBody>
+                                        <PopoverFooter d="flex" justifyContent="flex-end">
+                                          <HStack spacing={3}>
+                                            {/* <Button size="sm" onClick={setDelegateMorePopoverOpen.off}>Cancel</Button> */}
+                                            <Button size="sm" onClick={() => onIncreaseDelegation(v.validator_id)} colorScheme="octoColor"
+                                              isLoading={isDelegating} isDisabled={isDelegating}>Delegate</Button>
+                                          </HStack>
+                                        </PopoverFooter>
+                                      </PopoverContent>
+                                    </Popover> :
+                                    <Button size="xs" colorScheme="octoColor" variant="outline" onClick={() => onRegisterDelegator(v.validator_id)}
+                                      isDisabled={!canDelegate}>Delegate</Button>
+                              }
+                            </Td> : false
+                        }
+                      </Tr>
+                    )
+                  })
+                }
+              </Tbody>
+            </Table> :
+            <NoValidators />
+        }
+      </Skeleton>
+      <RegisterDelegatorModal isOpen={registerDelegatorModalOpen} anchor={anchor} validatorAccountId={selectedValidatorAccountId}
+        onClose={setRegisterDelegatorModalOpen.off} />
     </>
   );
 }

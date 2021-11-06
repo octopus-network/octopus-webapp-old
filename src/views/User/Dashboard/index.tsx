@@ -44,6 +44,7 @@ const Dashboard = () => {
       .then(balance => {
         setAccountBalance(balance.total);
       });
+      
     const promises = tokenContractIds.map(contractId => {
       const contract: any = new Contract(
         window.walletConnection.account(),

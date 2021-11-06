@@ -18,16 +18,17 @@ import {
   Skeleton,
 } from '@chakra-ui/react';
 
-import { fromDecimals, toDecimals } from 'utils';
+import { DecimalUtils, ZERO_DECIMAL } from 'utils';
 import { useTranslation } from 'react-i18next';
 import { RegisterValidatorModal, ValidatorsTable } from 'components';
-import { FAILED_TO_REDIRECT_MESSAGE, COMPLEX_CALL_GAS } from 'config/constants';
+import { FAILED_TO_REDIRECT_MESSAGE, COMPLEX_CALL_GAS, OCT_TOKEN_DECIMALS } from 'config/constants';
+import Decimal from 'decimal.js';
 
 const StakingPanel = ({ status, anchor }) => {
   const { appchain_state } = status;
   const toast = useToast();
-  const [depositAmount, setDepositAmount] = useState<any>();
-  const [inputAmount, setInputAmount] = useState<any>();
+  const [depositAmount, setDepositAmount] = useState<Decimal>(ZERO_DECIMAL);
+  const [inputAmount, setInputAmount] = useState<Decimal>(ZERO_DECIMAL);
  
   const [registerModalOpen, setRegsiterModalOpen] = useBoolean(false);
   const [unbondPopoverOpen, setUnbondPopoverOpen] = useBoolean(false);
@@ -50,8 +51,10 @@ const StakingPanel = ({ status, anchor }) => {
         .get_unbonded_stakes_of({
           account_id: window.accountId
         })
-    ]).then(([deposit, unbonded]) => {
-      setDepositAmount(fromDecimals(deposit));
+    ]).then(([deposit]) => {
+      setDepositAmount(
+        DecimalUtils.fromString(deposit, OCT_TOKEN_DECIMALS)
+      );
     });
     
   }, [anchor]);
@@ -91,7 +94,7 @@ const StakingPanel = ({ status, anchor }) => {
       .ft_transfer_call(
         {
           receiver_id: anchor.contractId,
-          amount: toDecimals(inputAmount),
+          amount: DecimalUtils.toU64(inputAmount, OCT_TOKEN_DECIMALS).toString(),
           msg: '"IncreaseStake"'
         },
         COMPLEX_CALL_GAS,
@@ -111,6 +114,10 @@ const StakingPanel = ({ status, anchor }) => {
       });
   }
 
+  const onAmountChange = ({ target: { value }}) => {
+    setInputAmount(DecimalUtils.fromString(value));
+  }
+
   return (
     <>
     <Box>
@@ -118,10 +125,14 @@ const StakingPanel = ({ status, anchor }) => {
       <Flex alignItems="center" justifyContent="space-between">
         <Heading fontSize="lg">Validators</Heading>
         {
-          depositAmount > 0 ?
+          depositAmount.gt(ZERO_DECIMAL) ?
           
           <HStack>
-            <Text fontSize="sm" color="gray">Staked: {depositAmount} OCT</Text>
+            <Text fontSize="sm" color="gray">
+              Staked: {
+                DecimalUtils.beautify(depositAmount)
+              } OCT
+            </Text>
             <Popover
               initialFocusRef={initialFocusRef}
               placement="bottom"
@@ -135,7 +146,8 @@ const StakingPanel = ({ status, anchor }) => {
               <PopoverContent>
                 <PopoverBody>
                   <Flex p={2}>
-                    <Input placeholder="amount of OCT" ref={stakeAmountInputRef} onChange={e => setInputAmount(e.target.value)} />
+                    <Input placeholder="amount of OCT" ref={stakeAmountInputRef} 
+                      onChange={onAmountChange} type="number" />
                   </Flex>
                 </PopoverBody>
                 <PopoverFooter d="flex" justifyContent="flex-end">

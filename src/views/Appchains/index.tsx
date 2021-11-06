@@ -30,7 +30,7 @@ import {
   PopoverFooter
 } from '@chakra-ui/react';
 
-import { COMPLEX_CALL_GAS } from 'config/constants';
+import { COMPLEX_CALL_GAS, OCT_TOKEN_DECIMALS } from 'config/constants';
 import { FiEdit, FiCheckCircle, FiPlus } from 'react-icons/fi';
 import { AiOutlineAudit, AiOutlineInbox, AiOutlineDashboard } from 'react-icons/ai';
 import { BiBadgeCheck } from 'react-icons/bi';
@@ -44,9 +44,8 @@ import BootingItem from './BootingItem';
 import InQueueItem from './InQueueItem';
 import StagingItem from './StagingItem';
 import RegisteredItem from './RegisteredItem';
-
+import { DecimalUtils, ZERO_DECIMAL } from 'utils';
 import Overview from './Overview';
-import { fromDecimals } from 'utils';
 
 export { Register } from './Register';
 
@@ -118,7 +117,7 @@ export const Appchains: React.FC = () => {
   const [isOwner, setIsOwner] = useState(false);
   const [countPopoverOpen, setCountPopoverOpen] = useBoolean(false);
   const [concludePopoverOpen, setConcludePopoverOpen] = useBoolean(false);
-  const [highestVotes, setHighestVotes] = useState(0);
+  const [highestVotes, setHighestVotes] = useState(ZERO_DECIMAL);
  
   const [isLoadingList, setIsLoadingList] = useState(false);
   const [preAuditAppchains, setPreAuditAppchains] = useState<undefined|any[]>();
@@ -186,18 +185,21 @@ export const Appchains: React.FC = () => {
       setBootingAppchains(booting);
       setActiveAppchains(active);
       setIsLoadingList(false);
-      let highest = 0;
+      let highest = ZERO_DECIMAL;
+
       for (let i = 0; i < voting.length; i++) {
         const { upvote_deposit, downvote_deposit } = voting[i];
-        if (fromDecimals(upvote_deposit) > highest) {
-          highest = fromDecimals(upvote_deposit);
+        const upvotes = DecimalUtils.fromString(upvote_deposit, OCT_TOKEN_DECIMALS);
+        const downvotes = DecimalUtils.fromString(downvote_deposit, OCT_TOKEN_DECIMALS);
+
+        if (upvotes.gt(highest)) {
+          highest = upvotes;
+        } else if (downvotes.gt(highest)) {
+          highest = downvotes;
         }
-        if (fromDecimals(downvote_deposit) > highest) {
-          highest = fromDecimals(upvote_deposit);
-        }
-        setHighestVotes(highest);
+        
       }
-      
+      setHighestVotes(highest);
     });
   }
 
@@ -496,11 +498,11 @@ export const Appchains: React.FC = () => {
             {
               bootingAppchains?.length ?
               <>
-                <SimpleGrid columns={{ base: 13, md: 17 }} color="gray" pl={4} pr={4} pb={2} fontSize="sm">
+                <SimpleGrid columns={{ base: 10, md: 14 }} color="gray" pl={4} pr={4} pb={2} fontSize="sm">
                   <GridItem colSpan={5}>{t('ID')}</GridItem>
                   <GridItem colSpan={4}>{t('Validators')}</GridItem>
                   <GridItem colSpan={4}>{t('Staked')}</GridItem>
-                  <GridItem colSpan={4} display={{ base: 'none', md: 'block' }} />
+                  <GridItem colSpan={1} display={{ base: 'none', md: 'block' }} />
                 </SimpleGrid>
                 <List spacing={3}>
                 {

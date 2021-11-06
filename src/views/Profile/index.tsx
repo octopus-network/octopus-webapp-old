@@ -25,11 +25,12 @@ import { useParams } from 'react-router-dom';
 import { CgProfile } from 'react-icons/cg';
 import { CheckIcon, CopyIcon, EditIcon, ExternalLinkIcon } from '@chakra-ui/icons';
 import { utils } from 'near-api-js';
-import { fromDecimals } from 'utils';
+import { DecimalUtils, ZERO_DECIMAL } from 'utils';
 import { ValidatorProfile } from 'types';
 import octopusConfig from 'config/octopus';
-import { FAILED_TO_REDIRECT_MESSAGE } from 'config/constants';
+import { FAILED_TO_REDIRECT_MESSAGE, OCT_TOKEN_DECIMALS } from 'config/constants';
 import { encodeAddress } from '@polkadot/util-crypto';
+import Decimal from 'decimal.js';
 
 export const Profile: React.FC = () => {
   const { id } = useParams();
@@ -40,8 +41,8 @@ export const Profile: React.FC = () => {
 
   const { hasCopied: hasCopiedId, onCopy: onCopyId } = useClipboard(account);
   
-  const [nearBalance, setNearBalnce] = useState(0);
-  const [octBalance, setOCTBalance] = useState(0);
+  const [nearBalance, setNearBalnce] = useState<Decimal>(ZERO_DECIMAL);
+  const [octBalance, setOCTBalance] = useState<Decimal>(ZERO_DECIMAL);
   const [isEditing, setIsEditing] = useBoolean(false);
   const [isSubmiting, setIsSubmiting] = useBoolean(false);
   const [validatorProfile, setValidatorProfile] = useState<ValidatorProfile>();
@@ -66,7 +67,9 @@ export const Profile: React.FC = () => {
           }
         })
       ).then(res => {
-        setNearBalnce(fromDecimals(res.result.amount, 24));
+        setNearBalnce(
+          DecimalUtils.fromString(res.result.amount, 24)
+        );
       });
 
     window
@@ -75,7 +78,9 @@ export const Profile: React.FC = () => {
         account_id: account
       })
       .then(balance => {
-        setOCTBalance(fromDecimals(balance, 18));
+        setOCTBalance(
+          DecimalUtils.fromString(balance, OCT_TOKEN_DECIMALS)
+        );
       });
 
     const anchorContractId = `${appchain}.${octopusConfig.registryContractId}`;
@@ -199,8 +204,12 @@ export const Profile: React.FC = () => {
         <Flex alignItems="flex-start" justifyContent="space-between">
           <Heading fontSize="md">Wallet Balance</Heading>
           <VStack>
-            <Heading fontSize="sm">{nearBalance.toFixed(3)} NEAR</Heading>
-            <Heading fontSize="sm">{octBalance.toFixed(3)} OCT</Heading>
+            <Heading fontSize="sm">
+              {DecimalUtils.beautify(nearBalance)} NEAR
+            </Heading>
+            <Heading fontSize="sm">
+              {DecimalUtils.beautify(octBalance)} OCT
+            </Heading>
           </VStack>
         </Flex>
         <Divider mt={3} mb={3} />

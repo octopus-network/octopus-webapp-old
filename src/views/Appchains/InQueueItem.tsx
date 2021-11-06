@@ -15,7 +15,9 @@ import {
 } from '@chakra-ui/react';
 
 import { MdKeyboardArrowRight } from 'react-icons/md';
-import { fromDecimals, NumberUtils } from 'utils';
+import Decimal from 'decimal.js';
+import { OCT_TOKEN_DECIMALS } from 'config/constants';
+import { DecimalUtils, ZERO_DECIMAL, ONE_HUNDRED_DECIMAL } from 'utils';
 import { useNavigate } from 'react-router-dom';
 
 const StyledAppchainItem = styled(SimpleGrid)`
@@ -49,18 +51,18 @@ const InQueueItem = ({
 }: {
   appchain: any;
   index: number;
-  highestVotes: number;
+  highestVotes: Decimal;
 }) => {
 
   const navigate = useNavigate();
  
-  const [upvotes, setUpvotes] = useState(0);
-  const [downvotes, setDownvotes] = useState(0);
-  const [score, setScore] = useState(0);
+  const [upvotes, setUpvotes] = useState(ZERO_DECIMAL);
+  const [downvotes, setDownvotes] = useState(ZERO_DECIMAL);
+  const [score, setScore] = useState(ZERO_DECIMAL);
 
   const { appchain_id, downvote_deposit, upvote_deposit, voting_score, appchain_metadata } = appchain;
-  const [userUpvoteDeposit, setUserUpvoteDeposit] = useState(0);
-  const [userDownvoteDeposit, setUserDownvoteDeposit] = useState(0);
+  const [userUpvoteDeposit, setUserUpvoteDeposit] = useState(ZERO_DECIMAL);
+  const [userDownvoteDeposit, setUserDownvoteDeposit] = useState(ZERO_DECIMAL);
 
   const colors = [
     '214,158,46',
@@ -70,9 +72,15 @@ const InQueueItem = ({
 
   useEffect(() => {
     setTimeout(() => {
-      setUpvotes(fromDecimals(upvote_deposit));
-      setDownvotes(fromDecimals(downvote_deposit));
-      setScore(fromDecimals(voting_score));
+      setUpvotes(
+        DecimalUtils.fromString(upvote_deposit, OCT_TOKEN_DECIMALS)
+      );
+      setDownvotes(
+        DecimalUtils.fromString(downvote_deposit, OCT_TOKEN_DECIMALS)
+      );
+      setScore(
+        DecimalUtils.fromString(voting_score, OCT_TOKEN_DECIMALS)
+      );
     }, 10);
   }, [downvote_deposit, upvote_deposit, voting_score]);
 
@@ -91,8 +99,12 @@ const InQueueItem = ({
         account_id: window.accountId
       })
     ]).then(([upvoteDeposit, downvoteDeposit]) => {
-      setUserUpvoteDeposit(fromDecimals(upvoteDeposit));
-      setUserDownvoteDeposit(fromDecimals(downvoteDeposit));
+      setUserUpvoteDeposit(
+        DecimalUtils.fromString(upvoteDeposit, OCT_TOKEN_DECIMALS)
+      );
+      setUserDownvoteDeposit(
+        DecimalUtils.fromString(downvoteDeposit, OCT_TOKEN_DECIMALS)
+      );
     });
   }, [appchain_id]);
 
@@ -127,11 +139,15 @@ const InQueueItem = ({
             <Box>
               <Flex alignItems="center">
                 <Box w="8px" h="8px" bg="#8884d8" borderRadius={2} />
-                <Text fontSize="xs" ml={1}>Upvotes: {NumberUtils.showWithCommas(upvotes)}</Text>
+                <Text fontSize="xs" ml={1}>
+                  Upvotes: {DecimalUtils.beautify(upvotes)}
+                </Text>
               </Flex>
               <Flex alignItems="center">
                 <Box w="8px" h="8px" bg="#82ca9d" borderRadius={2} />
-                <Text fontSize="xs" ml={1}>Downvotes: {NumberUtils.showWithCommas(downvotes)}</Text>
+                <Text fontSize="xs" ml={1}>
+                  Downvotes: {DecimalUtils.beautify(downvotes)}
+                </Text>
               </Flex>
             </Box>
           }>
@@ -139,35 +155,47 @@ const InQueueItem = ({
               <Box height="10px">
                 <Box mt="-3px" position="relative">
                   <Flex alignItems="center">
-                    <StyledBar width={(upvotes ? 100*upvotes/highestVotes : 0) + '%'} h="6px" 
+                    <StyledBar width={upvotes.mul(ONE_HUNDRED_DECIMAL).div(highestVotes).toNumber() + '%'} h="6px" 
                       bg="linear-gradient(to right, #3182CE, #EBF8FF)" />
-                    <Text fontSize="xs" ml={1}>{NumberUtils.showWithCommas(upvotes)}</Text>
+                    <Text fontSize="xs" ml={1}>
+                      {DecimalUtils.beautify(upvotes)}
+                    </Text>
                   </Flex>
                 </Box>
               </Box>
               <Box mt={2} height="10px">
                 <Box mt="-3px" position="relative">
                   <Flex alignItems="center">
-                    <StyledBar width={(downvotes ? 100*downvotes/highestVotes : 0) + '%'} h="6px" 
+                    <StyledBar width={downvotes.mul(ONE_HUNDRED_DECIMAL).div(highestVotes).toNumber() + '%'} h="6px" 
                       bg="linear-gradient(to right, #68D391, #F0FFF4)" />
-                    <Text fontSize="xs" ml={1}>{NumberUtils.showWithCommas(downvotes)}</Text>
+                    <Text fontSize="xs" ml={1}>
+                      {DecimalUtils.beautify(downvotes)}
+                    </Text>
                   </Flex>
                 </Box>
               </Box>
             </Box>
           </Tooltip>
           {
-            (userDownvoteDeposit || userUpvoteDeposit) ?
+            (userDownvoteDeposit.gt(ZERO_DECIMAL) || userUpvoteDeposit.gt(ZERO_DECIMAL)) ?
             <Flex position="absolute" bottom="-14px">
               <HStack color="gray" fontSize="xs">
                 <Text >Your Vote:</Text>
                 <Text>
                   {
-                    userDownvoteDeposit && userUpvoteDeposit ? 
-                    `${userUpvoteDeposit} upvotes, ${userDownvoteDeposit} downvotes` :
-                    userUpvoteDeposit ?
-                    `${userUpvoteDeposit} upvotes` :
-                    `${userDownvoteDeposit} downvotes`
+                    userDownvoteDeposit.gt(ZERO_DECIMAL) && userUpvoteDeposit.gt(ZERO_DECIMAL) ? 
+                    `${
+                      DecimalUtils.beautify(userUpvoteDeposit)
+                    } upvotes, ${
+                      DecimalUtils.beautify(userDownvoteDeposit)
+                    } downvotes` :
+                    userUpvoteDeposit.gt(ZERO_DECIMAL) ?
+                    `${
+                      DecimalUtils.beautify(userUpvoteDeposit)
+                    } upvotes` :
+                    `${
+                      DecimalUtils.beautify(userDownvoteDeposit)
+                    } downvotes`
                   }
                 </Text>
               </HStack>
@@ -179,15 +207,19 @@ const InQueueItem = ({
       <GridItem colSpan={3} textAlign="center">
         <Tooltip label={
           <Box>
-            <Text fontSize="xs" ml={1}>Total Score: {NumberUtils.showWithCommas(score)}</Text>
-            <Text fontSize="xs" ml={1}>Pending Score: {NumberUtils.showWithCommas(score+upvotes-downvotes)}</Text>
+            <Text fontSize="xs" ml={1}>
+              Total Score: {DecimalUtils.beautify(score)}
+            </Text>
+            <Text fontSize="xs" ml={1}>
+              Pending Score: {DecimalUtils.beautify(score.add(upvotes).minus(downvotes))}
+            </Text>
           </Box>
         }>
         <HStack spacing={1}>
           <StyledBox
             style={{ opacity: score ? '1' : '0', borderRadius: '30px' }}>
             <HStack spacing={1}>
-              <Text>{NumberUtils.showWithCommas(score)}</Text>
+              <Text>{DecimalUtils.beautify(score)}</Text>
             </HStack>
           </StyledBox>
           <StyledBox style={{ 
@@ -201,7 +233,10 @@ const InQueueItem = ({
               transform: 'scale(.9)',
               border: '1px solid #eee'
             }}>
-            <Text fontSize="10px">{(upvotes-downvotes > 0 ? '+' : '')}{NumberUtils.showWithCommas(upvotes-downvotes)}</Text>
+            <Text fontSize="10px">
+              { (upvotes.add(downvotes).gt(ZERO_DECIMAL) ? '+' : '') }
+              { DecimalUtils.beautify(upvotes.minus(downvotes)) }
+            </Text>
           </StyledBox>
         </HStack>
         </Tooltip>

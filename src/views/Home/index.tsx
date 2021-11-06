@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import {
   Box,
@@ -25,13 +25,15 @@ import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
 
 import { Ball, NoData } from 'components';
-import { fromDecimals } from 'utils';
+import { DecimalUtils, ZERO_DECIMAL, appchainStates } from 'utils';
+import { OCT_TOKEN_DECIMALS } from 'config/constants';
 import { utils } from 'near-api-js';
 import { HiOutlineArrowNarrowRight } from 'react-icons/hi';
 import { FcComboChart, FcCurrencyExchange, FcOrgUnit } from 'react-icons/fc';
 import { Link as RouterLink } from 'react-router-dom';
 import { StatCard } from './StatCard';
 import globe from 'assets/globe.svg';
+import Decimal from 'decimal.js';
 
 const StyledAppchainItem = styled(SimpleGrid)`
   border-radius: 10px;
@@ -59,18 +61,15 @@ const AppchainItem = ({
   appchain: any;
 }) => {
 
-  const { appchain_id, validators = [], appchain_state } = appchain;
-  const totalStaked = useMemo(
-    () => validators.reduce(
-      (total, b) => total + b.staked_amount, 0
-    ), [validators]);
-
+  const { appchain_id, validator_count, total_stake, appchain_state } = appchain;
+ 
   const state2color = {
     'Auditing': 'green',
     'Voting': 'teal',
     'Staging': 'blue',
     'Booting': 'yellow'
   }
+
   return (
     <StyledAppchainItem boxShadow="octoShadow" columns={{ base: 13, md: 17 }} p="6" alignItems="center">
       <GridItem colSpan={5}>
@@ -80,13 +79,19 @@ const AppchainItem = ({
         </HStack>
       </GridItem>
       <GridItem colSpan={4}>
-        <Text fontSize="xl">{validators.length}</Text>
+        <Text fontSize="xl">{validator_count}</Text>
       </GridItem>
       <GridItem colSpan={4}>
-        <Heading fontSize="md">{totalStaked} OCT</Heading>
+        <Heading fontSize="md">
+          {
+            DecimalUtils.beautify(
+              DecimalUtils.fromString(total_stake, OCT_TOKEN_DECIMALS)
+            )
+          } OCT
+        </Heading>
       </GridItem>
       <GridItem colSpan={4} textAlign="right" display={{ base: 'none', md: 'block' }}>
-        <Badge variant="outline" colorScheme={state2color[appchain_state]}>{appchain_state}</Badge>
+        <Badge variant="outline" colorScheme={state2color[appchain_state]}>{appchainStates[appchain_state]}</Badge>
       </GridItem>
     </StyledAppchainItem>
   );
@@ -97,11 +102,11 @@ export const Home: React.FC = () => {
   const [isDesktop] = useMediaQuery('(min-width: 62em)');
   const { t } = useTranslation();
 
-  const [numberAppchains, setNumberAppchains] = useState<number>(-1);
-  const [stakedAmount, setStakedAmount] = useState<number>(-1);
+  const [numberAppchains, setNumberAppchains] = useState<Decimal>();
+  const [stakedAmount, setStakedAmount] = useState<Decimal>();
   const [appchains, setAppchains] = useState<any[]|null>();
   const [isFetching, setIsFetching] = useState<boolean>(false);
-  const [currBlock, setCurrBlock] = useState<number>(-1);
+  const [currBlock, setCurrBlock] = useState<Decimal>();
 
   useEffect(() => {
    
@@ -118,8 +123,10 @@ export const Home: React.FC = () => {
         })
       ]
     ).then(([count, amount, appchains]) => {
-      setNumberAppchains(count);
-      setStakedAmount(fromDecimals(amount));
+      setNumberAppchains(DecimalUtils.fromString(count));
+      setStakedAmount(
+        DecimalUtils.fromString(amount, OCT_TOKEN_DECIMALS)
+      );
       setAppchains(appchains);
     });
   
@@ -139,7 +146,7 @@ export const Home: React.FC = () => {
           })
         )
         .then(({ result }) => {
-          setCurrBlock(result.header.height);
+          setCurrBlock(DecimalUtils.fromString(result.header.height));
         })
         .finally(() => {
           setIsFetching(false);
@@ -185,12 +192,15 @@ export const Home: React.FC = () => {
       </Container>
       <Container>
         <Grid templateColumns={isDesktop ? 'repeat(3, 1fr)' : 'repeat(1, 1fr)'} gap={12}>
-          <StatCard title={t('Total Appchains')} value={numberAppchains} 
-            icon={<Icon as={FcComboChart} w="6" h="6" />} />
-          <StatCard title={t('Staked OCT')} value={stakedAmount} 
-            icon={<Icon as={FcCurrencyExchange} w="6" h="6" />} />
-          <StatCard title={t('Block Height')} value={currBlock} 
-            icon={<Icon as={FcOrgUnit} w="6" h="6" />} />
+          <StatCard title={t('Total Appchains')} value={
+            numberAppchains?.gte(ZERO_DECIMAL) ? numberAppchains.toString() : ''
+            } icon={<Icon as={FcComboChart} w="6" h="6" />} />
+          <StatCard title={t('Staked OCT')} value={
+              stakedAmount?.gte(ZERO_DECIMAL) ? DecimalUtils.beautify(stakedAmount) : ''
+            } icon={<Icon as={FcCurrencyExchange} w="6" h="6" />} />
+          <StatCard title={t('Block Height')} value={
+              currBlock?.gt(ZERO_DECIMAL) ? DecimalUtils.beautify(currBlock, 0) : ''
+            } icon={<Icon as={FcOrgUnit} w="6" h="6" />} />
         </Grid>
       </Container>
       <Container mt="16" mb="16" minH="30vh">

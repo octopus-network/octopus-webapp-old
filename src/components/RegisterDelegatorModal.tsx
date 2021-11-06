@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  Modal, 
-  ModalBody, 
-  ModalContent, 
-  ModalOverlay, 
-  ModalHeader, 
-  ModalCloseButton, 
+import {
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalOverlay,
+  ModalHeader,
+  ModalCloseButton,
   FormControl,
   FormLabel,
   FormHelperText,
@@ -17,11 +17,17 @@ import {
 } from '@chakra-ui/react';
 
 import { useTranslation } from 'react-i18next';
-import { fromDecimals, toDecimals } from 'utils';
-import { FAILED_TO_REDIRECT_MESSAGE, COMPLEX_CALL_GAS } from 'config/constants';
+import { DecimalUtils, ZERO_DECIMAL } from 'utils';
+import Decimal from 'decimal.js';
 
-export const RegisterDelegatorModal = ({ 
-  isOpen, 
+import {
+  FAILED_TO_REDIRECT_MESSAGE,
+  COMPLEX_CALL_GAS,
+  OCT_TOKEN_DECIMALS
+} from 'config/constants';
+
+export const RegisterDelegatorModal = ({
+  isOpen,
   onClose,
   validatorAccountId,
   anchor
@@ -33,10 +39,10 @@ export const RegisterDelegatorModal = ({
 }) => {
   const toast = useToast();
   const { t } = useTranslation();
-  const [amount, setAmount] = useState<any>('');
-  
-  const [minimumDeposit, setMinimumDeposit] = useState<any>();
-  const [accountBalance, setAccountBalance] = useState<any>();
+
+  const [amount, setAmount] = useState<Decimal>(ZERO_DECIMAL);
+  const [minimumDeposit, setMinimumDeposit] = useState<Decimal>(ZERO_DECIMAL);
+  const [accountBalance, setAccountBalance] = useState<Decimal>(ZERO_DECIMAL);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -50,15 +56,21 @@ export const RegisterDelegatorModal = ({
           account_id: window.accountId
         })
     ]).then(([{ minimum_delegator_deposit }, balance]) => {
-      setMinimumDeposit(fromDecimals(minimum_delegator_deposit));
-      setAccountBalance(fromDecimals(balance));
-      setAmount(fromDecimals(minimum_delegator_deposit));
+      setMinimumDeposit(
+        DecimalUtils.fromString(minimum_delegator_deposit, OCT_TOKEN_DECIMALS)
+      );
+      setAccountBalance(
+        DecimalUtils.fromString(balance, OCT_TOKEN_DECIMALS)
+      );
+      setAmount(
+        DecimalUtils.fromString(minimum_delegator_deposit, OCT_TOKEN_DECIMALS)
+      );
     });
-    
+
   }, [anchor]);
 
   const onChangeAmount = ({ target: { value } }) => {
-    setAmount(value * 1);
+    setAmount(DecimalUtils.fromString(value));
   }
 
   const onSubmit = () => {
@@ -70,7 +82,7 @@ export const RegisterDelegatorModal = ({
       .ft_transfer_call(
         {
           receiver_id: anchor.contractId,
-          amount: toDecimals(amount),
+          amount: DecimalUtils.toU64(amount, OCT_TOKEN_DECIMALS).toString(),
           msg: JSON.stringify({
             RegisterDelegator: {
               validator_id: validatorAccountId
@@ -102,26 +114,29 @@ export const RegisterDelegatorModal = ({
         <ModalCloseButton />
         <ModalBody>
           <List spacing={4}>
-           
+
             <FormControl isRequired>
               <FormLabel htmlFor="amount">{t('Deposit Amount')}</FormLabel>
-              <Input id="amount" placeholder="deposit amount" onChange={onChangeAmount} defaultValue={amount} type="number" autoFocus />
-              <FormHelperText>minimum deposit: {minimumDeposit} OCT</FormHelperText>
+              <Input id="amount" placeholder="deposit amount" onChange={onChangeAmount}
+                defaultValue={amount.toNumber() || ''} type="number" autoFocus />
+              <FormHelperText>
+                minimum deposit: {DecimalUtils.beautify(minimumDeposit)} OCT
+              </FormHelperText>
             </FormControl>
-           
+
           </List>
           <Button mt={8} isFullWidth colorScheme="octoColor" type="submit" isLoading={isSubmitting} disabled={
-            !amount || amount < minimumDeposit || amount > accountBalance || isSubmitting
+            amount.lt(minimumDeposit) || amount.gt(accountBalance) || isSubmitting
           } onClick={onSubmit}>
             {
               !amount ?
-              'Delegate' :
-              (
-                amount < minimumDeposit ? 'Minimum Limit' :
-                amount > accountBalance ? 'Insufficient Balance' :
-                'Delegate'
-              )
-              
+                'Delegate' :
+                (
+                  amount.lt(minimumDeposit) ? 'Minimum Limit' :
+                    amount.gt(accountBalance) ? 'Insufficient Balance' :
+                      'Delegate'
+                )
+
             }
           </Button>
         </ModalBody>
