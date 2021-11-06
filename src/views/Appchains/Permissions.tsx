@@ -441,7 +441,7 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
                         </HStack>
                     ) :
 
-                    status?.appchan_state === 'Booting' ?
+                    status?.appchain_state === 'Booting' ?
                       (
                         isAdmin ?
                           <Button>
