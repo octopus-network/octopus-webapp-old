@@ -36,10 +36,11 @@ export class DecimalUtils {
     if (fixed === undefined) {
       fixed = 
         input.gt(ZERO_DECIMAL) && input.lt(ONE_DECIMAL) ? 6 : 
-        input.gte(ONE_DECIMAL) && input.lt(ONE_HUNDRED_DECIMAL) ? 3 : 2;
+        2;
     }
+
     const str = input.toNumber().toFixed(fixed);
- 
+
     const reg = str.indexOf('.') > -1 ? /(\d)(?=(\d{3})+\.)/g : /(\d)(?=(?:\d{3})+$)/g;
     return str.replace(reg, '$1,');
   }

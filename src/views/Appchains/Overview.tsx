@@ -444,12 +444,12 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                         <HStack>
                           <Heading fontSize="sm" fontWeight={500}>
                             {
-                               appchainStatus?.appchain_metadata?.premined_wrapped_appchain_token
-                              // DecimalUtils.beautify(
-                              //   DecimalUtils.fromString(
-                              //     appchainStatus?.appchain_metadata?.premined_wrapped_appchain_token,
-                              //   )
-                              // )
+                              DecimalUtils.beautify(
+                                DecimalUtils.fromString(
+                                  appchainStatus?.appchain_metadata?.premined_wrapped_appchain_token
+                                ),
+                                0
+                              )
                             }
                           </Heading>
                         </HStack>
@@ -477,10 +477,11 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                         <HStack>
                           <Heading fontSize="sm" fontWeight={500}>
                             {
-                              appchainStatus?.appchain_metadata?.ido_amount_of_wrapped_appchain_token
-                              // DecimalUtils.beautify(
-                              //   DecimalUtils.fromString(appchainStatus?.appchain_metadata?.ido_amount_of_wrapped_appchain_token)
-                              // )
+                              
+                              DecimalUtils.beautify(
+                                DecimalUtils.fromString(appchainStatus?.appchain_metadata?.ido_amount_of_wrapped_appchain_token),
+                                0
+                              )
                             }
                           </Heading>
                         </HStack>
@@ -495,10 +496,10 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                         <HStack>
                           <Heading fontSize="sm" fontWeight={600}>
                             {
-                              appchainStatus?.appchain_metadata?.initial_era_reward
-                              // DecimalUtils.beautify(
-                              //   DecimalUtils.fromString(appchainStatus?.appchain_metadata?.initial_era_reward)
-                              // )
+                              DecimalUtils.beautify(
+                                DecimalUtils.fromString(appchainStatus?.appchain_metadata?.initial_era_reward),
+                                0
+                              )
                             }
                           </Heading>
                         </HStack>

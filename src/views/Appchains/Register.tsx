@@ -138,7 +138,6 @@ export const Register: React.FC = () => {
               "website_url": websiteUrl,
               "github_address": githubAddress,
               "github_release": githubRelease,
-              "commit_id": "",
               "contact_email": email,
               "function_spec_url": functionSpecUrl,
               "premined_wrapped_appchain_token_beneficiary": preminedBeneficiary,

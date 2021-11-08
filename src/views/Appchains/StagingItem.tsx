@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useSpring, animated, config as SpringConfig } from 'react-spring';
 
 import { 
   GridItem,
@@ -15,6 +16,7 @@ import { MdKeyboardArrowRight } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
 import { DecimalUtils } from 'utils';
 import { OCT_TOKEN_DECIMALS } from 'config/constants';
+import Decimal from 'decimal.js';
 
 const StyledAppchainItem = styled(SimpleGrid)`
   border-radius: 10px;
@@ -34,6 +36,11 @@ const StagingItem = ({
 }) => {
   const navigate = useNavigate();
   const { appchain_id, validator_count, total_stake, appchain_metadata } = appchain;
+  const { animatedStake } = useSpring({
+    from: { animatedStake: 0 },
+    animatedStake: DecimalUtils.fromString(total_stake, OCT_TOKEN_DECIMALS).toNumber(),
+    config: SpringConfig.slow
+  });
  
   return (
     <StyledAppchainItem columns={{ base: 14, md: 14 }} p={4} alignItems="center"
@@ -50,11 +57,7 @@ const StagingItem = ({
       </GridItem>
       <GridItem colSpan={4}>
         <Text fontSize="md">
-          {
-            DecimalUtils.beautify(
-              DecimalUtils.fromString(total_stake, OCT_TOKEN_DECIMALS)
-            )
-          } OCT
+          <animated.span>{animatedStake.to(n => DecimalUtils.beautify(new Decimal(n)))}</animated.span> OCT
         </Text>
       </GridItem>
       

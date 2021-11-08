@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { useSpring, config as SpringConfig, animated } from 'react-spring';
 
 import { 
   GridItem,
@@ -30,12 +31,6 @@ const StyledAppchainItem = styled(SimpleGrid)`
     box-shadow: rgb(0 0 0 / 15%) 0px 0px 10px!important;
     transform: scaleX(0.99);
   }
-`;
-
-const StyledBar = styled(Box)`
-  border-radius: 5px;
-  transition: width .8s ease-out;
-  min-width: 2%;
 `;
 
 const StyledBox = styled(Box)`
@@ -108,6 +103,48 @@ const InQueueItem = ({
     });
   }, [appchain_id]);
 
+  const { animatedUpvotes } = useSpring({
+    from: { animatedUpvotes: 0 },
+    delay: 200,
+    config: SpringConfig.slow,
+    animatedUpvotes: upvotes.toNumber()
+  });
+
+  const { animatedDownvotes } = useSpring({
+    from: { animatedDownvotes: 0 },
+    delay: 200,
+    config: SpringConfig.slow,
+    animatedDownvotes: downvotes.toNumber()
+  });
+
+  const { animatedScore } = useSpring({
+    from: { animatedScore: 0 },
+    delay: 200,
+    config: { ...SpringConfig.slow, duration: 1500 },
+    animatedScore: score.toNumber()
+  });
+
+  const pendingTagProps = useSpring({ opacity: 1, delay: 2500, from: { opacity: 0 } });
+  const upvotesBarProps = useSpring({
+    from: { width: '0%' },
+    width: highestVotes.gt(ZERO_DECIMAL) ? upvotes.mul(ONE_HUNDRED_DECIMAL).div(highestVotes).toString() + '%' : '0%',
+    height: '6px',
+    delay: 200,
+    config: SpringConfig.slow,
+    background: '#8884d8',
+    borderRadius: '3px'
+  });
+
+  const downvotesBarProps = useSpring({
+    from: { width: '0%' },
+    width: highestVotes.gt(ZERO_DECIMAL) ? downvotes.mul(ONE_HUNDRED_DECIMAL).div(highestVotes).toString() + '%' : '0%',
+    height: '6px',
+    delay: 200,
+    config: SpringConfig.slow,
+    background: '#82ca9d',
+    borderRadius: '3px'
+  });
+
   return (
     <StyledAppchainItem columns={{ base: 9, md: 14 }} p={4} alignItems="center"
       style={{
@@ -134,74 +171,33 @@ const InQueueItem = ({
         </HStack>
       </GridItem>
       <GridItem colSpan={5}  display={{ base: 'none', md: 'block' }}>
-        <Box height="35px" position="relative">
-          <Tooltip label={
+        <SimpleGrid columns={2} gap={10}>
+          <Tooltip label={`Upvotes: ${DecimalUtils.beautify(upvotes)}`}>
             <Box>
-              <Flex alignItems="center">
-                <Box w="8px" h="8px" bg="#8884d8" borderRadius={2} />
-                <Text fontSize="xs" ml={1}>
-                  Upvotes: {DecimalUtils.beautify(upvotes)}
-                </Text>
+              <Text color="gray" fontSize="sm">
+                <animated.span>
+                  {animatedUpvotes.to(n => DecimalUtils.beautify(new Decimal(n)))}
+                </animated.span>
+              </Text>
+              <Flex bg="blackAlpha.100" borderRadius="3px" overflow="hidden" mt={1}>
+                <animated.div style={upvotesBarProps} />
               </Flex>
-              <Flex alignItems="center">
-                <Box w="8px" h="8px" bg="#82ca9d" borderRadius={2} />
-                <Text fontSize="xs" ml={1}>
-                  Downvotes: {DecimalUtils.beautify(downvotes)}
-                </Text>
-              </Flex>
-            </Box>
-          }>
-            <Box>
-              <Box height="10px">
-                <Box mt="-3px" position="relative">
-                  <Flex alignItems="center">
-                    <StyledBar width={upvotes.mul(ONE_HUNDRED_DECIMAL).div(highestVotes).toNumber() + '%'} h="6px" 
-                      bg="linear-gradient(to right, #3182CE, #EBF8FF)" />
-                    <Text fontSize="xs" ml={1}>
-                      {DecimalUtils.beautify(upvotes)}
-                    </Text>
-                  </Flex>
-                </Box>
-              </Box>
-              <Box mt={2} height="10px">
-                <Box mt="-3px" position="relative">
-                  <Flex alignItems="center">
-                    <StyledBar width={downvotes.mul(ONE_HUNDRED_DECIMAL).div(highestVotes).toNumber() + '%'} h="6px" 
-                      bg="linear-gradient(to right, #68D391, #F0FFF4)" />
-                    <Text fontSize="xs" ml={1}>
-                      {DecimalUtils.beautify(downvotes)}
-                    </Text>
-                  </Flex>
-                </Box>
-              </Box>
             </Box>
           </Tooltip>
-          {
-            (userDownvoteDeposit.gt(ZERO_DECIMAL) || userUpvoteDeposit.gt(ZERO_DECIMAL)) ?
-            <Flex position="absolute" bottom="-14px">
-              <HStack color="gray" fontSize="xs">
-                <Text >Your Vote:</Text>
-                <Text>
-                  {
-                    userDownvoteDeposit.gt(ZERO_DECIMAL) && userUpvoteDeposit.gt(ZERO_DECIMAL) ? 
-                    `${
-                      DecimalUtils.beautify(userUpvoteDeposit)
-                    } upvotes, ${
-                      DecimalUtils.beautify(userDownvoteDeposit)
-                    } downvotes` :
-                    userUpvoteDeposit.gt(ZERO_DECIMAL) ?
-                    `${
-                      DecimalUtils.beautify(userUpvoteDeposit)
-                    } upvotes` :
-                    `${
-                      DecimalUtils.beautify(userDownvoteDeposit)
-                    } downvotes`
-                  }
-                </Text>
-              </HStack>
-            </Flex> : null
-          }
-        </Box>
+          <Tooltip label={`Downvotes: ${DecimalUtils.beautify(downvotes)}`}>
+            <Box>
+              <Text color="gray" fontSize="sm">
+                <animated.span>
+                  {animatedDownvotes.to(n => DecimalUtils.beautify(new Decimal(n)))}
+                </animated.span>
+              </Text>
+              <Flex bg="blackAlpha.100" borderRadius="3px" overflow="hidden" mt={1}>
+                <animated.div style={downvotesBarProps} />
+              </Flex>
+            </Box>
+          </Tooltip>
+        </SimpleGrid>
+        
       </GridItem>
       <GridItem colSpan={1} />
       <GridItem colSpan={3} textAlign="center">
@@ -217,27 +213,33 @@ const InQueueItem = ({
         }>
         <HStack spacing={1}>
           <StyledBox
-            style={{ opacity: score ? '1' : '0', borderRadius: '30px' }}>
+            style={{ opacity: score ? 1 : 0, borderRadius: '30px' }}>
             <HStack spacing={1}>
-              <Text>{DecimalUtils.beautify(score)}</Text>
+              <Text>
+                <animated.span>
+                  {animatedScore.to(n => DecimalUtils.beautify(new Decimal(n)))}
+                </animated.span>
+              </Text>
             </HStack>
           </StyledBox>
-          <StyledBox style={{ 
-              marginTop: '-15px',
-              opacity: score ? '2' : '0',
-              padding: '0px 5px', 
-              borderRadius: '30px', 
-              color: '#9a9a9a', 
-              borderLeft: 0,
-              fontWeight: 600,
-              transform: 'scale(.9)',
-              border: '1px solid #eee'
-            }}>
-            <Text fontSize="10px">
-              { (upvotes.add(downvotes).gt(ZERO_DECIMAL) ? '+' : '') }
-              { DecimalUtils.beautify(upvotes.minus(downvotes)) }
-            </Text>
-          </StyledBox>
+          <animated.div style={pendingTagProps}>
+            <StyledBox style={{ 
+                marginTop: '-15px',
+                opacity: score ? 1 : 0,
+                padding: '0px 5px', 
+                borderRadius: '30px', 
+                color: '#9a9a9a', 
+                borderLeft: 0,
+                fontWeight: 600,
+                transform: 'scale(.9)',
+                border: '1px solid #eee'
+              }}>
+              <Text fontSize="10px">
+                { (upvotes.add(downvotes).gt(ZERO_DECIMAL) ? '+' : '') }
+                { DecimalUtils.beautify(upvotes.minus(downvotes)) }
+              </Text>
+            </StyledBox>
+          </animated.div>
         </HStack>
         </Tooltip>
       </GridItem>

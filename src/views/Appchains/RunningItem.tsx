@@ -9,10 +9,11 @@ import {
   Heading,
   Text,
   SimpleGrid,
-  Icon
+  Icon,
+  Button
 } from '@chakra-ui/react';
 
-import { MdKeyboardArrowRight } from 'react-icons/md';
+import { HiOutlineArrowNarrowRight } from 'react-icons/hi';
 import { useNavigate } from 'react-router-dom';
 import { DecimalUtils } from 'utils';
 import { OCT_TOKEN_DECIMALS } from 'config/constants';
@@ -29,7 +30,7 @@ const StyledAppchainItem = styled(SimpleGrid)`
   }
 `;
 
-const BootingItem = ({
+const RunningItem = ({
   appchain
 }: {
   appchain: any;
@@ -44,8 +45,7 @@ const BootingItem = ({
 
   return (
    
-    <StyledAppchainItem boxShadow="octoShadow" columns={{ base: 10, md: 14 }} p={4} alignItems="center"
-      onClick={() => navigate(`/appchains/overview/${appchain_id}`)}>
+    <StyledAppchainItem boxShadow="octoShadow" columns={{ base: 13, md: 17 }} p={4} alignItems="center">
       <GridItem colSpan={5}>
         <HStack>
           <Avatar name={appchain_id} size="xs" display={{ base: 'none', md: 'block' }} bg="blue.100"
@@ -62,8 +62,11 @@ const BootingItem = ({
         </Text>
       </GridItem>
       
-      <GridItem colSpan={1} textAlign="right">
-        <Icon as={MdKeyboardArrowRight} color="rgba(0, 0, 0, .3)" w={6} h={6} />
+      <GridItem colSpan={4} textAlign="right">
+        <Button>
+          <Text>Enter</Text>
+          <Icon as={HiOutlineArrowNarrowRight} ml="2" />
+        </Button>
       </GridItem>
      
     </StyledAppchainItem>
@@ -71,4 +74,4 @@ const BootingItem = ({
   );
 }
 
-export default BootingItem;
+export default RunningItem;

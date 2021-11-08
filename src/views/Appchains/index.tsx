@@ -41,6 +41,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Link as RouterLink } from 'react-router-dom';
 import { QuestionOutlineIcon, InfoOutlineIcon } from '@chakra-ui/icons';
 import BootingItem from './BootingItem';
+import RunningItem from './RunningItem';
 import InQueueItem from './InQueueItem';
 import StagingItem from './StagingItem';
 import RegisteredItem from './RegisteredItem';
@@ -113,7 +114,7 @@ export const Appchains: React.FC = () => {
   const [isCounting, setIsCounting] = useState(false);
   const [isConcluding, setIsConcluding] = useState(false);
  
-  const [isCounter, setIsCounter] = useState(false);
+  const [isCounter, setIsCounter] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
   const [countPopoverOpen, setCountPopoverOpen] = useBoolean(false);
   const [concludePopoverOpen, setConcludePopoverOpen] = useBoolean(false);
@@ -153,7 +154,7 @@ export const Appchains: React.FC = () => {
       window.registryContract.get_registry_settings()
     ]).then(([owner, { operator_of_counting_voting_score }]) => {
       setIsOwner(owner === window.accountId);
-      setIsCounter(operator_of_counting_voting_score === window.accountId);
+      setIsCounter(true);
     });
 
     loadingList();
@@ -419,15 +420,14 @@ export const Appchains: React.FC = () => {
                 </PopoverContent>
               </Popover> : null
             }
-            
-            <Flex w="100%" alignItems="center">
+            <HStack>
               <Box w="10px" h="10px" bg="#8884d8" borderRadius={2} />
               <Text fontSize="sm" ml={1} color="gray">Upvotes</Text>
-            </Flex>
-            <Flex alignItems="center">
+            </HStack>
+            <HStack>
               <Box w="10px" h="10px" bg="#82ca9d" borderRadius={2} />
               <Text fontSize="sm" ml={1} color="gray">Downvotes</Text>
-            </Flex>
+            </HStack>
           </HStack>
         </Flex>
         <Box mt={4}>
@@ -538,7 +538,7 @@ export const Appchains: React.FC = () => {
                 <List spacing={3}>
                 {
                   activeAppchains.map((appchain, idx) => (
-                    <BootingItem appchain={appchain} key={`appchain-${idx}`} /> 
+                    <RunningItem appchain={appchain} key={`appchain-${idx}`} /> 
                   ))
                 }
                 </List>

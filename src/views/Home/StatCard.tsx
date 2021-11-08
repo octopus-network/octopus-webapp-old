@@ -11,27 +11,28 @@ import {
 export const StatCard = ({
   title,
   value,
+  bg,
   icon
 }: {
   title: string;
   value: string;
+  bg: string;
   icon: any;
 }) => {
 
   return (
     <Skeleton isLoaded={!!value} borderRadius="10">
-    <Box p="5" boxShadow="octoShadow" borderRadius="10" bg="rgba(255, 255, 255, .05)"
-      overflow="hidden" position="relative">
+    <Box p="5" bgGradient={bg} borderRadius="2xl"
+      overflow="hidden" position="relative" boxShadow="rgb(0 0 0 / 15%) 0px 0px 8px">
       <Flex alignItems="center" justifyContent="space-between">
-        <Text fontSize="sm">{title}</Text>
-        {icon}
+        <Text fontSize="sm" color="whiteAlpha.800">{title}</Text>
       </Flex>
       <Box mt="4">
-        <Heading fontSize="2xl">{value || 'loading'}</Heading>
+        <Heading fontSize="2xl" color="whiteAlpha.900">{value || 'loading'}</Heading>
       </Box>
       <Box position="absolute" transform="scale(4.6)" 
-        bottom="0" right="0" opacity=".08">
-      {icon}
+        bottom="0" right="0" opacity=".6">
+        {icon}
       </Box>
     </Box>
     </Skeleton>

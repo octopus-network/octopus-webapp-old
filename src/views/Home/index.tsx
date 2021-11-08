@@ -28,18 +28,20 @@ import { Ball, NoData } from 'components';
 import { DecimalUtils, ZERO_DECIMAL, appchainStates } from 'utils';
 import { OCT_TOKEN_DECIMALS } from 'config/constants';
 import { utils } from 'near-api-js';
+import { AiOutlineBlock, AiOutlineDollarCircle, AiOutlineDeploymentUnit } from 'react-icons/ai';
 import { HiOutlineArrowNarrowRight } from 'react-icons/hi';
-import { FcComboChart, FcCurrencyExchange, FcOrgUnit } from 'react-icons/fc';
 import { Link as RouterLink } from 'react-router-dom';
 import { StatCard } from './StatCard';
-import globe from 'assets/globe.svg';
 import Decimal from 'decimal.js';
 
 const StyledAppchainItem = styled(SimpleGrid)`
   border-radius: 10px;
+  box-shadow: rgb(0 0 0 / 20%) 0px 0px 2px;
+  transition: transform 0.2s ease-in-out 0s, box-shadow 0.2s ease-in-out 0s;
   cursor: pointer;
   &:hover {
-    background: rgba(122, 122, 122, .1);
+    box-shadow: rgb(0 0 0 / 15%) 0px 0px 10px;
+    transform: scaleX(0.99);
   }
 `;
 
@@ -71,7 +73,7 @@ const AppchainItem = ({
   }
 
   return (
-    <StyledAppchainItem boxShadow="octoShadow" columns={{ base: 13, md: 17 }} p="6" alignItems="center">
+    <StyledAppchainItem boxShadow="octoShadow" columns={{ base: 13, md: 17 }} p={4} alignItems="center">
       <GridItem colSpan={5}>
         <HStack>
           <Avatar name={appchain_id} size="sm" display={{ base: 'none', md: 'block' }} bg="blue.100" />
@@ -177,30 +179,30 @@ export const Home: React.FC = () => {
             </Center>
           </Box>
         </Center>
-        <Box mt="60px" position="relative" zIndex="1">
+        <Box mt="80px" position="relative" zIndex="1">
           <Center>
             <RouterLink to="/appchains/join">
-              <JoinButton colorScheme="octoColor">
+              <JoinButton colorScheme="octoColor" variant="outline">
                 <Text>{t('Join Octopus')}</Text>
                 <Icon as={HiOutlineArrowNarrowRight} ml="2" />
               </JoinButton>
             </RouterLink>
           </Center>
         </Box>
-        <Box position="absolute" left="0" right="0" bottom="0" top="0" opacity=".2" zIndex="0"
-          bg={`url(${globe}) center -50px / cover no-repeat;`} />
+        {/* <Box position="absolute" left="0" right="0" bottom="0" top="0" opacity=".2" zIndex="0"
+          bg={`url(${globe}) center -50px / cover no-repeat;`} /> */}
       </Container>
       <Container>
         <Grid templateColumns={isDesktop ? 'repeat(3, 1fr)' : 'repeat(1, 1fr)'} gap={12}>
-          <StatCard title={t('Total Appchains')} value={
+          <StatCard title={t('Total Appchains')} bg="linear(to-r, #2193b0, #6dd5ed)" value={
             numberAppchains?.gte(ZERO_DECIMAL) ? numberAppchains.toString() : ''
-            } icon={<Icon as={FcComboChart} w="6" h="6" />} />
-          <StatCard title={t('Staked OCT')} value={
+            } icon={<Icon as={AiOutlineBlock} w="6" h="6" color="whiteAlpha.500" />} />
+          <StatCard title={t('Staked OCT')} bg="linear(to-r, #e75ba4, #e06395)" value={
               stakedAmount?.gte(ZERO_DECIMAL) ? DecimalUtils.beautify(stakedAmount) : ''
-            } icon={<Icon as={FcCurrencyExchange} w="6" h="6" />} />
-          <StatCard title={t('Block Height')} value={
+            } icon={<Icon as={AiOutlineDollarCircle} w="6" h="6" color="whiteAlpha.500" />} />
+          <StatCard title={t('Block Height')} bg="linear(to-r, #5b86e5, #36d1dc)" value={
               currBlock?.gt(ZERO_DECIMAL) ? DecimalUtils.beautify(currBlock, 0) : ''
-            } icon={<Icon as={FcOrgUnit} w="6" h="6" />} />
+            } icon={<Icon as={AiOutlineDeploymentUnit} w="6" h="6" color="whiteAlpha.500" />} />
         </Grid>
       </Container>
       <Container mt="16" mb="16" minH="30vh">
