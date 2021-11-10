@@ -130,6 +130,7 @@ const InQueueItem: React.FC<InQueueItemProps> = ({
 
   const pendingTagProps = useSpring({ opacity: 1, delay: 2500, from: { opacity: 0 } });
   const upvotesBarProps = useSpring({
+    reset: true,
     from: { width: '0%' },
     width: highestVotes.gt(ZERO_DECIMAL) ? upvotes.mul(ONE_HUNDRED_DECIMAL).div(highestVotes).toString() + '%' : '0%',
     height: '6px',
@@ -140,6 +141,7 @@ const InQueueItem: React.FC<InQueueItemProps> = ({
   });
 
   const downvotesBarProps = useSpring({
+    reset: true,
     from: { width: '0%' },
     width: highestVotes.gt(ZERO_DECIMAL) ? downvotes.mul(ONE_HUNDRED_DECIMAL).div(highestVotes).toString() + '%' : '0%',
     height: '6px',

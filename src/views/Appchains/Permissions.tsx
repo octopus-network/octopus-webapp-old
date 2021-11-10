@@ -398,7 +398,7 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
                                 onClose={setWithdrawVotesPopoverOpen.off}
                               >
                                 <PopoverTrigger>
-                                  <Button onClick={setWithdrawVotesPopoverOpen.on} colorScheme="octoColor">
+                                  <Button onClick={setWithdrawVotesPopoverOpen.on} colorScheme="octoColor" isDisabled={withdrawVotesPopoverOpen}>
                                     Withdraw Votes
                                   </Button>
                                 </PopoverTrigger>
@@ -434,7 +434,7 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
                           {
                             !!anchor ?
                               <Button colorScheme="octoColor"
-                                onClick={onGoStake}>
+                                onClick={onGoStake} variant="ghost">
                                 Staking <ChevronRightIcon ml={1} />
                               </Button> :
                               anchor === undefined ?
@@ -462,7 +462,7 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
                                   onClose={setWithdrawVotesPopoverOpen.off}
                                 >
                                   <PopoverTrigger>
-                                    <Button onClick={setWithdrawVotesPopoverOpen.on} colorScheme="octoColor">
+                                    <Button onClick={setWithdrawVotesPopoverOpen.on} colorScheme="octoColor" isDisabled={withdrawVotesPopoverOpen}>
                                       Withdraw Votes
                                     </Button>
                                   </PopoverTrigger>
@@ -512,7 +512,7 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
                                     onClose={setWithdrawVotesPopoverOpen.off}
                                   >
                                     <PopoverTrigger>
-                                      <Button onClick={setWithdrawVotesPopoverOpen.on} colorScheme="octoColor">
+                                      <Button onClick={setWithdrawVotesPopoverOpen.on} colorScheme="octoColor" isDisabled={withdrawVotesPopoverOpen}>
                                         Withdraw Votes
                                       </Button>
                                     </PopoverTrigger>
