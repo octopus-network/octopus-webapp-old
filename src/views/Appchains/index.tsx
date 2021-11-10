@@ -445,7 +445,7 @@ export const Appchains: React.FC = () => {
                 <List spacing={3}>
                 {
                   votingAppchains.map((appchain, idx) => (
-                    <InQueueItem index={idx} appchain={appchain} key={`appchain-${idx}`} highestVotes={highestVotes} /> 
+                    <InQueueItem index={idx} appchain={appchain} key={`voting-appchain-${idx}`} highestVotes={highestVotes} /> 
                   ))
                 }
                 </List>

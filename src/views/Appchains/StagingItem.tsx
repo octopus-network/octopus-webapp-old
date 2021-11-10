@@ -37,6 +37,7 @@ const StagingItem = ({
   const navigate = useNavigate();
   const { appchain_id, validator_count, total_stake, appchain_metadata } = appchain;
   const { animatedStake } = useSpring({
+    reset: true,
     from: { animatedStake: 0 },
     animatedStake: DecimalUtils.fromString(total_stake, OCT_TOKEN_DECIMALS).toNumber(),
     config: SpringConfig.slow

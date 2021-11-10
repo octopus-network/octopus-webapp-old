@@ -64,7 +64,8 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
   useEffect(() => {
     if (!status) return;
     Promise.all([
-      window.tokenContract.ft_balance_of({ account_id: window.accountId }),
+      window.accountId ?
+      window.tokenContract.ft_balance_of({ account_id: window.accountId }) : Promise.resolve(0),
       window.registryContract.get_upvote_deposit_for({
         appchain_id: status.appchain_id,
         account_id: window.accountId

@@ -39,14 +39,16 @@ const StyledBox = styled(Box)`
   white-space: nowrap;
 `;
 
-const InQueueItem = ({
-  appchain,
-  index,
-  highestVotes
-}: {
+type InQueueItemProps = {
   appchain: any;
   index: number;
   highestVotes: Decimal;
+}
+
+const InQueueItem: React.FC<InQueueItemProps> = ({
+  appchain,
+  index,
+  highestVotes
 }) => {
 
   const navigate = useNavigate();
@@ -55,7 +57,7 @@ const InQueueItem = ({
   const [downvotes, setDownvotes] = useState(ZERO_DECIMAL);
   const [score, setScore] = useState(ZERO_DECIMAL);
 
-  const { appchain_id, downvote_deposit, upvote_deposit, voting_score, appchain_metadata } = appchain;
+  const { appchain_id, appchain_metadata } = appchain;
   const [userUpvoteDeposit, setUserUpvoteDeposit] = useState(ZERO_DECIMAL);
   const [userDownvoteDeposit, setUserDownvoteDeposit] = useState(ZERO_DECIMAL);
 
@@ -66,18 +68,17 @@ const InQueueItem = ({
   ];
 
   useEffect(() => {
-    setTimeout(() => {
-      setUpvotes(
-        DecimalUtils.fromString(upvote_deposit, OCT_TOKEN_DECIMALS)
-      );
-      setDownvotes(
-        DecimalUtils.fromString(downvote_deposit, OCT_TOKEN_DECIMALS)
-      );
-      setScore(
-        DecimalUtils.fromString(voting_score, OCT_TOKEN_DECIMALS)
-      );
-    }, 10);
-  }, [downvote_deposit, upvote_deposit, voting_score]);
+    const { downvote_deposit, upvote_deposit, voting_score } = appchain;
+    setUpvotes(
+      DecimalUtils.fromString(upvote_deposit, OCT_TOKEN_DECIMALS)
+    );
+    setDownvotes(
+      DecimalUtils.fromString(downvote_deposit, OCT_TOKEN_DECIMALS)
+    );
+    setScore(
+      DecimalUtils.fromString(voting_score, OCT_TOKEN_DECIMALS)
+    );
+  }, [appchain]);
 
   useEffect(() => {
     if (!appchain_id) {
@@ -104,6 +105,7 @@ const InQueueItem = ({
   }, [appchain_id]);
 
   const { animatedUpvotes } = useSpring({
+    reset: true,
     from: { animatedUpvotes: 0 },
     delay: 200,
     config: SpringConfig.slow,
@@ -111,6 +113,7 @@ const InQueueItem = ({
   });
 
   const { animatedDownvotes } = useSpring({
+    reset: true,
     from: { animatedDownvotes: 0 },
     delay: 200,
     config: SpringConfig.slow,
@@ -118,10 +121,11 @@ const InQueueItem = ({
   });
 
   const { animatedScore } = useSpring({
+    reset: true,
     from: { animatedScore: 0 },
+    to: { animatedScore: score.toNumber() },
     delay: 200,
     config: { ...SpringConfig.slow, duration: 1500 },
-    animatedScore: score.toNumber()
   });
 
   const pendingTagProps = useSpring({ opacity: 1, delay: 2500, from: { opacity: 0 } });
@@ -182,6 +186,12 @@ const InQueueItem = ({
               <Flex bg="blackAlpha.100" borderRadius="3px" overflow="hidden" mt={1}>
                 <animated.div style={upvotesBarProps} />
               </Flex>
+              {
+                userUpvoteDeposit.gt(ZERO_DECIMAL) ?
+                <Text color="gray" fontSize="xs" mt={1}>
+                  Your upvotes: {DecimalUtils.beautify(userUpvoteDeposit)}
+                </Text> : null
+              }
             </Box>
           </Tooltip>
           <Tooltip label={`Downvotes: ${DecimalUtils.beautify(downvotes)}`}>
@@ -191,9 +201,15 @@ const InQueueItem = ({
                   {animatedDownvotes.to(n => DecimalUtils.beautify(new Decimal(n)))}
                 </animated.span>
               </Text>
-              <Flex bg="blackAlpha.100" borderRadius="3px" overflow="hidden" mt={1}>
+              <Flex bg="blackAlpha.100" borderRadius="3px" overflow="hidden">
                 <animated.div style={downvotesBarProps} />
               </Flex>
+              {
+                userDownvoteDeposit.gt(ZERO_DECIMAL) ?
+                <Text color="gray" fontSize="xs" mt={1}>
+                  Your downvotes: {DecimalUtils.beautify(userDownvoteDeposit)}
+                </Text> : null
+              }
             </Box>
           </Tooltip>
         </SimpleGrid>
@@ -250,4 +266,4 @@ const InQueueItem = ({
   );
 }
 
-export default InQueueItem;
+export default React.memo(InQueueItem);

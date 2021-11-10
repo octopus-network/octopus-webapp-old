@@ -40,8 +40,9 @@ export class DecimalUtils {
     }
 
     const str = input.toNumber().toFixed(fixed);
-
+    
     const reg = str.indexOf('.') > -1 ? /(\d)(?=(\d{3})+\.)/g : /(\d)(?=(?:\d{3})+$)/g;
+   
     return str.replace(reg, '$1,');
   }
 }

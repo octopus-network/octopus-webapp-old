@@ -92,16 +92,18 @@ const Overview = ({ appchainId, onDrawerClose }) => {
 
         }
       });
-
-    window
-      .tokenContract
-      .ft_balance_of({
-        account_id: window.accountId
-      }).then(balance => {
-        setAccountBalance(
-          DecimalUtils.fromString(balance, OCT_TOKEN_DECIMALS)
-        );
-      });
+    
+    if (window.accountId) {
+      window
+        .tokenContract
+        .ft_balance_of({
+          account_id: window.accountId
+        }).then(balance => {
+          setAccountBalance(
+            DecimalUtils.fromString(balance, OCT_TOKEN_DECIMALS)
+          );
+        });
+    }
 
     window
       .registryContract
