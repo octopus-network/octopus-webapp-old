@@ -19,11 +19,13 @@ import { COMPLEX_CALL_GAS } from 'config/constants';
 export const ConfirmBootingModal = ({ 
   isOpen, 
   onClose,
-  anchor
+  anchor,
+  appchainId,
 }: {
   isOpen: boolean;
   onClose: VoidFunction;
   anchor: any;
+  appchainId: string;
 }) => {
   const toast = useToast();
   
@@ -58,7 +60,7 @@ export const ConfirmBootingModal = ({
         <ModalBody>
           <Heading fontSize="lg">Are you confirm to booting this appchain?</Heading>
           <Box mt={3}>
-            <ValidatorsTable anchor={anchor} noAction={true} />
+            <ValidatorsTable anchor={anchor} noAction={true} appchainId={appchainId} />
           </Box>
         </ModalBody>
         <ModalFooter>

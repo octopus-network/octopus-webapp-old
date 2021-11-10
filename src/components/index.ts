@@ -12,3 +12,4 @@ export { StateBadge } from './StateBadge';
 export { TokenInfoModal } from './TokenInfoModal';
 export { ValidatorsTable } from './ValidatorsTable';
 export { ConfirmBootingModal } from './ConfirmBootingModal';
+export { GoLiveModal } from './GoLiveModal';

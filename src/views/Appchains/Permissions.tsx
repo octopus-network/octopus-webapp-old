@@ -28,7 +28,7 @@ import { DecimalUtils, loginNear, ZERO_DECIMAL } from 'utils';
 import octopusConfig from 'config/octopus';
 import { FAILED_TO_REDIRECT_MESSAGE, SIMPLE_CALL_GAS, COMPLEX_CALL_GAS, OCT_TOKEN_DECIMALS } from 'config/constants';
 import { useNavigate } from 'react-router-dom';
-import { ConfirmBootingModal } from 'components';
+import { ConfirmBootingModal, GoLiveModal } from 'components';
 import { useTranslation } from 'react-i18next';
 import Decimal from 'decimal.js';
 
@@ -42,6 +42,7 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
   const [loadingType, setLoadingType] = useState('');
   const [rejectPopoverOpen, setRejectPopoverOpen] = useBoolean(false);
   const [bootingModalOpen, setBootingModalOpen] = useBoolean(false);
+  const [goLiveModalOpen, setGoLiveModalOpen] = useBoolean(false);
   const [passAuditingPopoverOpen, setPassAuditingPopoverOpen] = useBoolean(false);
   const [upvotePopoverOpen, setUpvotePopoverOpen] = useBoolean(false);
   const [downvotePopoverOpen, setDownvotePopoverOpen] = useBoolean(false);
@@ -445,9 +446,12 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
                     status?.appchain_state === 'Booting' ?
                       (
                         isAdmin ?
-                          <Button>
-                            Go Live
-                          </Button> :
+                          (
+                            anchor ?
+                            <Button onClick={setGoLiveModalOpen.on} colorScheme="octoColor">
+                              Go Live
+                            </Button> : null
+                          ) :
                           <HStack>
                             {
                               upvoteDeposit.gt(ZERO_DECIMAL) || downvoteDeposit.gt(ZERO_DECIMAL) ?
@@ -664,7 +668,9 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
             }
           </HStack>
       }
-      <ConfirmBootingModal isOpen={bootingModalOpen} onClose={setBootingModalOpen.off} anchor={anchor} />
+      <ConfirmBootingModal isOpen={bootingModalOpen} onClose={setBootingModalOpen.off} 
+        anchor={anchor} appchainId={status?.appchain_id} />
+      <GoLiveModal isOpen={goLiveModalOpen} onClose={setGoLiveModalOpen.off} anchor={anchor} />
     </>
   );
 }

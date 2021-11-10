@@ -126,6 +126,7 @@ const Overview = ({ appchainId, onDrawerClose }) => {
         anchorContractId,
         {
           viewMethods: [
+            'get_appchain_settings',
             'get_validator_deposit_of',
             'get_anchor_status',
             'get_processing_status_of',
@@ -138,7 +139,11 @@ const Overview = ({ appchainId, onDrawerClose }) => {
           ],
           changeMethods: [
             'unbond_stake',
-            'go_booting'
+            'go_booting',
+            'go_live',
+            'set_rpc_endpoint',
+            'set_subql_endpoint',
+            'set_era_reward'
           ]
         }
       );
