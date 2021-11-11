@@ -257,11 +257,11 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
       });
   }
 
-  const withdrawVotes = (type, amount) => {
+  const withdrawVotes = (type: string, amount: Decimal) => {
     const method = type === 'upvote' ? window.registryContract.withdraw_upvote_deposit_of :
       window.registryContract.withdraw_downvote_deposit_of;
 
-    method(
+    return method(
       {
         appchain_id: status.appchain_id,
         amount: DecimalUtils.toU64(amount, OCT_TOKEN_DECIMALS).toString()
@@ -270,7 +270,6 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
     ).then(() => {
       window.location.reload();
     }).catch(err => {
-      setIsWithdrawing(false);
       toast({
         position: 'top-right',
         title: 'Error',
@@ -280,20 +279,24 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
     });
   }
 
-  const onWithdrawVotes = () => {
+  const onWithdrawVotes = async () => {
     const voteType = upvotePopoverOpen ? 'upvote' : 'downvote';
     const voteAmount = voteType === 'upvote' ? upvoteAmount : downvoteAmount;
-    withdrawVotes(voteType, voteAmount);
+    setIsWithdrawing(true);
+    await withdrawVotes(voteType, voteAmount);
+    setIsWithdrawing(false);
   }
 
-  const onWithdrawUpvotes = () => {
+  const onWithdrawUpvotes = async () => {
     setWithdrawingUpvotes(true);
-    withdrawVotes('upvote', upvoteDeposit);
+    await withdrawVotes('upvote', upvoteDeposit);
+    setWithdrawingUpvotes(false);
   }
 
-  const onWithdrawDownvotes = () => {
+  const onWithdrawDownvotes = async () => {
     setWithdrawingDownvotes(true);
-    withdrawVotes('downvote', downvoteDeposit);
+    await withdrawVotes('downvote', downvoteDeposit);
+    setWithdrawingDownvotes(false);
   }
 
   const onUpvoteAmountChange = ({ target: { value } }) => {

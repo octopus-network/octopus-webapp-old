@@ -23,8 +23,8 @@ export class DecimalUtils {
     if (input.isNeg()) {
       throw new Error(`Negative decimal value ${input} cannot be converted to u64.`);
     }
-
-    const shiftedValue = new BN(input.toString()).mul(new BN(10).pow(new BN(shift)));
+   
+    const shiftedValue = new BN(input.mul(new Decimal(10).pow(new Decimal(shift))).toString());
     return shiftedValue;
   }
 
