@@ -269,13 +269,6 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
       COMPLEX_CALL_GAS
     ).then(() => {
       window.location.reload();
-    }).catch(err => {
-      toast({
-        position: 'top-right',
-        title: 'Error',
-        description: err.toString(),
-        status: 'error'
-      });
     });
   }
 
@@ -283,19 +276,52 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
     const voteType = upvotePopoverOpen ? 'upvote' : 'downvote';
     const voteAmount = voteType === 'upvote' ? upvoteAmount : downvoteAmount;
     setIsWithdrawing(true);
-    await withdrawVotes(voteType, voteAmount);
+
+    try {
+      await withdrawVotes(voteType, voteAmount);
+    } catch(err) {
+      toast({
+        position: 'top-right',
+        title: 'Error',
+        description: err.toString(),
+        status: 'error'
+      });
+    }
+   
     setIsWithdrawing(false);
   }
 
   const onWithdrawUpvotes = async () => {
     setWithdrawingUpvotes(true);
-    await withdrawVotes('upvote', upvoteDeposit);
+
+    try {
+      await withdrawVotes('upvote', upvoteDeposit);
+    } catch(err) {
+      toast({
+        position: 'top-right',
+        title: 'Error',
+        description: err.toString(),
+        status: 'error'
+      });
+    }
+
     setWithdrawingUpvotes(false);
   }
 
   const onWithdrawDownvotes = async () => {
     setWithdrawingDownvotes(true);
-    await withdrawVotes('downvote', downvoteDeposit);
+
+    try {
+      await withdrawVotes('downvote', downvoteDeposit);
+    } catch(err) {
+      toast({
+        position: 'top-right',
+        title: 'Error',
+        description: err.toString(),
+        status: 'error'
+      });
+    }
+    
     setWithdrawingDownvotes(false);
   }
 
