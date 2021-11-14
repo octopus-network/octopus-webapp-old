@@ -26,11 +26,12 @@ import { Formik, Form, Field } from 'formik';
 import { useTranslation } from 'react-i18next';
 import { EditIcon } from '@chakra-ui/icons';
 import { DecimalUtils, ZERO_DECIMAL } from 'utils';
-import { FAILED_TO_REDIRECT_MESSAGE, COMPLEX_CALL_GAS } from 'config/constants';
-import octopusConfig from 'config/octopus';
+import { FAILED_TO_REDIRECT_MESSAGE, Gas, OCT_TOKEN_DECIMALS } from 'primitives';
+import { octopusConfig } from 'config';
 import { TokenInfoModal } from 'components';
 import Decimal from 'decimal.js';
-import { OCT_TOKEN_DECIMALS } from 'config/constants';
+
+import { useGlobalStore } from 'stores';
 
 export const Register: React.FC = () => {
 
@@ -40,9 +41,10 @@ export const Register: React.FC = () => {
   const [tokenInfoModalOpen, setTokenInfoModalOpen] = useBoolean(false);
   const [accountBalance, setAccountBalance] = useState(ZERO_DECIMAL);
   const toast = useToast();
+  const globalStore = useGlobalStore(state => state.globalStore);
 
   useEffect(() => {
-    window
+    globalStore
       .registryContract
       .get_registry_settings()
       .then(({ minimum_register_deposit }) => {
@@ -51,10 +53,10 @@ export const Register: React.FC = () => {
         );
       });
 
-    if (window.accountId) {
-      window
+    if (globalStore.accountId) {
+      globalStore
         .tokenContract
-        .ft_balance_of({ account_id: window.accountId })
+        .ft_balance_of({ account_id: globalStore.accountId })
         .then(amount => {
           setAccountBalance(
             DecimalUtils.fromString(amount, OCT_TOKEN_DECIMALS)
@@ -62,7 +64,7 @@ export const Register: React.FC = () => {
         });
     }
 
-  }, []);
+  }, [globalStore]);
 
   const validateAppchainId = (value) => {
     const reg = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
@@ -124,9 +126,7 @@ export const Register: React.FC = () => {
       return;
     }
 
-    console.log(minimumRegisterDeposit.toString());
-
-    window
+    globalStore
       .tokenContract
       .ft_transfer_call(
         {
@@ -157,7 +157,7 @@ export const Register: React.FC = () => {
             }
           })
         },
-        COMPLEX_CALL_GAS,
+        Gas.COMPLEX_CALL_GAS,
         1,
       ).catch((err) => {
         console.log(err);
@@ -241,7 +241,7 @@ export const Register: React.FC = () => {
                   <GridItem colSpan={3}>
                     <Field name="websiteUrl">
                       {({ field, form }) => (
-                        <FormControl isInvalid={form.errors.websiteUrl && form.touched.websiteUrl}>
+                        <FormControl isInvalid={form.errors.websiteUrl && form.touched.websiteUrl} isRequired>
                           <FormLabel htmlFor="websiteUrl">{t('Website')}</FormLabel>
                           <Input {...field} id="websiteUrl" placeholder="Website Url" />
                           <FormErrorMessage>{form.errors.websiteUrl}</FormErrorMessage>
@@ -377,12 +377,12 @@ export const Register: React.FC = () => {
                 mt={8}
                 colorScheme="octoColor"
                 isLoading={props.isSubmitting}
-                disabled={props.isSubmitting || !window.accountId}
+                disabled={props.isSubmitting || !globalStore.accountId}
                 type="submit"
                 size="lg"
                 isFullWidth={true}
               >
-                {window?.accountId ? t('Submit') : t('Please Login')}
+                {globalStore?.accountId ? t('Submit') : t('Please Login')}
               </Button>
             </Form>
           )}

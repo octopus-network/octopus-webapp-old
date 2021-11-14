@@ -21,18 +21,20 @@ import {
   Avatar
 } from '@chakra-ui/react';
 
-import octopus from 'config/octopus';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FaChevronDown } from 'react-icons/fa';
 import { FiMenu } from 'react-icons/fi';
 import { LocaleModal } from 'components';
+import { useGlobalStore } from 'stores';
 
-import { loginNear, logoutNear } from 'utils';
+import { octopusConfig } from 'config';
 import logo from 'assets/logo.png';
 import logoWhite from 'assets/logo_white.png';
 
 export const Header = () => {
+
+  const globalStore = useGlobalStore(state => state.globalStore);
 
   const [localeModalOpen, setLocalModalOpen] = useBoolean();
   const { t } = useTranslation();
@@ -43,6 +45,23 @@ export const Header = () => {
 
   const selectedLinkStyle = {
     color: colorMode === 'light' ? 'octoColor.500' : 'white', fontWeight: '600'
+  }
+
+  const onLogin = () => {
+    globalStore
+      .walletConnection
+      .requestSignIn(
+        octopusConfig.registryContractId,
+        'Octopus Webapp'
+      );
+  }
+
+  const onLogout = () => {
+    globalStore
+      .walletConnection
+      .signOut();
+    
+    window.location.replace(window.location.origin + window.location.pathname);
   }
 
   return (
@@ -63,7 +82,7 @@ export const Header = () => {
                   aria-selected={/bridge/.test(locationPath)}>{t('Bridge')}</Link>
                
                 {
-                  octopus.networkId === 'testnet' ?
+                  octopusConfig.networkId === 'testnet' ?
                   <Link target="_blank" href="https://faucet.testnet.oct.network">{t('Faucet')}</Link> : null
                 }
                 
@@ -76,12 +95,14 @@ export const Header = () => {
                 {t('localeName')} <Icon w={3} h={3} as={FaChevronDown} />
               </Link>
               {
-                window.walletConnection?.isSignedIn() ?
+                globalStore.walletConnection?.isSignedIn() ?
                 <Menu placement="top-end">
                   <MenuButton as={Button} variant="ghost">
                     <HStack>
                       <Avatar w="20px" h="20px" mr="1" />
-                      <Text maxW="100px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">{window.accountId}</Text>
+                      <Text maxW="100px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
+                        {globalStore.accountId}
+                      </Text>
                     </HStack>
                   </MenuButton>
                   <MenuList>
@@ -89,10 +110,10 @@ export const Header = () => {
                       <MenuItem>{t('Dashboard')}</MenuItem>
                     </RouterLink>
                     <MenuDivider />
-                    <MenuItem onClick={logoutNear}>{t('Sign out')}</MenuItem>
+                    <MenuItem onClick={onLogout}>{t('Sign out')}</MenuItem>
                   </MenuList>
                 </Menu> :
-                <Button variant="outline" onClick={loginNear}>{t('Login')}</Button>
+                <Button variant="outline" onClick={onLogin}>{t('Login')}</Button>
               }
             </HStack>
             <Menu placement="top-end">

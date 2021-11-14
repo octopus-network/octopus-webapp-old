@@ -21,25 +21,32 @@ import {
   Link
 } from '@chakra-ui/react';
 
+import { AnchorContract } from 'types';
+
 import { decodeAddress } from '@polkadot/util-crypto';
 import { u8aToHex } from '@polkadot/util';
 import { useTranslation } from 'react-i18next';
-import { FAILED_TO_REDIRECT_MESSAGE, COMPLEX_CALL_GAS, OCT_TOKEN_DECIMALS } from 'config/constants';
+import { FAILED_TO_REDIRECT_MESSAGE, Gas, OCT_TOKEN_DECIMALS } from 'primitives';
+import { useGlobalStore } from 'stores';
 
 import Decimal from 'decimal.js';
 import { ZERO_DECIMAL, DecimalUtils } from 'utils';
 
-export const RegisterValidatorModal = ({ 
-  isOpen, 
-  onClose,
-  anchor
-}: {
+type RegisterValidatorModalProps = {
   isOpen: boolean;
   onClose: VoidFunction;
-  anchor: any;
+  anchorContract: AnchorContract;
+}
+
+export const RegisterValidatorModal: React.FC<RegisterValidatorModalProps> = ({ 
+  isOpen, 
+  onClose,
+  anchorContract
 }) => {
   const toast = useToast();
   const { t } = useTranslation();
+
+  const globalStore = useGlobalStore(state => state.globalStore);
   const [amount, setAmount] = useState<Decimal>(ZERO_DECIMAL);
   const [validatorId, setValidatorId] = useState<any>('');
   const [canBeDelegatedTo, setCanBeDelegatedTo] = useState(false);
@@ -50,14 +57,18 @@ export const RegisterValidatorModal = ({
   const [email, setEmail] = useState('');
 
   useEffect(() => {
+    if (!anchorContract) {
+      return;
+    }
+
     Promise.all([
-      anchor
+      anchorContract
         .get_protocol_settings(),
 
-      window
+      globalStore
         .tokenContract
         .ft_balance_of({
-          account_id: window.accountId
+          account_id: globalStore.accountId
         })
     ]).then(([{ minimum_validator_deposit }, balance]) => {
       setMinimumDeposit(DecimalUtils.fromString(minimum_validator_deposit, OCT_TOKEN_DECIMALS));
@@ -65,7 +76,7 @@ export const RegisterValidatorModal = ({
       setAmount(DecimalUtils.fromString(minimum_validator_deposit, OCT_TOKEN_DECIMALS));
     });
     
-  }, [anchor]);
+  }, [anchorContract, globalStore]);
 
   const onChangeAmount = ({ target: { value } }) => {
     setAmount(DecimalUtils.fromString(value));
@@ -94,11 +105,11 @@ export const RegisterValidatorModal = ({
 
     setIsSubmitting(true);
 
-    window
+    globalStore
       .tokenContract
       .ft_transfer_call(
         {
-          receiver_id: anchor.contractId,
+          receiver_id: anchorContract.contractId,
           amount: DecimalUtils.toU64(amount, OCT_TOKEN_DECIMALS).toString(),
           msg: JSON.stringify({
             RegisterValidator: {
@@ -111,7 +122,7 @@ export const RegisterValidatorModal = ({
             }
           })
         },
-        COMPLEX_CALL_GAS,
+        Gas.COMPLEX_CALL_GAS,
         1,
       ).catch(err => {
         if (err.message === FAILED_TO_REDIRECT_MESSAGE) {

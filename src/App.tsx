@@ -3,7 +3,7 @@ import DocumentTitle from 'react-document-title';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ChakraProvider } from '@chakra-ui/react';
 
-import defaultTheme from 'config/defaultTheme';
+import { defaultTheme } from 'config';
 
 import { 
   Bridge,
@@ -28,7 +28,7 @@ export const App = () => {
         <Router>
           <Routes>
             <Route path="/" element={<Root />}>
-              <Route path='' element={<Navigate to='home' />} />
+              <Route path="" element={<Navigate to='home' />} />
               <Route path="home" element={<Home />} />
               <Route path="appchains" element={<Appchains />} />
               <Route path="appchains/join" element={<AppchainRegister />} />

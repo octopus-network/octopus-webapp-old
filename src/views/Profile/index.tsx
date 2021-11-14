@@ -27,17 +27,19 @@ import { CheckIcon, CopyIcon, EditIcon, ExternalLinkIcon } from '@chakra-ui/icon
 import { utils } from 'near-api-js';
 import { DecimalUtils, ZERO_DECIMAL } from 'utils';
 import { ValidatorProfile } from 'types';
-import octopusConfig from 'config/octopus';
-import { FAILED_TO_REDIRECT_MESSAGE, OCT_TOKEN_DECIMALS } from 'config/constants';
+import { octopusConfig } from 'config';
+import { FAILED_TO_REDIRECT_MESSAGE, OCT_TOKEN_DECIMALS } from 'primitives';
 import { encodeAddress } from '@polkadot/util-crypto';
 import Decimal from 'decimal.js';
+import { useGlobalStore } from 'stores';
 
 export const Profile: React.FC = () => {
   const { id } = useParams();
 
   const toast = useToast();
   const account = useMemo(() => id.split('@')[0], [id]);
-  const appchain = useMemo(() => id.split('@')[1], [id]);
+  const appchainId = useMemo(() => id.split('@')[1], [id]);
+  const globalStore = useGlobalStore(state => state.globalStore);
 
   const { hasCopied: hasCopiedId, onCopy: onCopyId } = useClipboard(account);
   
@@ -52,10 +54,10 @@ export const Profile: React.FC = () => {
   const { hasCopied: hasCopiedEmail, onCopy: onCopyEmail } = useClipboard(validatorProfile?.email);
   
   useEffect(() => {
-    if (!account || !appchain) return;
+    if (!account || !appchainId) return;
     utils.web
       .fetchJson(
-        window.walletConnection._near?.config.nodeUrl,
+        octopusConfig.nodeUrl,
         JSON.stringify({
           "jsonrpc": "2.0",
           "id": "dontcare",
@@ -72,7 +74,7 @@ export const Profile: React.FC = () => {
         );
       });
 
-    window
+    globalStore
       .tokenContract
       .ft_balance_of({
         account_id: account
@@ -83,9 +85,9 @@ export const Profile: React.FC = () => {
         );
       });
 
-    const anchorContractId = `${appchain}.${octopusConfig.registryContractId}`;
+    const anchorContractId = `${appchainId}.${octopusConfig.registryContractId}`;
 
-    const provider = window.walletConnection._near.connection.provider;
+    const provider = globalStore.walletConnection._near.connection.provider;
   
     provider.query({
       request_type: 'view_code',
@@ -93,7 +95,7 @@ export const Profile: React.FC = () => {
       finality: 'optimistic',
     }).then(res => {
       const contract = new Contract(
-        window.walletConnection.account(),
+        globalStore.walletConnection.account(),
         anchorContractId,
         {
           viewMethods: [
@@ -110,7 +112,7 @@ export const Profile: React.FC = () => {
       console.log('No anchor');
     });
 
-  }, [account, appchain]);
+  }, [account, appchainId, globalStore]);
 
   useEffect(() => {
     if (!anchor) {
@@ -171,10 +173,10 @@ export const Profile: React.FC = () => {
             <Icon as={CgProfile} w={5} h={5} />
             <Text>Account Profile in </Text>
           </HStack>
-          <Heading fontSize="md">{appchain}</Heading>
+          <Heading fontSize="md">{appchainId}</Heading>
         </HStack>
         {
-          window.accountId === account ?
+          globalStore.accountId === account ?
           isEditing ?
           <HStack>
             <Button variant="outline" onClick={setIsEditing.off} isDisabled={isSubmiting}>

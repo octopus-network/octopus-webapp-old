@@ -18,15 +18,28 @@ import {
   Skeleton,
 } from '@chakra-ui/react';
 
+import { 
+  OriginAppchainInfo, 
+  AnchorContract, 
+  AppchainState
+} from 'types';
+
 import { DecimalUtils, ZERO_DECIMAL } from 'utils';
 import { useTranslation } from 'react-i18next';
 import { RegisterValidatorModal, ValidatorsTable } from 'components';
-import { FAILED_TO_REDIRECT_MESSAGE, COMPLEX_CALL_GAS, OCT_TOKEN_DECIMALS } from 'config/constants';
+import { FAILED_TO_REDIRECT_MESSAGE, Gas, OCT_TOKEN_DECIMALS } from 'primitives';
 import Decimal from 'decimal.js';
+import { useGlobalStore } from 'stores';
 
-const StakingPanel = ({ status, anchor }) => {
-  const { appchain_state } = status;
+type StakingPanelProps = {
+  appchain: OriginAppchainInfo;
+  anchorContract: AnchorContract;
+}
+
+const StakingPanel: React.FC<StakingPanelProps> = ({ appchain, anchorContract }) => {
+ 
   const toast = useToast();
+  const globalStore = useGlobalStore(state => state.globalStore);
   const [depositAmount, setDepositAmount] = useState<Decimal>(ZERO_DECIMAL);
   const [inputAmount, setInputAmount] = useState<Decimal>(ZERO_DECIMAL);
  
@@ -42,14 +55,18 @@ const StakingPanel = ({ status, anchor }) => {
   const { t } = useTranslation();
 
   useEffect(() => {
+    if (!anchorContract) {
+      return;
+    }
+
     Promise.all([
-      anchor
+      anchorContract
         .get_validator_deposit_of({
-          validator_id: window.accountId
+          validator_id: globalStore.accountId
         }),
-      anchor
+      anchorContract
         .get_unbonded_stakes_of({
-          account_id: window.accountId
+          account_id: globalStore.accountId
         })
     ]).then(([deposit]) => {
       setDepositAmount(
@@ -57,7 +74,7 @@ const StakingPanel = ({ status, anchor }) => {
       );
     });
     
-  }, [anchor]);
+  }, [anchorContract, globalStore]);
 
   useEffect(() => {
     if (stakeMorePopoverOpen) {
@@ -71,7 +88,7 @@ const StakingPanel = ({ status, anchor }) => {
 
   const onUnbond = () => {
     setIsUnbonding(true);
-    anchor
+    anchorContract
       .unbond_stake()
       .then(_ => {
         window.location.reload();
@@ -89,15 +106,15 @@ const StakingPanel = ({ status, anchor }) => {
 
   const onIncreaseStake = () => {
     setIsStaking(true);
-    window
+    globalStore
       .tokenContract
       .ft_transfer_call(
         {
-          receiver_id: anchor.contractId,
+          receiver_id: anchorContract.contractId,
           amount: DecimalUtils.toU64(inputAmount, OCT_TOKEN_DECIMALS).toString(),
           msg: '"IncreaseStake"'
         },
-        COMPLEX_CALL_GAS,
+        Gas.COMPLEX_CALL_GAS,
         1,
       ).catch(err => {
         if (err.message === FAILED_TO_REDIRECT_MESSAGE) {
@@ -160,7 +177,7 @@ const StakingPanel = ({ status, anchor }) => {
               </PopoverContent>
             </Popover>
             {
-              appchain_state === 'Active' ?
+              appchain.appchain_state === AppchainState.Active ?
               <>
                 <Button size="sm">Decrease</Button>
                 <Popover
@@ -193,40 +210,17 @@ const StakingPanel = ({ status, anchor }) => {
           </HStack> :
 
           <Button size="sm" colorScheme="octoColor" onClick={setRegsiterModalOpen.on}>Register Validator</Button>
-          // <Popover
-          //   initialFocusRef={initialFocusRef}
-          //   placement="bottom"
-          //   isOpen={registerPopoverOpen}
-          //   onClose={setRegisterPopoverOpen.off}
-          //   >
-          //   <PopoverTrigger>
-          //     <Button colorScheme="octoColor"
-          //       isDisabled={registerPopoverOpen} onClick={setRegisterPopoverOpen.on}>Register</Button>
-          //   </PopoverTrigger>
-          //   <PopoverContent>
-          //     <PopoverBody>
-          //       <Box p="2" d="flex">
-          //         <Heading fontSize="lg">Register</Heading>
-          //       </Box>
-          //     </PopoverBody>
-          //     <PopoverFooter d="flex" justifyContent="flex-end">
-          //       <HStack spacing={3}>
-          //         <Button size="sm" onClick={setRegisterPopoverOpen.off}>{t('Cancel')}</Button>
-          //         <Button size="sm" colorScheme="octoColor">{t('Confirm')}</Button>
-          //       </HStack>
-          //     </PopoverFooter>
-          //   </PopoverContent>
-          // </Popover>
+       
         }
       </Flex>
       </Skeleton>
       <Box mt={4} p={2} borderWidth={1} borderRadius={10}>
-        <ValidatorsTable anchor={anchor} appchainId={status.appchain_id} />
+        <ValidatorsTable anchorContract={anchorContract} appchainId={appchain.appchain_id} />
       </Box>
       
     </Box>
     <RegisterValidatorModal isOpen={registerModalOpen} onClose={setRegsiterModalOpen.off}
-      anchor={anchor} />
+      anchorContract={anchorContract} />
     </>
   );
 }

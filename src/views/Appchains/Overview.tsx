@@ -28,10 +28,17 @@ import {
   CloseButton
 } from '@chakra-ui/react';
 
+import {
+  AppchainId,
+  OriginAppchainInfo,
+  AnchorContract,
+  AppchainState
+} from 'types';
+
 import dayjs from 'dayjs';
 import axios from 'axios';
-import { Contract } from 'near-api-js';
-import { loginNear, appchainStates, DecimalUtils, ZERO_DECIMAL } from 'utils';
+
+import { DecimalUtils, ZERO_DECIMAL } from 'utils';
 import { AiOutlineUser, AiOutlineGlobal, AiFillGithub, AiOutlineFileZip } from 'react-icons/ai';
 import { FaStar } from 'react-icons/fa';
 import { FiAnchor } from 'react-icons/fi';
@@ -42,19 +49,27 @@ import { AiOutlineEdit } from 'react-icons/ai';
 import { StateBadge, ScoreChart } from 'components';
 import StakingPanel from './StakingPanel';
 import Permissions from './Permissions';
-import octopusConfig from 'config/octopus';
-import { OCT_TOKEN_DECIMALS } from 'config/constants';
+import { octopusConfig } from 'config';
+import { OCT_TOKEN_DECIMALS } from 'primitives';
+import { useGlobalStore } from 'stores';
 
 import Decimal from 'decimal.js';
 
-const Overview = ({ appchainId, onDrawerClose }) => {
+type OverviewProps = {
+  appchainId: AppchainId;
+  onDrawerClose: VoidFunction;
+}
 
-  const [appchainStatus, setAppchainStatus] = useState<any>();
-  const { hasCopied, onCopy } = useClipboard(appchainStatus?.appchain_metadata?.contact_email);
+const Overview: React.FC<OverviewProps> = ({ appchainId, onDrawerClose }) => {
+
+  const [appchain, setAppchain] = useState<OriginAppchainInfo>();
+
+  const { hasCopied, onCopy } = useClipboard(appchain?.appchain_metadata?.contact_email);
   const [isOwner, setIsOwner] = useState(false);
   const [accountBalance, setAccountBalance] = useState<Decimal>(ZERO_DECIMAL);
   const toast = useToast();
 
+  const globalStore = useGlobalStore(state => state.globalStore);
   const [counterData, setCounterData] = useState<any>();
   const highestScore = useRef<Decimal>(ZERO_DECIMAL);
   const lowestScore = useRef<Decimal>(
@@ -65,39 +80,33 @@ const Overview = ({ appchainId, onDrawerClose }) => {
   const [isUpdating, setIsUpdating] = useBoolean(false);
   const [appchainMetadata, setAppchainMeataData] = useState<any>({});
   const [ftMetadata, setFTMetadata] = useState<any>({});
-  const [inStaking, setInStaking] = useBoolean(false);
+  const [isInStaking, setIsInStaking] = useBoolean(false);
 
   const [isAdmin, setIsAdmin] = useState(false);
-  const [anchor, setAnchor] = useState<Contract>();
+  const [anchorContract, setAnchorContract] = useState<AnchorContract>();
 
   useEffect(() => {
-    axios.get(`/api/counter?appchain=${appchainId}`)
-      .then(res => res.data)
-      .then((data: any) => {
-        if (data.success) {
-          const tmpObj = {}
-          data.data.forEach(({ voting_score, created_at }) => {
-            const score = DecimalUtils.fromString(voting_score, OCT_TOKEN_DECIMALS);
-            if (score.lt(lowestScore.current)) {
-              lowestScore.current = score;
-            } else if (score.gt(highestScore.current)) {
-              highestScore.current = score;
-            }
-            tmpObj[dayjs(created_at).format('MM-DD')] = score.toNumber();
-          });
-
-          setCounterData(
-            Object.entries(tmpObj).slice(-7).map(([date, score]) => ({ date, score }))
-          );
-
-        }
+    globalStore
+      .registryContract
+      .get_appchain_status_of({
+        appchain_id: appchainId
+      })
+      .then(appchain => {
+        setAppchain(appchain);
+        setAppchainMeataData(appchain.appchain_metadata);
+        setFTMetadata(appchain.appchain_metadata.fungible_token_metadata);
+        setIsOwner(globalStore.accountId === appchain.appchain_owner);
       });
     
-    if (window.accountId) {
-      window
+  }, [appchainId, globalStore]);
+
+  useEffect(() => {
+    
+    if (globalStore.accountId) {
+      globalStore
         .tokenContract
         .ft_balance_of({
-          account_id: window.accountId
+          account_id: globalStore.accountId
         }).then(balance => {
           setAccountBalance(
             DecimalUtils.fromString(balance, OCT_TOKEN_DECIMALS)
@@ -105,85 +114,97 @@ const Overview = ({ appchainId, onDrawerClose }) => {
         });
     }
 
-    window
+    globalStore
       .registryContract
       .get_owner()
       .then(owner => {
-        setIsAdmin(owner === window.accountId);
+        setIsAdmin(owner === globalStore.accountId);
       });
 
-    const provider = window.walletConnection._near.connection.provider;
+    if (appchain?.appchain_anchor) {
+      const provider = globalStore.walletConnection?._near.connection.provider;
 
-    const anchorContractId = `${appchainId}.${octopusConfig.registryContractId}`;
+      provider.query({
+        request_type: 'view_code',
+        account_id: appchain?.appchain_anchor,
+        finality: 'optimistic',
+      }).then(_ => {
+        const contract = new AnchorContract(
+          globalStore.walletConnection.account(),
+          appchain?.appchain_anchor,
+          {
+            viewMethods: [
+              'get_appchain_settings',
+              'get_validator_deposit_of',
+              'get_anchor_status',
+              'get_processing_status_of',
+              'get_unbonded_stakes_of',
+              'get_anchor_settings',
+              'get_protocol_settings',
+              'get_validator_set_info_of',
+              'get_validator_list_of',
+              'get_delegator_deposit_of'
+            ],
+            changeMethods: [
+              'unbond_stake',
+              'go_booting',
+              'go_live',
+              'set_rpc_endpoint',
+              'set_subql_endpoint',
+              'set_era_reward'
+            ]
+          }
+        );
 
-    provider.query({
-      request_type: 'view_code',
-      account_id: anchorContractId,
-      finality: 'optimistic',
-    }).then(res => {
-      const contract = new Contract(
-        window.walletConnection.account(),
-        anchorContractId,
-        {
-          viewMethods: [
-            'get_appchain_settings',
-            'get_validator_deposit_of',
-            'get_anchor_status',
-            'get_processing_status_of',
-            'get_unbonded_stakes_of',
-            'get_anchor_settings',
-            'get_protocol_settings',
-            'get_validator_set_info_of',
-            'get_validator_list_of',
-            'get_delegator_deposit_of'
-          ],
-          changeMethods: [
-            'unbond_stake',
-            'go_booting',
-            'go_live',
-            'set_rpc_endpoint',
-            'set_subql_endpoint',
-            'set_era_reward'
-          ]
-        }
-      );
-
-      setAnchor(contract);
-    }).catch(err => {
-      setAnchor(null);
-      console.log('No anchor');
-    });
-
-  }, [appchainId]);
-
-  useEffect(() => {
-    window
-      .registryContract
-      .get_appchain_status_of({
-        appchain_id: appchainId
-      })
-      .then(status => {
-        setAppchainStatus(status);
-        setAppchainMeataData(status.appchain_metadata);
-        setFTMetadata(status.appchain_metadata.fungible_token_metadata);
-        setIsOwner(window.accountId && status?.appchain_owner === window.accountId);
+        setAnchorContract(contract);
       });
-  }, [appchainId]);
+    }
+
+    if (appchain?.appchain_state === AppchainState.InQueue) {
+      axios
+        .get(`/api/counter?appchain=${appchain.appchain_id}`)
+        .then(res => res.data)
+        .then((data: any) => {
+          if (data.success) {
+            const tmpObj = {}
+            data.data.forEach(({ voting_score, created_at }) => {
+              const score = DecimalUtils.fromString(voting_score, OCT_TOKEN_DECIMALS);
+              if (score.lt(lowestScore.current)) {
+                lowestScore.current = score;
+              } else if (score.gt(highestScore.current)) {
+                highestScore.current = score;
+              }
+              tmpObj[dayjs(created_at).format('MM-DD')] = score.toNumber();
+            });
+  
+            setCounterData(
+              Object.entries(tmpObj).slice(-7).map(([date, score]) => ({ date, score }))
+            );
+  
+          }
+        });
+    }
+
+  }, [appchain, globalStore]);
 
   const onUpdate = async () => {
     setIsUpdating.on();
 
     try {
       // delete appchainMetadata['custom_metadata'];
-      await window
-        .registryContract
-        .update_appchain_metadata({
-          appchain_id: appchainId,
-          ...appchainMetadata,
-          fungible_token_metadata: ftMetadata
-        });
-
-      window.location.reload();
+      await 
+        globalStore
+          .registryContract
+          .update_appchain_metadata({
+            appchain_id: appchain.appchain_id,
+            ...appchainMetadata,
+            fungible_token_metadata: ftMetadata
+          });
+      
+      // we need to wait 1000ms to see then appchain state update
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (err) {
       setIsEditing.off();
       setIsUpdating.off();
@@ -196,7 +217,16 @@ const Overview = ({ appchainId, onDrawerClose }) => {
     }
   }
 
-  const onAppchainMetadataChange = (k, v, isNumber = false) => {
+  const onLogin = () => {
+    globalStore
+      .walletConnection
+      .requestSignIn(
+        octopusConfig.registryContractId,
+        'Octopus Webapp'
+      );
+  }
+
+  const onAppchainMetadataChange = (k: string, v: string) => {
     setAppchainMeataData(Object.assign({}, appchainMetadata, { [k]: v }));
   }
 
@@ -219,23 +249,23 @@ const Overview = ({ appchainId, onDrawerClose }) => {
 
           <VStack alignItems="flex-start" spacing={1} style={{
             transition: 'opacity .3s ease',
-            opacity: inStaking ? '.3' : 1
+            opacity: isInStaking ? .3 : 1
           }}>
             <HStack>
-              <Skeleton isLoaded={!!appchainStatus}>
-                <Heading fontSize="3xl">{appchainStatus?.appchain_id || 'loading...'}</Heading>
+              <Skeleton isLoaded={!!appchain}>
+                <Heading fontSize="3xl">{appchain?.appchain_id || 'loading...'}</Heading>
               </Skeleton>
               {
-                appchainStatus ?
-                  <StateBadge state={appchainStates[appchainStatus.appchain_state] || 'Unknown'} /> : null
+                appchain ?
+                  <StateBadge state={appchain.appchain_state} /> : null
               }
             </HStack>
-            <Skeleton isLoaded={!!appchainStatus}>
+            <Skeleton isLoaded={!!appchain}>
               <HStack color="gray" spacing={5} fontSize="sm">
-                <Link isExternal href={`${octopusConfig.explorerUrl}/accounts/${appchainStatus?.appchain_owner}`}>
+                <Link isExternal href={`${octopusConfig.explorerUrl}/accounts/${appchain?.appchain_owner}`}>
                   <HStack spacing={1}>
                     <Icon as={AiOutlineUser} />
-                    <Text>{appchainStatus?.appchain_owner || 'loading...'}</Text>
+                    <Text>{appchain?.appchain_owner || 'loading...'}</Text>
                   </HStack>
                 </Link>
 
@@ -243,8 +273,8 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                   <Icon as={IoMdTime} />
                   <Text>
                     {
-                      appchainStatus ? dayjs(
-                        appchainStatus.registered_time.substr(0, 13) * 1
+                      appchain ? dayjs(
+                        appchain.registered_time.substr(0, 13) as any * 1
                       ).format('YYYY-MM-DD HH:mm') : 'loading...'
                     }
                   </Text>
@@ -254,16 +284,16 @@ const Overview = ({ appchainId, onDrawerClose }) => {
             </Skeleton>
           </VStack>
 
-          <Permissions onGoStake={setInStaking.on} onCancelStake={setInStaking.off} inStaking={inStaking}
-            anchor={anchor} status={appchainStatus} />
+          <Permissions onGoStake={setIsInStaking.on} onCancelStake={setIsInStaking.off} isInStaking={isInStaking}
+            anchorContract={anchorContract} appchain={appchain} />
         </Flex>
         <Divider mt={3} mb={3} />
         {
-          inStaking ?
-            <StakingPanel status={appchainStatus} anchor={anchor} /> :
+          isInStaking ?
+            <StakingPanel appchain={appchain} anchorContract={anchorContract} /> :
             <List>
               {
-                appchainStatus?.appchain_state === 'InQueue' &&
+                appchain?.appchain_state === AppchainState.InQueue &&
                 <>
                   <Box>
                     <Flex justifyContent="space-between">
@@ -274,7 +304,7 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                       <Heading fontSize="md" fontWeight={500}>
                         {
                           DecimalUtils.beautify(
-                            DecimalUtils.fromString(appchainStatus?.voting_score, OCT_TOKEN_DECIMALS)
+                            DecimalUtils.fromString(appchain?.voting_score, OCT_TOKEN_DECIMALS)
                           )
                         }
                       </Heading>
@@ -308,39 +338,14 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                   </Flex> : null
               }
               {
-                appchainStatus?.appchain_metadata?.website_url &&
-                <>
-                  <Flex direction={{ base: "column", sm: "row" }} justifyContent="space-between">
-                    <HStack fontSize="sm" spacing={1} minW="130px" mr={2}>
-                      <Icon as={AiOutlineGlobal} />
-                      <Text>Website</Text>
-                    </HStack>
-                    {
-                      isEditing ?
-                        <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.website_url}
-                          onChange={e => onAppchainMetadataChange('website_url', e.target.value)} width="auto" /> :
-                        <Link href={appchainStatus?.appchain_metadata?.website_url} isExternal flex={1} overflow="hidden">
-                          <HStack justifyContent={{ base: "start", sm: "end" }}>
-                            <Heading fontSize="md" fontWeight={500} maxW="100%" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
-                              {appchainStatus?.appchain_metadata?.website_url}
-                            </Heading>
-                            <ExternalLinkIcon mx="2px" />
-                          </HStack>
-                        </Link>
-                    }
-                  </Flex>
-                  <Divider mt={3} mb={3} />
-                </>
-              }
-              {
-                !!anchor &&
+                !!appchain?.appchain_anchor ?
                 <>
                   <Flex justifyContent="space-between">
                     <HStack fontSize="sm" spacing={1} minW="130px" mr={2}>
                       <Icon as={FiAnchor} />
                       <Text>Anchor</Text>
                     </HStack>
-                    <Link href={`${octopusConfig.explorerUrl}/accounts/${appchainId}.${octopusConfig.registryContractId}`} isExternal flex={1} overflow="hidden">
+                    <Link href={`${octopusConfig.explorerUrl}/accounts/${appchain?.appchain_anchor}`} isExternal flex={1} overflow="hidden">
                       <HStack justifyContent={{ base: "start", sm: "end" }}>
                         <Heading fontSize="md" fontWeight={500} maxW="100%" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
                           {appchainId}.{octopusConfig.registryContractId}
@@ -350,9 +355,36 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                     </Link>
                   </Flex>
                   <Divider mt={3} mb={3} />
-                </>
+                </> : null
               }
-              <Skeleton isLoaded={!!appchainStatus}>
+              {
+                isEditing ||
+                appchain?.appchain_metadata?.website_url ?
+                <>
+                  <Flex direction={{ base: "column", sm: "row" }} justifyContent="space-between">
+                    <HStack fontSize="sm" spacing={1} minW="130px" mr={2}>
+                      <Icon as={AiOutlineGlobal} />
+                      <Text>Website</Text>
+                    </HStack>
+                    {
+                      isEditing ?
+                        <Input disabled={isUpdating} defaultValue={appchain?.appchain_metadata?.website_url}
+                          onChange={e => onAppchainMetadataChange('website_url', e.target.value)} width="auto" /> :
+                        <Link href={appchain?.appchain_metadata?.website_url} isExternal flex={1} overflow="hidden">
+                          <HStack justifyContent={{ base: "start", sm: "end" }}>
+                            <Heading fontSize="md" fontWeight={500} maxW="100%" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
+                              {appchain?.appchain_metadata?.website_url}
+                            </Heading>
+                            <ExternalLinkIcon mx="2px" />
+                          </HStack>
+                        </Link>
+                    }
+                  </Flex>
+                  <Divider mt={3} mb={3} />
+                </> : null
+              }
+              
+              <Skeleton isLoaded={!!appchain}>
                 <Flex direction={{ base: "column", sm: "row" }} justifyContent="space-between">
                   <HStack fontSize="sm" spacing={1} minW="130px" mr={2}>
                     <Icon as={AttachmentIcon} />
@@ -360,13 +392,13 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                   </HStack>
                   {
                     isEditing ?
-                      <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.function_spec_url}
+                      <Input disabled={isUpdating} defaultValue={appchain?.appchain_metadata?.function_spec_url}
                         onChange={e => onAppchainMetadataChange('function_spec_url', e.target.value)} width="auto" /> :
-                      appchainStatus?.appchain_metadata?.function_spec_url ?
-                        <Link href={appchainStatus?.appchain_metadata?.function_spec_url} isExternal flex={1} overflow="hidden">
+                        appchain?.appchain_metadata?.function_spec_url ?
+                        <Link href={appchain?.appchain_metadata?.function_spec_url} isExternal flex={1} overflow="hidden">
                           <HStack justifyContent={{ base: "start", sm: "end" }}>
                             <Heading fontSize="md" fontWeight={500} maxW="100%" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
-                              {appchainStatus?.appchain_metadata?.function_spec_url}
+                              {appchain?.appchain_metadata?.function_spec_url}
                             </Heading>
                             <ExternalLinkIcon mx="2px" />
                           </HStack>
@@ -375,7 +407,7 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                 </Flex>
               </Skeleton>
               <Divider mt={3} mb={3} />
-              <Skeleton isLoaded={!!appchainStatus}>
+              <Skeleton isLoaded={!!appchain}>
                 <Flex direction={{ base: "column", sm: "row" }} justifyContent="space-between">
                   <HStack fontSize="sm" spacing={1} minW="130px" mr={2}>
                     <Icon as={AiFillGithub} />
@@ -383,12 +415,12 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                   </HStack>
                   {
                     isEditing ?
-                      <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.github_address}
+                      <Input disabled={isUpdating} defaultValue={appchain?.appchain_metadata?.github_address}
                         onChange={e => onAppchainMetadataChange('github_address', e.target.value)} width="auto" /> :
-                      <Link href={appchainStatus?.appchain_metadata?.github_address} isExternal flex={1} overflow="hidden">
+                      <Link href={appchain?.appchain_metadata?.github_address} isExternal flex={1} overflow="hidden">
                         <HStack justifyContent={{ base: "start", sm: "end" }}>
                           <Heading fontSize="md" fontWeight={500} maxW="100%" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
-                            {appchainStatus?.appchain_metadata?.github_address}
+                            {appchain?.appchain_metadata?.github_address}
                           </Heading>
                           <ExternalLinkIcon mx="2px" />
                         </HStack>
@@ -397,7 +429,7 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                 </Flex>
               </Skeleton>
               <Divider mt={3} mb={3} />
-              <Skeleton isLoaded={!!appchainStatus}>
+              <Skeleton isLoaded={!!appchain}>
                 <Flex direction={{ base: "column", sm: "row" }} justifyContent="space-between">
                   <HStack fontSize="sm" spacing={1} minW="130px" mr={2}>
                     <Icon as={AiOutlineFileZip} />
@@ -405,12 +437,12 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                   </HStack>
                   {
                     isEditing ?
-                      <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.github_release}
+                      <Input disabled={isUpdating} defaultValue={appchain?.appchain_metadata?.github_release}
                         onChange={e => onAppchainMetadataChange('github_release', e.target.value)} width="auto" /> :
-                      <Link href={appchainStatus?.appchain_metadata?.github_release} isExternal flex={1} overflow="hidden">
+                      <Link href={appchain?.appchain_metadata?.github_release} isExternal flex={1} overflow="hidden">
                         <HStack justifyContent={{ base: "start", sm: "end" }}>
                           <Heading fontSize="md" fontWeight={500} overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
-                            {appchainStatus?.appchain_metadata?.github_release}
+                            {appchain?.appchain_metadata?.github_release}
                           </Heading>
                           <ExternalLinkIcon mx="2px" />
                         </HStack>
@@ -419,7 +451,7 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                 </Flex>
               </Skeleton>
               <Divider mt={3} mb={3} />
-              <Skeleton isLoaded={!!appchainStatus}>
+              <Skeleton isLoaded={!!appchain}>
                 <Flex direction={{ base: "column", sm: "row" }} justifyContent="space-between" c>
                   <HStack fontSize="sm" spacing={1} minW="130px" mr={2}>
                     <Icon as={HiOutlineMail} />
@@ -427,10 +459,10 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                   </HStack>
                   {
                     isEditing ?
-                      <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.contact_email}
+                      <Input disabled={isUpdating} defaultValue={appchain?.appchain_metadata?.contact_email}
                         onChange={e => onAppchainMetadataChange('contact_email', e.target.value)} width="auto" /> :
                       <HStack flex={1} overflow="hidden" justifyContent={{ base: "start", sm: "end" }}>
-                        <Heading fontSize="md" fontWeight={500}>{appchainStatus?.appchain_metadata?.contact_email}</Heading>
+                        <Heading fontSize="md" fontWeight={500}>{appchain?.appchain_metadata?.contact_email}</Heading>
                         <IconButton size="sm" aria-label="Copy" icon={
                           hasCopied ? <CheckIcon /> : <CopyIcon />
                         } onClick={onCopy} />
@@ -439,21 +471,21 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                 </Flex>
               </Skeleton>
 
-              <Skeleton isLoaded={!!appchainStatus}>
+              <Skeleton isLoaded={!!appchain}>
 
                 <List spacing={2} p={3} bg="#f9fafc" borderRadius={5} mt={4}>
                   <Flex justifyContent="space-between" fontSize="sm">
                     <Text fontSize="xs">Premined Amount</Text>
                     {
                       isEditing ?
-                        <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.premined_wrapped_appchain_token} bg="white"
-                          onChange={e => onAppchainMetadataChange('premined_wrapped_appchain_token', e.target.value, true)} width="auto" size="sm" /> :
+                        <Input disabled={isUpdating} defaultValue={appchain?.appchain_metadata?.premined_wrapped_appchain_token} bg="white"
+                          onChange={e => onAppchainMetadataChange('premined_wrapped_appchain_token', e.target.value,)} width="auto" size="sm" /> :
                         <HStack>
                           <Heading fontSize="sm" fontWeight={500}>
                             {
                               DecimalUtils.beautify(
                                 DecimalUtils.fromString(
-                                  appchainStatus?.appchain_metadata?.premined_wrapped_appchain_token
+                                  appchain?.appchain_metadata?.premined_wrapped_appchain_token
                                 ),
                                 0
                               )
@@ -466,11 +498,11 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                     <Text fontSize="xs">Premined Beneficiary</Text>
                     {
                       isEditing ?
-                        <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.premined_wrapped_appchain_token_beneficiary} bg="white"
+                        <Input disabled={isUpdating} defaultValue={appchain?.appchain_metadata?.premined_wrapped_appchain_token_beneficiary} bg="white"
                           onChange={e => onAppchainMetadataChange('premined_wrapped_appchain_token_beneficiary', e.target.value)} width="auto" size="sm" /> :
                         <HStack>
                           <Heading fontSize="sm" fontWeight={500}>
-                            {appchainStatus?.appchain_metadata?.premined_wrapped_appchain_token_beneficiary}
+                            {appchain?.appchain_metadata?.premined_wrapped_appchain_token_beneficiary}
                           </Heading>
                         </HStack>
                     }
@@ -479,14 +511,14 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                     <Text fontSize="xs">IDO Amount</Text>
                     {
                       isEditing ?
-                        <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.ido_amount_of_wrapped_appchain_token} bg="white"
-                          onChange={e => onAppchainMetadataChange('ido_amount_of_wrapped_appchain_token', e.target.value, true)} width="auto" size="sm" /> :
+                        <Input disabled={isUpdating} defaultValue={appchain?.appchain_metadata?.ido_amount_of_wrapped_appchain_token} bg="white"
+                          onChange={e => onAppchainMetadataChange('ido_amount_of_wrapped_appchain_token', e.target.value)} width="auto" size="sm" /> :
                         <HStack>
                           <Heading fontSize="sm" fontWeight={500}>
                             {
                               
                               DecimalUtils.beautify(
-                                DecimalUtils.fromString(appchainStatus?.appchain_metadata?.ido_amount_of_wrapped_appchain_token),
+                                DecimalUtils.fromString(appchain?.appchain_metadata?.ido_amount_of_wrapped_appchain_token),
                                 0
                               )
                             }
@@ -494,34 +526,34 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                         </HStack>
                     }
                   </Flex>
-                  <Flex justifyContent="space-between" fontSize="sm">
+                  {/* <Flex justifyContent="space-between" fontSize="sm">
                     <Text fontSize="xs">Era Reward</Text>
                     {
                       isEditing ?
-                        <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.initial_era_reward} bg="white"
-                          onChange={e => onAppchainMetadataChange('initial_era_reward', e.target.value, true)} width="auto" size="sm" /> :
+                        <Input disabled={isUpdating} defaultValue={appchain?.appchain_metadata?.initial_era_reward} bg="white"
+                          onChange={e => onAppchainMetadataChange('initial_era_reward', e.target.value)} width="auto" size="sm" /> :
                         <HStack>
                           <Heading fontSize="sm" fontWeight={600}>
                             {
                               DecimalUtils.beautify(
-                                DecimalUtils.fromString(appchainStatus?.appchain_metadata?.initial_era_reward),
+                                DecimalUtils.fromString(appchain?.appchain_metadata?.initial_era_reward),
                                 0
                               )
                             }
                           </Heading>
                         </HStack>
                     }
-                  </Flex>
+                  </Flex> */}
                   <Divider />
                   <Flex justifyContent="space-between" fontSize="sm">
                     <Text fontSize="xs">Token Name</Text>
                     {
                       isEditing ?
-                        <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.fungible_token_metadata?.name} bg="white"
+                        <Input disabled={isUpdating} defaultValue={appchain?.appchain_metadata?.fungible_token_metadata?.name} bg="white"
                           onChange={e => onFTMetadataChange('name', e.target.value)} width="auto" size="sm" /> :
                         <HStack>
                           <Heading fontSize="sm" fontWeight={500}>
-                            {appchainStatus?.appchain_metadata?.fungible_token_metadata?.name}
+                            {appchain?.appchain_metadata?.fungible_token_metadata?.name}
                           </Heading>
                         </HStack>
                     }
@@ -530,11 +562,11 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                     <Text fontSize="xs">Token Symbol</Text>
                     {
                       isEditing ?
-                        <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.fungible_token_metadata?.symbol} bg="white"
+                        <Input disabled={isUpdating} defaultValue={appchain?.appchain_metadata?.fungible_token_metadata?.symbol} bg="white"
                           onChange={e => onFTMetadataChange('symbol', e.target.value)} width="auto" size="sm" /> :
                         <HStack>
                           <Heading fontSize="sm" fontWeight={500}>
-                            {appchainStatus?.appchain_metadata?.fungible_token_metadata?.symbol}
+                            {appchain?.appchain_metadata?.fungible_token_metadata?.symbol}
                           </Heading>
                         </HStack>
                     }
@@ -544,11 +576,11 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                     <Text fontSize="xs">Icon</Text>
                     {
                       isEditing ?
-                        <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.fungible_token_metadata?.icon} bg="white"
+                        <Input disabled={isUpdating} defaultValue={appchain?.appchain_metadata?.fungible_token_metadata?.icon} bg="white"
                           onChange={e => onFTMetadataChange('icon', e.target.value)} width="auto" size="sm" /> :
                         <HStack>
                           <Heading fontSize="sm" fontWeight={500} maxWidth={200} overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
-                            {appchainStatus?.appchain_metadata?.fungible_token_metadata?.icon}
+                            {appchain?.appchain_metadata?.fungible_token_metadata?.icon}
                           </Heading>
                         </HStack>
                     }
@@ -557,11 +589,11 @@ const Overview = ({ appchainId, onDrawerClose }) => {
                     <Text fontSize="xs">Decimals</Text>
                     {
                       isEditing ?
-                        <Input disabled={isUpdating} defaultValue={appchainStatus?.appchain_metadata?.fungible_token_metadata?.decimals} bg="white"
+                        <Input disabled={isUpdating} defaultValue={appchain?.appchain_metadata?.fungible_token_metadata?.decimals} bg="white"
                           onChange={e => onFTMetadataChange('decimals', e.target.value, true)} width="auto" size="sm" /> :
                         <HStack>
                           <Heading fontSize="md" fontWeight={500}>
-                            {appchainStatus?.appchain_metadata?.fungible_token_metadata?.decimals}
+                            {appchain?.appchain_metadata?.fungible_token_metadata?.decimals}
                           </Heading>
                         </HStack>
                     }
@@ -576,13 +608,13 @@ const Overview = ({ appchainId, onDrawerClose }) => {
       </DrawerBody>
       <DrawerFooter bg="rgba(120, 120, 150, .08)">
         {
-          window.accountId ?
+          globalStore.accountId ?
             <VStack alignItems="flex-end" spacing={0}>
               <HStack>
                 <Avatar size="sm" />
                 <VStack spacing={-1} alignItems="flex-start">
                   <HStack>
-                    <Text>{window.accountId}</Text>
+                    <Text>{globalStore.accountId}</Text>
                     {
                       isOwner &&
                       <Tooltip label="Owner of this appchain">
@@ -606,7 +638,7 @@ const Overview = ({ appchainId, onDrawerClose }) => {
               </HStack>
 
             </VStack> :
-            <Button size="sm" onClick={loginNear}>
+            <Button size="sm" onClick={onLogin}>
               <Avatar size="xs" mr="1" />
               <Text color="gray">Login</Text>
             </Button>

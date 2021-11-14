@@ -12,7 +12,7 @@ import {
 } from '@chakra-ui/react';
 
 import { useTranslation } from 'react-i18next';
-import octopusConfig from 'config/octopus';
+import { octopusConfig } from 'config';
 import { FaDiscord, FaTwitter, FaGithub } from 'react-icons/fa';
 
 export const Footer = () => {

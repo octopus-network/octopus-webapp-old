@@ -3,14 +3,28 @@ import React, { useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   useToast,
   Spinner,
-  useColorMode,
-  Box
+  useColorModeValue,
+  Box,
+  Container,
+  Center
 } from '@chakra-ui/react';
 
-import { providers } from "near-api-js";
-import octopusConfig from 'config/octopus';
+import { 
+  providers, 
+  connect, 
+  keyStores, 
+  WalletConnection
+} from 'near-api-js';
+
+import { 
+  RegistryContract,
+  TokenContract
+} from 'types';
+
+import { octopusConfig } from 'config';
 import { Footer, Header } from 'components';
 import { useLocation, useNavigate, Outlet } from 'react-router-dom';
+import { useGlobalStore } from 'stores';
 
 const Loading = () => {
   return (
@@ -35,18 +49,25 @@ export const Root: React.FC = () => {
   const transactionHashes = urlParams.get('transactionHashes') || '';
   const errorMessage = urlParams.get('errorMessage') || '';
 
-  const { colorMode } = useColorMode();
+  const bgImage = useColorModeValue('linear-gradient(to bottom, #f5f6f9, #fff 60vh)', 'none');
+
   const location = useLocation();
   const navigate = useNavigate();
   const toastIdRef = useRef<any>();
 
+  const { globalStore, updateGlobalStore } = useGlobalStore();
+
   const checkRedirect = useCallback(() => {
     if (/appchains\/join/.test(location.pathname)) {
-      navigate('/appchains/registered');
+      navigate('/appchains');
     }
   }, [location.pathname, navigate]);
 
   useEffect(() => {
+    if (!globalStore.accountId) {
+      return;
+    }
+    
     if (transactionHashes) {
       toastIdRef.current = toast({
         position: 'top-right',
@@ -56,7 +77,7 @@ export const Root: React.FC = () => {
       });
       const provider = new providers.JsonRpcProvider(octopusConfig.archivalUrl);
       provider
-        .txStatus(transactionHashes, window.accountId)
+        .txStatus(transactionHashes, globalStore.accountId)
         .then(status => {
           const { receipts_outcome } = status;
           let message = '';
@@ -79,6 +100,7 @@ export const Root: React.FC = () => {
             checkRedirect();
           }
         }).catch(err => {
+          console.log(err);
           setTimeout(() => {
             toast.update(toastIdRef.current, {
               description: err?.kind?.ExecutionError || err.toString(),
@@ -103,18 +125,82 @@ export const Root: React.FC = () => {
     const newUrl = `${protocol}//${host}${pathname}${params ? '?' + params : ''}${hash}`;
     window.history.pushState({ path: newUrl }, '', newUrl);
 
-  }, [errorMessage, transactionHashes, checkRedirect, toast, urlParams]);
+  }, [errorMessage, transactionHashes, checkRedirect, toast, urlParams, globalStore]);
+
+  // init near
+  useEffect(() => {
+    connect({
+      ...octopusConfig,
+      deps: { keyStore: new keyStores.BrowserLocalStorageKeyStore() },
+    }).then(near => {
+      const walletConnection = new WalletConnection(near, 'octopus_bridge');
+      const pjsAccount = window.localStorage.getItem('pjsAccount') || undefined;
+
+      const registryContract = new RegistryContract(
+        walletConnection.account(),
+        octopusConfig.registryContractId,
+        {
+          viewMethods: [
+            'get_minimum_register_deposit', 
+            'get_appchains_with_state_of', 
+            'get_appchain_status_of', 
+            'get_registry_settings',
+            'get_upvote_deposit_for', 
+            'get_downvote_deposit_for', 
+            'get_appchains_count_of', 
+            'get_total_stake', 
+            'get_owner'
+          ],
+          changeMethods: [
+            'start_auditing_appchain', 
+            'reject_appchain', 
+            'remove_appchain', 
+            'pass_auditing_appchain', 
+            'update_appchain_metadata',
+            'withdraw_upvote_deposit_of', 
+            'withdraw_downvote_deposit_of', 
+            'count_voting_score', 
+            'conclude_voting_score'
+          ]
+        }
+      );
+    
+      const tokenContract = new TokenContract(
+        walletConnection.account(),
+        octopusConfig.tokenContractId,
+        {
+          viewMethods: ['ft_balance_of'],
+          changeMethods: ['ft_transfer_call']
+        }
+      );
+
+      updateGlobalStore({
+        accountId: walletConnection.getAccountId(),
+        registryContract,
+        tokenContract,
+        walletConnection,
+        pjsAccount
+      });
+
+    });
+   
+  }, [updateGlobalStore]);
 
   return (
-    <div style={{ 
-      backgroundImage: colorMode === 'light' ? 
-        'linear-gradient(to bottom, #f5f6f9, #fff 30%)' : '',
-      backgroundSize: '100% 100vh',
-      backgroundRepeat: 'no-repeat'
-    }}>
+    <Container minH="100vh" maxW="full" 
+      bgImage={bgImage} bgSize="100% 100vh" bgRepeat="no-repeat">
       <Header />
-      <Outlet />
+      {
+        (
+          !!!globalStore.registryContract ||
+          !!!globalStore.walletConnection
+        ) ?
+        <Center minH="20vh">
+          <Spinner size="xl" thickness="6px" speed="1s" color="gray.500" />
+        </Center> :
+        <Outlet />
+      }
       <Footer />
-    </div>
+    </Container>
   );
 }
