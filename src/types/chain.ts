@@ -91,3 +91,19 @@ export type AppchainSettings = {
   subqlEndpoint: string;
   eraReward: Decimal;
 }
+
+export type OriginIndexRange = {
+  start_index: string;
+  end_index: string;
+}
+
+export type IndexRange = {
+  startIndex: number;
+  endIndex: number;
+}
+
+export type OriginRewardHistory = {
+  era_number: string;
+  reward: string;
+  is_withdrawn: boolean;
+}

@@ -33,8 +33,8 @@ type BlockData = {
 }
 
 async function getHeaderByBlockNumber(api: ApiPromise, num: number): Promise<BlockData> {
-  if (!api.isReady) {
-    return;
+  if (!api.isReady || !api.isConnected) {
+    return Promise.resolve(null);
   }
   return api.rpc.chain.getBlockHash(num)
     .then(hash => Promise.all([
@@ -95,14 +95,14 @@ export const BlocksTable: React.FC<BlocksTableProps> = ({ apiPromise, bestNumber
       <Thead>
         <Tr>
           <Th>Block</Th>
-          <Th>Hash</Th>
+          <Th display={['none', 'table-cell']}>Hash</Th>
           <Th>Extrinsics</Th>
         </Tr>
       </Thead>
       
       <Tbody>
         {
-          blockDataList?.map(({ number, hash, extrinsics }, idx) => {
+          blockDataList?.filter(b => !!b).map(({ number, hash, extrinsics }, idx) => {
             return (
               <Tr key={`block-${idx}`}>
                 <Td>
@@ -111,7 +111,7 @@ export const BlocksTable: React.FC<BlocksTableProps> = ({ apiPromise, bestNumber
                     #{number}
                   </Link>
                 </Td>
-                <Td>
+                <Td display={['none', 'table-cell']}>
                   <Link href="#"
                     _hover={{ textDecoration: 'underline' }}>
                     {hash}

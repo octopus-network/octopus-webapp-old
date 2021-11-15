@@ -29,10 +29,10 @@ export const Footer = () => {
               <Link href="#">Privacy policy</Link>
               <Text color="gray.300">|</Text>
               <Link target="_blank"
-                href={`${octopusConfig.explorerUrl}/accounts/${octopusConfig.registryContractId}`}>Registry Contract</Link>
+                href={`${octopusConfig.nearExplorerUrl}/accounts/${octopusConfig.registryContractId}`}>Registry Contract</Link>
               <Text color="gray.300">|</Text>
               <Link target="_blank"
-                href={`${octopusConfig.explorerUrl}/accounts/${octopusConfig.tokenContractId}`}>Token Contract</Link>
+                href={`${octopusConfig.nearExplorerUrl}/accounts/${octopusConfig.tokenContractId}`}>Token Contract</Link>
             </HStack>
           </Center>
         </Box>

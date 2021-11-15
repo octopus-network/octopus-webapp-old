@@ -68,7 +68,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ accountId, activity, boxSha
   }
 
   return (
-    <Link isExternal href={`${octopusConfig.explorerUrl}/transactions/${hash}`}>
+    <Link isExternal href={`${octopusConfig.nearExplorerUrl}/transactions/${hash}`}>
     <StyledItem alignItems="center" justifyContent="space-between" pt="4" pb="4" boxShadow={boxShadow}>
       <Flex alignItems="flex-start" spacing="0" w="60%" flexDirection="column">
         <Heading fontSize="md" fontWeight="600">{actionKinds[action_kind]}</Heading>

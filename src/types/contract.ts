@@ -8,7 +8,9 @@ import {
   AppchainSortingField,
   AppchainSortingOrder,
   AppchainId,
-  FungibleTokenMetadata
+  FungibleTokenMetadata,
+  OriginIndexRange,
+  OriginRewardHistory
 } from 'types';
 
 type FtBalanceOfArgs = {
@@ -94,6 +96,12 @@ type SetSubqlEndpointProps = {
 
 type SetEraRewardProps = {
   era_reward: string;
+}
+
+type GetValidatorRewardsOfArgs = {
+  start_era: string;
+  end_era: string;
+  validator_id: AccountId;
 }
 
 export class TokenContract extends Contract {
@@ -184,6 +192,14 @@ export class AnchorContract extends Contract {
     return this.get_appchain_settings();
   }
 
+  get_index_range_of_staking_history(): Promise<OriginIndexRange> {
+    return this.get_index_range_of_staking_history();
+  }
+
+  get_validator_rewards_of(args: GetValidatorRewardsOfArgs): Promise<OriginRewardHistory[]> {
+    return this.get_validator_rewards_of(args);
+  }
+
   get_validator_deposit_of(args: GetValidatorDepositOfArgs): Promise<string> {
     return this.get_validator_deposit_of(args);
   } 
@@ -192,8 +208,8 @@ export class AnchorContract extends Contract {
     return this.get_unbonded_stakes_of(args);
   }
 
-  unbond_stake() {
-    return this.unbond_stake();
+  unbond_stake(args: {}, gas: string) {
+    return this.unbond_stake(args, gas);
   }
 
   get_protocol_settings(): Promise<any> {

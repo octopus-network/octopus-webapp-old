@@ -93,18 +93,17 @@ export const Root: React.FC = () => {
           } else {
             toast.update(toastIdRef.current, {
               description: 'Success',
-              duration: 1500,
+              duration: 2500,
               variant: 'left-accent',
               status: 'success'
             });
             checkRedirect();
           }
         }).catch(err => {
-          console.log(err);
           setTimeout(() => {
             toast.update(toastIdRef.current, {
               description: err?.kind?.ExecutionError || err.toString(),
-              duration: 2500,
+              duration: 5000,
               status: 'error'
             });
           }, 500);
