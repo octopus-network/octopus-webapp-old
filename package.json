@@ -7,7 +7,7 @@
     "@chakra-ui/react": "^1.0.0",
     "@emotion/react": "^11.0.0",
     "@emotion/styled": "^11.0.0",
-    "@polkadot/api": "^5.3.2",
+    "@polkadot/api": "^6.8.1",
     "@polkadot/extension-dapp": "^0.39.2",
     "@polkadot/react-identicon": "^0.84.3",
     "@polkadot/ui-keyring": "^0.84.3",
@@ -45,7 +45,8 @@
     "recharts": "^2.1.4",
     "styled-components": "^5.3.0",
     "typescript": "^3.9.5",
-    "web-vitals": "^0.2.2"
+    "web-vitals": "^0.2.2",
+    "zustand": "^3.6.5"
   },
   "scripts": {
     "start": "react-scripts start",

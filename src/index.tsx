@@ -2,9 +2,7 @@ import * as React from 'react';
 import ReactDOM from 'react-dom';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import { connect, keyStores, WalletConnection, Contract } from 'near-api-js';
 
-import octopusConfig from 'config/octopus';
 import './common.css';
 import { App } from './App';
 
@@ -16,58 +14,6 @@ const defaultLocale = window.localStorage.getItem('locale') || locales[0];
 
 // reset colormode
 window.localStorage.removeItem('chakra-ui-color-mode');
-
-const initNear = async () => {
-  const near = await connect(
-    Object.assign(
-      { deps: { keyStore: new keyStores.BrowserLocalStorageKeyStore() } },
-      octopusConfig
-    )
-  );
-  
-  window.walletConnection = new WalletConnection(near, 'octopus_bridge');
-  window.accountId = window.walletConnection.getAccountId();
-  window.pjsAccount = window.localStorage.getItem('pjsAccount') || undefined;
-
-  window.registryContract = await new Contract(
-    window.walletConnection.account(),
-    octopusConfig.registryContractId,
-    {
-      viewMethods: [
-        'get_minimum_register_deposit', 
-        'get_appchains_with_state_of', 
-        'get_appchain_status_of', 
-        'get_registry_settings',
-        'get_upvote_deposit_for', 
-        'get_downvote_deposit_for', 
-        'get_appchains_count_of', 
-        'get_total_stake', 
-        'get_owner'
-      ],
-      changeMethods: [
-        'start_auditing_appchain', 
-        'reject_appchain', 
-        'remove_appchain', 
-        'pass_auditing_appchain', 
-        'update_appchain_metadata',
-        'withdraw_upvote_deposit_of', 
-        'withdraw_downvote_deposit_of', 
-        'count_voting_score', 
-        'conclude_voting_score'
-      ]
-    }
-  );
-
-  window.tokenContract = await new Contract(
-    window.walletConnection.account(),
-    octopusConfig.tokenContractId,
-    {
-      viewMethods: ['ft_balance_of'],
-      changeMethods: ['ft_transfer_call']
-    }
-  );
-
-} 
 
 locales.forEach((locale) => {
   i18nResources[locale] = {
@@ -90,12 +36,9 @@ i18n
     }
   });
 
-initNear()
-  .then(() => {
-    ReactDOM.render(
-      <React.StrictMode>
-        <App />
-      </React.StrictMode>,
-      document.getElementById('root')
-    );
-  });
+ReactDOM.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+  document.getElementById('root')
+);

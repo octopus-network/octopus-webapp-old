@@ -16,44 +16,53 @@ import {
   useToast
 } from '@chakra-ui/react';
 
+import { AnchorContract } from 'types';
+
 import { useTranslation } from 'react-i18next';
 import { DecimalUtils, ZERO_DECIMAL } from 'utils';
 import Decimal from 'decimal.js';
+import { useGlobalStore } from 'stores';
 
 import {
   FAILED_TO_REDIRECT_MESSAGE,
-  COMPLEX_CALL_GAS,
+  Gas,
   OCT_TOKEN_DECIMALS
-} from 'config/constants';
+} from 'primitives';
 
-export const RegisterDelegatorModal = ({
-  isOpen,
-  onClose,
-  validatorAccountId,
-  anchor
-}: {
+type RegisterDelegatorModalProps = {
   isOpen: boolean;
   onClose: VoidFunction;
   validatorAccountId: string;
-  anchor: any;
+  anchorContract: AnchorContract;
+}
+
+export const RegisterDelegatorModal: React.FC<RegisterDelegatorModalProps> = ({
+  isOpen,
+  onClose,
+  validatorAccountId,
+  anchorContract
 }) => {
   const toast = useToast();
   const { t } = useTranslation();
-
+  const globalStore = useGlobalStore(state => state.globalStore);
   const [amount, setAmount] = useState<Decimal>(ZERO_DECIMAL);
   const [minimumDeposit, setMinimumDeposit] = useState<Decimal>(ZERO_DECIMAL);
   const [accountBalance, setAccountBalance] = useState<Decimal>(ZERO_DECIMAL);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    if (!anchorContract) {
+      return;
+    }
+    
     Promise.all([
-      anchor
+      anchorContract
         .get_protocol_settings(),
 
-      window
+      globalStore
         .tokenContract
         .ft_balance_of({
-          account_id: window.accountId
+          account_id: globalStore.accountId
         })
     ]).then(([{ minimum_delegator_deposit }, balance]) => {
       setMinimumDeposit(
@@ -67,7 +76,7 @@ export const RegisterDelegatorModal = ({
       );
     });
 
-  }, [anchor]);
+  }, [anchorContract, globalStore]);
 
   const onChangeAmount = ({ target: { value } }) => {
     setAmount(DecimalUtils.fromString(value));
@@ -77,11 +86,11 @@ export const RegisterDelegatorModal = ({
 
     setIsSubmitting(true);
 
-    window
+    globalStore
       .tokenContract
       .ft_transfer_call(
         {
-          receiver_id: anchor.contractId,
+          receiver_id: anchorContract.contractId,
           amount: DecimalUtils.toU64(amount, OCT_TOKEN_DECIMALS).toString(),
           msg: JSON.stringify({
             RegisterDelegator: {
@@ -89,7 +98,7 @@ export const RegisterDelegatorModal = ({
             }
           })
         },
-        COMPLEX_CALL_GAS,
+        Gas.COMPLEX_CALL_GAS,
         1,
       ).catch(err => {
         if (err.message === FAILED_TO_REDIRECT_MESSAGE) {

@@ -14,18 +14,21 @@ import {
 } from '@chakra-ui/react';
 
 import { ValidatorsTable } from 'components';
-import { COMPLEX_CALL_GAS } from 'config/constants';
+import { Gas } from 'primitives';
+import { AnchorContract, AppchainId } from 'types';
 
-export const ConfirmBootingModal = ({ 
-  isOpen, 
-  onClose,
-  anchor,
-  appchainId,
-}: {
+type ConfirmBootingModalProps = {
   isOpen: boolean;
   onClose: VoidFunction;
-  anchor: any;
-  appchainId: string;
+  anchorContract: AnchorContract;
+  appchainId: AppchainId;
+}
+
+export const ConfirmBootingModal: React.FC<ConfirmBootingModalProps> = ({ 
+  isOpen, 
+  onClose,
+  anchorContract,
+  appchainId,
 }) => {
   const toast = useToast();
   
@@ -33,10 +36,10 @@ export const ConfirmBootingModal = ({
   
   const onBooting = () => {
     setIsSubmiting(true);
-    anchor
+    anchorContract
       .go_booting(
         {},
-        COMPLEX_CALL_GAS
+        Gas.COMPLEX_CALL_GAS
       )
       .then(() => {
         window.location.reload();
@@ -60,7 +63,7 @@ export const ConfirmBootingModal = ({
         <ModalBody>
           <Heading fontSize="lg">Are you confirm to booting this appchain?</Heading>
           <Box mt={3}>
-            <ValidatorsTable anchor={anchor} noAction={true} appchainId={appchainId} />
+            <ValidatorsTable anchorContract={anchorContract} noAction={true} appchainId={appchainId} />
           </Box>
         </ModalBody>
         <ModalFooter>

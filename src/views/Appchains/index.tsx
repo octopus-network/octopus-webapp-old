@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 
 import { 
   Container,
@@ -30,7 +30,14 @@ import {
   PopoverFooter
 } from '@chakra-ui/react';
 
-import { COMPLEX_CALL_GAS, OCT_TOKEN_DECIMALS } from 'config/constants';
+import {
+  OriginAppchainInfo,
+  AppchainSortingField,
+  AppchainSortingOrder,
+  AppchainState
+} from 'types';
+
+import { OCT_TOKEN_DECIMALS, Gas } from 'primitives';
 import { FiEdit, FiCheckCircle, FiPlus } from 'react-icons/fi';
 import { AiOutlineAudit, AiOutlineInbox, AiOutlineDashboard } from 'react-icons/ai';
 import { BiBadgeCheck } from 'react-icons/bi';
@@ -47,6 +54,7 @@ import StagingItem from './StagingItem';
 import RegisteredItem from './RegisteredItem';
 import { DecimalUtils, ZERO_DECIMAL } from 'utils';
 import Overview from './Overview';
+import { useGlobalStore } from 'stores';
 
 export { Register } from './Register';
 
@@ -104,7 +112,8 @@ export const Appchains: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const toast = useToast();
- 
+  
+  const globalStore = useGlobalStore(state => state.globalStore);
   const [numPreAudit, setNumPreAudit] = useState<string|number>('');
   const [numAuditing, setNumAuditing] = useState<string|number>('');
   const [numInQueue, setNumInQueue] = useState<string|number>('');
@@ -114,70 +123,45 @@ export const Appchains: React.FC = () => {
   const [isCounting, setIsCounting] = useState(false);
   const [isConcluding, setIsConcluding] = useState(false);
  
-  const [isCounter, setIsCounter] = useState(true);
+  const [isCounter, setIsCounter] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
   const [countPopoverOpen, setCountPopoverOpen] = useBoolean(false);
   const [concludePopoverOpen, setConcludePopoverOpen] = useBoolean(false);
   const [highestVotes, setHighestVotes] = useState(ZERO_DECIMAL);
  
   const [isLoadingList, setIsLoadingList] = useState(false);
-  const [preAuditAppchains, setPreAuditAppchains] = useState<undefined|any[]>();
-  const [auditingAppchains, setAuditingAppchains] = useState<undefined|any[]>();
-  const [votingAppchains, setVotingAppchains] = useState<undefined|any[]>();
-  const [stakingAppchains, setStakingAppchains] = useState<undefined|any[]>();
-  const [bootingAppchains, setBootingAppchains] = useState<undefined|any[]>();
-  const [activeAppchains, setActiveAppchains] = useState<undefined|any[]>();
+  const [preAuditAppchains, setPreAuditAppchains] = useState<OriginAppchainInfo[]>();
+  const [auditingAppchains, setAuditingAppchains] = useState<OriginAppchainInfo[]>();
+  const [votingAppchains, setVotingAppchains] = useState<OriginAppchainInfo[]>();
+  const [stakingAppchains, setStakingAppchains] = useState<OriginAppchainInfo[]>();
+  const [bootingAppchains, setBootingAppchains] = useState<OriginAppchainInfo[]>();
+  const [activeAppchains, setActiveAppchains] = useState<OriginAppchainInfo[]>();
 
   const initialFocusRef = React.useRef();
 
-  useEffect(() => {
-    const promises = [
-      'Registered', 'Auditing', 'Dead', 'InQueue', 'Staging', 'Booting', 'Active'
-    ].map(state => window.registryContract.get_appchains_count_of({
-      appchain_state: state
-    }));
-
-    Promise.all(promises).then(([
-      registeredCount, auditingCount, deadCount, inQueueCount, 
-      stagingCount, bootingCount, activeCount
-    ]) => {
-      setNumPreAudit((registeredCount*1 + deadCount*1));
-      setNumAuditing((auditingCount));
-      setNumInQueue(inQueueCount);
-      setNumStaging(stagingCount);
-      setNumBooting(bootingCount);
-      setNumActive(activeCount);
-    });
-
-    Promise.all([
-      window.registryContract.get_owner(),
-      window.registryContract.get_registry_settings()
-    ]).then(([owner, { operator_of_counting_voting_score }]) => {
-      setIsOwner(owner === window.accountId);
-      setIsCounter(true);
-    });
-
-    loadingList();
-
-  }, []);
-
-  const loadingList = async () => {
+  const loadingList = useCallback(async () => {
     setIsLoadingList(true);
     return Promise.all([
-      ['Registered', 'Dead'],
-      ['Auditing'],
-      ['InQueue'],
-      ['Staging'],
-      ['Booting'],
-      ['Active']
-    ].map((states, idx) => window
+      [
+        AppchainState.Registered,
+        AppchainState.Dead
+      ],
+      [AppchainState.Auditing],
+      [AppchainState.InQueue],
+      [AppchainState.Staging],
+      [AppchainState.Booting],
+      [AppchainState.Active]
+    ].map((states, idx) => 
+    globalStore
       .registryContract
       .get_appchains_with_state_of({ 
         appchain_state: states,
         page_number: 1,
         page_size: 20,
-        sorting_field: idx === 2 ? 'VotingScore' : 'RegisteredTime',
-        sorting_order: 'Descending'
+        sorting_field: idx === 2 ? 
+          AppchainSortingField.VotingScore : 
+          AppchainSortingField.RegisteredTime,
+        sorting_order: AppchainSortingOrder.Descending
     }))).then(([preAudit, auditing, voting, staking, booting, active]) => {
       setPreAuditAppchains(preAudit);
       setAuditingAppchains(auditing);
@@ -202,7 +186,49 @@ export const Appchains: React.FC = () => {
       }
       setHighestVotes(highest);
     });
-  }
+  }, [globalStore]);
+
+  useEffect(() => {
+
+    const promises = [
+      AppchainState.Registered,
+      AppchainState.Auditing,
+      AppchainState.Dead,
+      AppchainState.InQueue,
+      AppchainState.Staging,
+      AppchainState.Booting,
+      AppchainState.Active
+    ].map(state => 
+      globalStore
+        .registryContract
+        .get_appchains_count_of({
+          appchain_state: state
+        })
+    );
+
+    Promise.all(promises).then(([
+      registeredCount, auditingCount, deadCount, inQueueCount, 
+      stagingCount, bootingCount, activeCount
+    ]) => {
+      setNumPreAudit(registeredCount as any * 1 + deadCount as any * 1);
+      setNumAuditing(auditingCount);
+      setNumInQueue(inQueueCount);
+      setNumStaging(stagingCount);
+      setNumBooting(bootingCount);
+      setNumActive(activeCount);
+    });
+
+    Promise.all([
+      globalStore.registryContract.get_owner(),
+      globalStore.registryContract.get_registry_settings()
+    ]).then(([owner, { operator_of_counting_voting_score }]) => {
+      setIsOwner(owner === globalStore.accountId);
+      setIsCounter(operator_of_counting_voting_score === globalStore.accountId);
+    });
+
+    loadingList();
+
+  }, [globalStore, loadingList]);
 
   const onDrawerClose = () => {
     navigate(`/appchains`);
@@ -211,12 +237,13 @@ export const Appchains: React.FC = () => {
   const onCount = () => {
     setIsCounting(true);
     setCountPopoverOpen.off();
-    window
+    globalStore
       .registryContract
       .count_voting_score(
-        {}, 
-        COMPLEX_CALL_GAS
-      ).then(() => {
+        {},
+        Gas.COMPLEX_CALL_GAS
+      )
+      .then(() => {
         window.location.reload();
       }).catch(err => {
         setIsCounting(false);
@@ -232,11 +259,11 @@ export const Appchains: React.FC = () => {
   const onConclude = () => {
     setIsConcluding(true);
     setConcludePopoverOpen.off();
-    window
+    globalStore
       .registryContract
       .conclude_voting_score(
         {},
-        COMPLEX_CALL_GAS
+        Gas.COMPLEX_CALL_GAS
       ).then(() => {
         window.location.reload();
       }).catch(err => {

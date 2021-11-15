@@ -31,9 +31,11 @@ import { Link as RouterLink } from 'react-router-dom';
 import { InfoOutlineIcon } from '@chakra-ui/icons';
 import { RegisterDelegatorModal } from 'components';
 import { CgProfile } from 'react-icons/cg';
-import { FAILED_TO_REDIRECT_MESSAGE, COMPLEX_CALL_GAS, OCT_TOKEN_DECIMALS } from 'config/constants';
+import { FAILED_TO_REDIRECT_MESSAGE, Gas, OCT_TOKEN_DECIMALS } from 'primitives';
 import Decimal from 'decimal.js';
 import { DecimalUtils, ZERO_DECIMAL } from 'utils';
+import { AnchorContract, AppchainId } from 'types';
+import { useGlobalStore } from 'stores';
 
 const NoValidators = () => (
   <Box p={3} borderRadius={10} w="100%">
@@ -44,17 +46,22 @@ const NoValidators = () => (
   </Box>
 );
 
-export const ValidatorsTable = ({
-  anchor,
+type ValidatorsTableProps = {
+  anchorContract: AnchorContract;
+  noAction?: boolean;
+  appchainId: AppchainId;
+  size?: 'sm' | 'md' | 'lg'
+}
+
+export const ValidatorsTable: React.FC<ValidatorsTableProps> = ({
+  anchorContract,
   noAction,
   appchainId,
-}: {
-  anchor: any;
-  noAction?: boolean;
-  appchainId: string;
+  size = 'sm'
 }) => {
 
   const toast = useToast();
+  const globalStore = useGlobalStore(state => state.globalStore);
   const [validatorList, setValidatorList] = useState<any>();
   const [selectedValidatorAccountId, setSelectedValidatorAccountId] = useState('');
   const [registerDelegatorModalOpen, setRegisterDelegatorModalOpen] = useBoolean(false);
@@ -68,12 +75,17 @@ export const ValidatorsTable = ({
   const delegateAmountInputRef = React.useRef<any>();
 
   useEffect(() => {
-    anchor
+
+    if (!anchorContract) {
+      return;
+    }
+
+    anchorContract
       .get_validator_list_of()
       .then(res => {
         setValidatorList(res);
       });
-  }, [anchor]);
+  }, [anchorContract]);
 
   useEffect(() => {
     if (delegateMorePopoverOpen) {
@@ -90,14 +102,14 @@ export const ValidatorsTable = ({
       return;
     }
     Promise.all(
-      validatorList.map(v => anchor.get_delegator_deposit_of({
-        delegator_id: window.accountId,
+      validatorList.map(v => anchorContract.get_delegator_deposit_of({
+        delegator_id: globalStore.accountId,
         validator_id: v.validator_id
       }).then(amount => DecimalUtils.fromString(amount, OCT_TOKEN_DECIMALS)))
     ).then((deposits: any[]) => {
       setDelegatedDeposits(deposits);
     });
-  }, [validatorList, anchor]);
+  }, [validatorList, anchorContract, globalStore]);
 
   const onRegisterDelegator = (id) => {
     setSelectedValidatorAccountId(id);
@@ -106,11 +118,11 @@ export const ValidatorsTable = ({
 
   const onIncreaseDelegation = (id) => {
     setIsDelegating(true);
-    window
+    globalStore
       .tokenContract
       .ft_transfer_call(
         {
-          receiver_id: anchor.contractId,
+          receiver_id: anchorContract.contractId,
           amount: delegateAmount.toString(),
           msg: JSON.stringify({
             IncreaseDelegation: {
@@ -118,7 +130,7 @@ export const ValidatorsTable = ({
             }
           })
         },
-        COMPLEX_CALL_GAS,
+        Gas.COMPLEX_CALL_GAS,
         1,
       ).catch(err => {
         if (err.message === FAILED_TO_REDIRECT_MESSAGE) {
@@ -144,7 +156,7 @@ export const ValidatorsTable = ({
       <Skeleton isLoaded={validatorList !== undefined}>
         {
           validatorList?.length > 0 ?
-            <Table variant="simple" size="sm">
+            <Table variant="simple" size={size}>
               <Thead>
                 <Tr>
                   <Th>Validator Id</Th>
@@ -159,7 +171,7 @@ export const ValidatorsTable = ({
               <Tbody>
                 {
                   validatorList.map((v, idx) => {
-                    const canDelegate = v.can_be_delegated_to && v.validator_id !== window.accountId;
+                    const canDelegate = v.can_be_delegated_to && v.validator_id !== globalStore.accountId;
                     return (
                       <Tr key={`validator-${idx}`}>
                         <Td>
@@ -234,7 +246,10 @@ export const ValidatorsTable = ({
             <NoValidators />
         }
       </Skeleton>
-      <RegisterDelegatorModal isOpen={registerDelegatorModalOpen} anchor={anchor} validatorAccountId={selectedValidatorAccountId}
+      <RegisterDelegatorModal
+        isOpen={registerDelegatorModalOpen}
+        anchorContract={anchorContract}
+        validatorAccountId={selectedValidatorAccountId}
         onClose={setRegisterDelegatorModalOpen.off} />
     </>
   );

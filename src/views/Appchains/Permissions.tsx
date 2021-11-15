@@ -22,21 +22,49 @@ import {
   useBoolean
 } from '@chakra-ui/react';
 
-import { TriangleUpIcon, TriangleDownIcon, ChevronRightIcon, ChevronLeftIcon } from '@chakra-ui/icons';
+import {
+  OriginAppchainInfo,
+  AnchorContract,
+  AppchainState
+} from 'types';
+
+import { 
+  TriangleUpIcon, 
+  TriangleDownIcon, 
+  ChevronRightIcon, 
+  ChevronLeftIcon 
+} from '@chakra-ui/icons';
+
 import { RiDeleteBin6Line } from 'react-icons/ri';
-import { DecimalUtils, loginNear, ZERO_DECIMAL } from 'utils';
-import octopusConfig from 'config/octopus';
-import { FAILED_TO_REDIRECT_MESSAGE, SIMPLE_CALL_GAS, COMPLEX_CALL_GAS, OCT_TOKEN_DECIMALS } from 'config/constants';
+import { DecimalUtils, ZERO_DECIMAL } from 'utils';
+import { octopusConfig } from 'config';
+import { FAILED_TO_REDIRECT_MESSAGE, Gas, OCT_TOKEN_DECIMALS } from 'primitives';
 import { useNavigate } from 'react-router-dom';
 import { ConfirmBootingModal, GoLiveModal } from 'components';
 import { useTranslation } from 'react-i18next';
 import Decimal from 'decimal.js';
+import { useGlobalStore } from 'stores';
 
-const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) => {
+type PermissionsProps = {
+  appchain: OriginAppchainInfo;
+  onGoStake: VoidFunction;
+  onCancelStake: VoidFunction;
+  isInStaking: boolean;
+  anchorContract: AnchorContract;
+}
+
+const Permissions: React.FC<PermissionsProps> = ({ 
+  appchain, 
+  onGoStake, 
+  onCancelStake, 
+  isInStaking, 
+  anchorContract 
+}) => {
   const toast = useToast();
   const { t } = useTranslation();
 
   const [isAdmin, setIsAdmin] = useState(false);
+  const globalStore = useGlobalStore(state => state.globalStore);
 
   const navigate = useNavigate();
   const [loadingType, setLoadingType] = useState('');
@@ -63,19 +91,28 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
   const downvoteInputRef = React.useRef();
 
   useEffect(() => {
-    if (!status) return;
+    if (!appchain) return;
     Promise.all([
-      window.accountId ?
-      window.tokenContract.ft_balance_of({ account_id: window.accountId }) : Promise.resolve(0),
-      window.registryContract.get_upvote_deposit_for({
-        appchain_id: status.appchain_id,
-        account_id: window.accountId
-      }),
-      window.registryContract.get_downvote_deposit_for({
-        appchain_id: status.appchain_id,
-        account_id: window.accountId
-      }),
-      window.registryContract.get_owner()
+      globalStore.accountId ?
+        globalStore
+          .tokenContract
+          .ft_balance_of({ account_id: globalStore.accountId }) : Promise.resolve('0'),
+
+      globalStore
+        .registryContract
+        .get_upvote_deposit_for({
+          appchain_id: appchain.appchain_id,
+          account_id: globalStore.accountId
+        }),
+
+      globalStore
+        .registryContract
+        .get_downvote_deposit_for({
+          appchain_id: appchain.appchain_id,
+          account_id: globalStore.accountId
+        }),
+
+      globalStore.registryContract.get_owner()
     ]).then(([balance, upvoteDeposit, downvoteDeposit, owner]) => {
       setAccountBalance(
         DecimalUtils.fromString(balance, OCT_TOKEN_DECIMALS)
@@ -86,22 +123,21 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
       setDownvoteDeposit(
         DecimalUtils.fromString(downvoteDeposit, OCT_TOKEN_DECIMALS)
       );
-      setIsAdmin(owner === window.accountId);
+      setIsAdmin(owner === globalStore.accountId);
     });
 
-  }, [status]);
+  }, [appchain, globalStore]);
 
   const onStartAudit = () => {
     setLoadingType('audit');
 
-    window
+    globalStore
       .registryContract
       .start_auditing_appchain(
-        {
-          appchain_id: status.appchain_id
-        },
-        SIMPLE_CALL_GAS
-      ).then(() => {
+        { appchain_id: appchain.appchain_id },
+        Gas.SIMPLE_CALL_GAS
+      )
+      .then(() => {
         window.location.reload();
       }).catch(err => {
         setLoadingType('');
@@ -117,13 +153,13 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
   const onReject = () => {
     setLoadingType('reject');
     setRejectPopoverOpen.off();
-    window
+    globalStore
       .registryContract
       .reject_appchain(
         {
-          appchain_id: status.appchain_id
-        },
-        SIMPLE_CALL_GAS
+          appchain_id: appchain.appchain_id,
+        }, 
+        Gas.SIMPLE_CALL_GAS
       ).then(() => {
         window.location.reload();
       }).catch(err => {
@@ -140,15 +176,16 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
   const onRemove = () => {
     setLoadingType('remove');
     setRejectPopoverOpen.off();
-    window
+    globalStore
       .registryContract
       .remove_appchain(
         {
-          appchain_id: status.appchain_id
+          appchain_id: appchain.appchain_id
         },
-        SIMPLE_CALL_GAS
-      ).then(() => {
-        navigate('/appchains/registered');
+        Gas.SIMPLE_CALL_GAS
+      )
+      .then(() => {
+        navigate('/appchains');
         window.location.reload();
       }).catch(err => {
         setLoadingType('');
@@ -165,16 +202,14 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
     setLoadingType('passAuditing');
     setPassAuditingPopoverOpen.off();
 
-    window
+    globalStore
       .registryContract
       .pass_auditing_appchain(
-        {
-          appchain_id: status.appchain_id,
-          // appchain_anchor_code: Array.from(u8a)
-        },
-        SIMPLE_CALL_GAS
-      ).then(() => {
-        navigate('/appchains/inqueue');
+        { appchain_id: appchain.appchain_id },
+        Gas.SIMPLE_CALL_GAS
+      )
+      .then(() => {
+        navigate('/appchains');
         window.location.reload();
       }).catch(err => {
         setLoadingType('');
@@ -204,13 +239,13 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
     }
   }, [upvotePopoverOpen, downvotePopoverOpen]);
 
-  if (!window.accountId) {
-    return (
-      status?.appchain_state === 'InQueue' ?
-        (
-          <Button colorScheme="octoColor" variant="outline" onClick={loginNear}>Login to Vote</Button>
-        ) : null
-    );
+  const onLogin = () => {
+    globalStore
+      .walletConnection
+      .requestSignIn(
+        octopusConfig.registryContractId,
+        'Octopus Webapp'
+      );
   }
 
   const onDepositVotes = () => {
@@ -228,7 +263,7 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
     }
 
     setLoadingType(voteType);
-    window
+    globalStore
       .tokenContract
       .ft_transfer_call(
         {
@@ -236,11 +271,11 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
           amount: DecimalUtils.toU64(voteAmount, OCT_TOKEN_DECIMALS).toString(),
           msg: JSON.stringify({
             [`${voteType.replace(/^([a-z])|\s+([a-z])/g, $1 => $1.toUpperCase())}Appchain`]: {
-              "appchain_id": status.appchain_id
+              "appchain_id": appchain.appchain_id
             }
           })
         },
-        SIMPLE_CALL_GAS,
+        Gas.SIMPLE_CALL_GAS,
         1,
       ).catch(err => {
         if (err.message === FAILED_TO_REDIRECT_MESSAGE) {
@@ -258,15 +293,17 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
   }
 
   const withdrawVotes = (type: string, amount: Decimal) => {
-    const method = type === 'upvote' ? window.registryContract.withdraw_upvote_deposit_of :
-      window.registryContract.withdraw_downvote_deposit_of;
+    const method = 
+      type === 'upvote' ? 
+      globalStore.registryContract.withdraw_upvote_deposit_of :
+      globalStore.registryContract.withdraw_downvote_deposit_of;
 
     return method(
       {
-        appchain_id: status.appchain_id,
+        appchain_id: appchain.appchain_id,
         amount: DecimalUtils.toU64(amount, OCT_TOKEN_DECIMALS).toString()
       },
-      COMPLEX_CALL_GAS
+      Gas.COMPLEX_CALL_GAS
     ).then(() => {
       window.location.reload();
     });
@@ -333,17 +370,28 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
     setDownvoteAmount(DecimalUtils.fromString(value));
   }
 
+  if (!globalStore.accountId) {
+    return (
+      appchain?.appchain_state === AppchainState.InQueue ?
+        (
+          <Button colorScheme="octoColor" variant="outline" onClick={onLogin}>
+            Login to Vote
+          </Button>
+        ) : null
+    );
+  }
+
   return (
     <>
       {
-        inStaking ?
+        isInStaking ?
           <Button onClick={onCancelStake}>
             <ChevronLeftIcon mr={1} /> Back
           </Button> :
 
           <HStack spacing="2">
             {
-              status?.appchain_state === 'Registered' ?
+              appchain?.appchain_state === AppchainState.Registered ?
                 (
                   isAdmin ?
                     <>
@@ -378,7 +426,7 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
                     </> : null
 
                 ) :
-                status?.appchain_state === 'Auditing' ?
+                appchain?.appchain_state === AppchainState.Auditing ?
                   (
                     isAdmin ?
                       <>
@@ -410,11 +458,11 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
                         </Popover>
                       </> : null
                   ) :
-                  status?.appchain_state === 'Staging' ?
+                  appchain?.appchain_state === AppchainState.Staging ?
 
                     (
                       isAdmin ?
-                        <Button onClick={setBootingModalOpen.on} colorScheme="octoColor">
+                        <Button onClick={setBootingModalOpen.on} isDisabled={!anchorContract} colorScheme="octoColor">
                           Go Booting
                         </Button> :
                         <HStack>
@@ -461,22 +509,22 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
                               </Popover> : null
                           }
                           {
-                            !!anchor ?
+                            !!appchain?.appchain_anchor ?
                               <Button colorScheme="octoColor"
                                 onClick={onGoStake} variant="ghost">
                                 Staking <ChevronRightIcon ml={1} />
                               </Button> :
-                              anchor === undefined ?
+                              anchorContract === undefined ?
                                 <Spinner size="sm" /> : null
                           }
                         </HStack>
                     ) :
 
-                    status?.appchain_state === 'Booting' ?
+                    appchain?.appchain_state === AppchainState.Booting ?
                       (
                         isAdmin ?
                           (
-                            anchor ?
+                            !!anchorContract ?
                             <Button onClick={setGoLiveModalOpen.on} colorScheme="octoColor">
                               Go Live
                             </Button> : null
@@ -527,7 +575,7 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
                           </HStack>
                       ) :
 
-                      status?.appchan_state === 'Active' ?
+                      appchain?.appchain_state === AppchainState.Active ?
                         (
                           isAdmin ?
                             null :
@@ -577,7 +625,7 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
                             </HStack>
                         ) :
 
-                        status?.appchain_state === 'Dead' ?
+                        appchain?.appchain_state === AppchainState.Dead ?
                           (
                             isAdmin ?
                               <Button isLoading={loadingType === 'remove'}
@@ -586,7 +634,7 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
                               </Button> : null
                           ) :
 
-                          status?.appchain_state === 'InQueue' ?
+                          appchain?.appchain_state === AppchainState.InQueue ?
                             (
                               <>
                                 <Popover
@@ -621,13 +669,13 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
                                         </Box>
                                         <Box mt={4}>
                                           <Grid templateColumns="repeat(5, 1fr)" gap={2}>
-                                            <GridItem colSpan={upvoteDeposit.gte(ZERO_DECIMAL) ? 5 : 3}>
+                                            <GridItem colSpan={upvoteDeposit.gt(ZERO_DECIMAL) ? 3 : 5}>
                                               <Button colorScheme="octoColor" isFullWidth={true}
                                                 isDisabled={!!loadingType || isWithdrawing || upvoteAmount.lte(ZERO_DECIMAL)} isLoading={loadingType === 'upvote'}
                                                 onClick={onDepositVotes}>Upvote</Button>
                                             </GridItem>
                                             {
-                                              upvoteDeposit.lt(ZERO_DECIMAL) ?
+                                              upvoteDeposit.gt(ZERO_DECIMAL) ?
                                                 <GridItem colSpan={2}>
                                                   <Button isFullWidth={true}
                                                     isDisabled={isWithdrawing || upvoteAmount.lte(ZERO_DECIMAL)} isLoading={isWithdrawing}
@@ -672,7 +720,7 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
                                         </Box>
                                         <Box mt={4}>
                                           <Grid templateColumns="repeat(5, 1fr)" gap={2}>
-                                            <GridItem colSpan={downvoteDeposit.lte(ZERO_DECIMAL) ? 5 : 3}>
+                                            <GridItem colSpan={downvoteDeposit.gt(ZERO_DECIMAL) ? 3 : 5}>
                                               <Button colorScheme="octoColor" isFullWidth={true}
                                                 isDisabled={!!loadingType || isWithdrawing || downvoteAmount.lte(ZERO_DECIMAL)} isLoading={loadingType === 'downvote'}
                                                 onClick={onDepositVotes}>Downvote</Button>
@@ -698,8 +746,10 @@ const Permissions = ({ status, onGoStake, onCancelStake, inStaking, anchor }) =>
           </HStack>
       }
       <ConfirmBootingModal isOpen={bootingModalOpen} onClose={setBootingModalOpen.off} 
-        anchor={anchor} appchainId={status?.appchain_id} />
-      <GoLiveModal isOpen={goLiveModalOpen} onClose={setGoLiveModalOpen.off} anchor={anchor} />
+        anchorContract={anchorContract} appchainId={appchain?.appchain_id} />
+        
+      <GoLiveModal isOpen={goLiveModalOpen} onClose={setGoLiveModalOpen.off} 
+        appchain={appchain} anchorContract={anchorContract} />
     </>
   );
 }

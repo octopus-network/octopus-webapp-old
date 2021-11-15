@@ -17,10 +17,11 @@ import {
 } from '@chakra-ui/react';
 
 import { Contract, utils } from 'near-api-js';
-import octopusConfig from 'config/octopus';
+import { octopusConfig } from 'config';
 import TokenItem from './TokenItem';
 import { CopyIcon, CheckIcon } from '@chakra-ui/icons';
 import ActivityItem from './ActivityItem';
+import { useGlobalStore } from 'stores';
 
 const tokenContractIds = [octopusConfig.tokenContractId];
 
@@ -29,16 +30,17 @@ const Dashboard = () => {
   const [isDesktop] = useMediaQuery('(min-width: 62em)');
   const [tokenList, setTokenList] = useState([]);
   const [activityList, setActivityList] = useState([]);
-  const [accountBalance, setAccountBalance] = useState(0);
+  const [accountBalance, setAccountBalance] = useState('0');
+  const globalStore = useGlobalStore(state => state.globalStore);
 
-  const { hasCopied, onCopy } = useClipboard(window.accountId);
+  const { hasCopied, onCopy } = useClipboard(globalStore.accountId);
 
   useEffect(() => {
-    if (!window.accountId) {
+    if (!globalStore.accountId) {
       return;
     }
     
-    window.walletConnection
+    globalStore.walletConnection
       .account()
       .getAccountBalance()
       .then(balance => {
@@ -47,7 +49,7 @@ const Dashboard = () => {
       
     const promises = tokenContractIds.map(contractId => {
       const contract: any = new Contract(
-        window.walletConnection.account(),
+        globalStore.walletConnection.account(),
         contractId,
         {
           viewMethods: ['ft_balance_of', 'ft_metadata'],
@@ -57,7 +59,7 @@ const Dashboard = () => {
       return Promise.all([
         contract.ft_metadata(), 
         contract.ft_balance_of({
-          account_id: window.accountId
+          account_id: globalStore.accountId
         }),
         contractId
       ]);
@@ -68,12 +70,12 @@ const Dashboard = () => {
     });
 
     utils.web
-      .fetchJson(`${octopusConfig.helperUrl}/account/${window.accountId}/activity`)
+      .fetchJson(`${octopusConfig.helperUrl}/account/${globalStore.accountId}/activity`)
       .then(list => {
         setActivityList(list.slice(0, 5));
       });
 
-  }, []);
+  }, [globalStore]);
 
   return (
     <Container pb="8" pt="8">
@@ -83,7 +85,7 @@ const Dashboard = () => {
             <Flex flexDirection="column" alignItems="center" p="12">
               <Avatar />
               <HStack alignItems="center" mt="3">
-                <Heading fontSize="lg" fontWeight="600">{window.accountId}</Heading>
+                <Heading fontSize="lg" fontWeight="600">{globalStore.accountId}</Heading>
                 <IconButton size="sm" aria-label="Copy" icon={
                   hasCopied ? <CheckIcon />: <CopyIcon />
                 } onClick={onCopy} />
@@ -124,7 +126,7 @@ const Dashboard = () => {
               {
                 activityList.length ?
                 activityList.map((activity, idx) => (
-                  <ActivityItem activity={activity} key={`activity-item-${idx}`} boxShadow={
+                  <ActivityItem accountId={globalStore.accountId} activity={activity} key={`activity-item-${idx}`} boxShadow={
                     idx === activity.length - 1 ? '' : 'inset 0 -1px #eaeaea'
                   } />
                 )) :

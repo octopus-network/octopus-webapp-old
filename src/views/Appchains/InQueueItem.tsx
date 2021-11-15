@@ -15,23 +15,15 @@ import {
   Avatar
 } from '@chakra-ui/react';
 
+import { OriginAppchainInfo } from 'types';
+
 import { MdKeyboardArrowRight } from 'react-icons/md';
 import Decimal from 'decimal.js';
-import { OCT_TOKEN_DECIMALS } from 'config/constants';
+import { OCT_TOKEN_DECIMALS } from 'primitives';
 import { DecimalUtils, ZERO_DECIMAL, ONE_HUNDRED_DECIMAL } from 'utils';
 import { useNavigate } from 'react-router-dom';
-
-const StyledAppchainItem = styled(SimpleGrid)`
-  overflow: hidden;
-  position: relative;
-  border-radius: 10px;
-  transition: transform 0.2s ease-in-out 0s, box-shadow 0.2s ease-in-out 0s;
-  cursor: pointer;
-  &:hover {
-    box-shadow: rgb(0 0 0 / 15%) 0px 0px 10px!important;
-    transform: scaleX(0.99);
-  }
-`;
+import { AppchainListItem } from 'components';
+import { useGlobalStore } from 'stores';
 
 const StyledBox = styled(Box)`
   
@@ -40,7 +32,7 @@ const StyledBox = styled(Box)`
 `;
 
 type InQueueItemProps = {
-  appchain: any;
+  appchain: OriginAppchainInfo;
   index: number;
   highestVotes: Decimal;
 }
@@ -52,12 +44,12 @@ const InQueueItem: React.FC<InQueueItemProps> = ({
 }) => {
 
   const navigate = useNavigate();
- 
+  
+  const globalStore = useGlobalStore(state => state.globalStore);
   const [upvotes, setUpvotes] = useState(ZERO_DECIMAL);
   const [downvotes, setDownvotes] = useState(ZERO_DECIMAL);
   const [score, setScore] = useState(ZERO_DECIMAL);
 
-  const { appchain_id, appchain_metadata } = appchain;
   const [userUpvoteDeposit, setUserUpvoteDeposit] = useState(ZERO_DECIMAL);
   const [userDownvoteDeposit, setUserDownvoteDeposit] = useState(ZERO_DECIMAL);
 
@@ -68,6 +60,7 @@ const InQueueItem: React.FC<InQueueItemProps> = ({
   ];
 
   useEffect(() => {
+
     const { downvote_deposit, upvote_deposit, voting_score } = appchain;
     setUpvotes(
       DecimalUtils.fromString(upvote_deposit, OCT_TOKEN_DECIMALS)
@@ -81,18 +74,15 @@ const InQueueItem: React.FC<InQueueItemProps> = ({
   }, [appchain]);
 
   useEffect(() => {
-    if (!appchain_id) {
-      return;
-    }
-
+   
     Promise.all([
-      window.registryContract.get_upvote_deposit_for({
-        appchain_id,
-        account_id: window.accountId
+      globalStore.registryContract.get_upvote_deposit_for({
+        appchain_id: appchain.appchain_id,
+        account_id: globalStore.accountId
       }),
-      window.registryContract.get_downvote_deposit_for({
-        appchain_id,
-        account_id: window.accountId
+      globalStore.registryContract.get_downvote_deposit_for({
+        appchain_id: appchain.appchain_id,
+        account_id: globalStore.accountId
       })
     ]).then(([upvoteDeposit, downvoteDeposit]) => {
       setUserUpvoteDeposit(
@@ -102,7 +92,7 @@ const InQueueItem: React.FC<InQueueItemProps> = ({
         DecimalUtils.fromString(downvoteDeposit, OCT_TOKEN_DECIMALS)
       );
     });
-  }, [appchain_id]);
+  }, [appchain, globalStore]);
 
   const { animatedUpvotes } = useSpring({
     reset: true,
@@ -152,14 +142,16 @@ const InQueueItem: React.FC<InQueueItemProps> = ({
   });
 
   return (
-    <StyledAppchainItem columns={{ base: 9, md: 14 }} p={4} alignItems="center"
+    <AppchainListItem columns={{ base: 9, md: 14 }}
       style={{
+        position: 'relative',
+        overflow: 'hidden',
         borderStyle: 'solid',
         borderWidth: '1px',
         borderColor: index < 3 ? `rgba(${colors[index]},.3)` : 'transparent',
         boxShadow: index < 3 ? '' : 'rgb(0 0 0 / 20%) 0px 0px 2px'
       }}
-      onClick={() => navigate(`/appchains/overview/${appchain_id}`)}>
+      onClick={() => navigate(`/appchains/overview/${appchain.appchain_id}`)}>
       {
         index < 3 ?
         <Flex position="absolute" left={0} top={0} bg={`linear-gradient(to right bottom, rgba(${colors[index]},1), transparent 80%)}`}
@@ -172,32 +164,34 @@ const InQueueItem: React.FC<InQueueItemProps> = ({
       }
       <GridItem colSpan={4}>
         <HStack>
-          <Avatar name={appchain_id} size="xs" display={{ base: 'none', md: 'block' }} bg="blue.100" src={appchain_metadata?.fungible_token_metadata?.icon} />
-          <Heading fontSize="lg" ml={2} whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">{appchain_id}</Heading>
+          <Avatar name={appchain.appchain_id} size="xs" display={{ base: 'none', md: 'block' }}
+            bg={appchain.appchain_metadata?.fungible_token_metadata?.icon ? 'white' : 'blue.100'}
+            src={appchain.appchain_metadata?.fungible_token_metadata?.icon} />
+          <Heading fontSize="lg" ml={2} whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">{appchain.appchain_id}</Heading>
         </HStack>
       </GridItem>
       <GridItem colSpan={5}  display={{ base: 'none', md: 'block' }}>
         <SimpleGrid columns={2} gap={10}>
           <Tooltip label={`Upvotes: ${DecimalUtils.beautify(upvotes)}`}>
-            <Box>
+            <Box position="relative" mt={-1}>
               <Text color="gray" fontSize="sm">
                 <animated.span>
                   {animatedUpvotes.to(n => DecimalUtils.beautify(new Decimal(n)))}
                 </animated.span>
               </Text>
-              <Flex bg="blackAlpha.100" borderRadius="3px" overflow="hidden" mt={1}>
+              <Flex bg="blackAlpha.100" borderRadius="3px" overflow="hidden">
                 <animated.div style={upvotesBarProps} />
               </Flex>
               {
                 userUpvoteDeposit.gt(ZERO_DECIMAL) ?
-                <Text color="gray" fontSize="xs" mt={1}>
+                <Text color="gray" fontSize="xs" position="absolute" transform="scale(.8)" transformOrigin="left">
                   Your upvotes: {DecimalUtils.beautify(userUpvoteDeposit)}
                 </Text> : null
               }
             </Box>
           </Tooltip>
           <Tooltip label={`Downvotes: ${DecimalUtils.beautify(downvotes)}`}>
-            <Box>
+            <Box position="relative" mt={-1}>
               <Text color="gray" fontSize="sm">
                 <animated.span>
                   {animatedDownvotes.to(n => DecimalUtils.beautify(new Decimal(n)))}
@@ -208,7 +202,7 @@ const InQueueItem: React.FC<InQueueItemProps> = ({
               </Flex>
               {
                 userDownvoteDeposit.gt(ZERO_DECIMAL) ?
-                <Text color="gray" fontSize="xs" mt={1}>
+                <Text color="gray" fontSize="xs" position="absolute" transform="scale(.8)" transformOrigin="left">
                   Your downvotes: {DecimalUtils.beautify(userDownvoteDeposit)}
                 </Text> : null
               }
@@ -264,7 +258,7 @@ const InQueueItem: React.FC<InQueueItemProps> = ({
       <GridItem colSpan={1} textAlign="right">
         <Icon as={MdKeyboardArrowRight} color="rgba(0, 0, 0, .3)" w={6} h={6} />
       </GridItem>
-    </StyledAppchainItem>
+    </AppchainListItem>
   );
 }
 

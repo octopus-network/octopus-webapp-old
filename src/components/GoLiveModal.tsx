@@ -10,6 +10,7 @@ import {
   Heading,
   FormControl,
   FormLabel,
+  FormHelperText,
   InputGroup,
   Input,
   InputRightElement,
@@ -18,18 +19,23 @@ import {
   Button
 } from '@chakra-ui/react';
 
-import { COMPLEX_CALL_GAS } from 'config/constants';
+import { Gas } from 'primitives';
+import { AnchorContract, OriginAppchainInfo } from 'types';
+import { DecimalUtils } from 'utils';
+import Decimal from 'decimal.js';
 
 type GoLiveModalProps = {
   isOpen: boolean;
   onClose: VoidFunction;
-  anchor: any;
+  appchain: OriginAppchainInfo;
+  anchorContract: AnchorContract;
 }
 
 export const GoLiveModal: React.FC<GoLiveModalProps> = ({ 
   isOpen, 
   onClose,
-  anchor
+  appchain,
+  anchorContract
 }) => {
   const toast = useToast();
   
@@ -46,24 +52,29 @@ export const GoLiveModal: React.FC<GoLiveModalProps> = ({
   const [inputEraRewards, setInputEraRewards] = useState('');
 
   useEffect(() => {
-    if (!anchor) return;
+    if (!anchorContract) return;
 
-    anchor
+    anchorContract
       .get_appchain_settings()
       .then(({ rpc_endpoint, subql_endpoint, era_reward }) => {
 
         setRPCEndpoint(rpc_endpoint);
         setSubqlEndpoint(subql_endpoint);
-        setEraRewards(era_reward);
+        setEraRewards(
+          DecimalUtils.fromString(
+            era_reward, 
+            appchain.appchain_metadata.fungible_token_metadata.decimals
+          ).toString()
+        );
       });
-  }, [anchor]);
+  }, [anchorContract, appchain]);
   
   const onSetRPCEndpoint = () => {
     setIsUpdatingRPCEndpoint(true);
-    anchor
+    anchorContract
       .set_rpc_endpoint(
         { rpc_endpoint: inputRPCEndpoint },
-        COMPLEX_CALL_GAS
+        Gas.COMPLEX_CALL_GAS
       )
       .then(() => {
         window.location.reload();
@@ -80,10 +91,10 @@ export const GoLiveModal: React.FC<GoLiveModalProps> = ({
 
   const onSetSubqlEndpoint = () => {
     setIsUpdatingSubqlEndpoint(true);
-    anchor
+    anchorContract
       .set_subql_endpoint(
         { subql_endpoint: inputSubqlEndpoint },
-        COMPLEX_CALL_GAS
+        Gas.COMPLEX_CALL_GAS
       )
       .then(() => {
         window.location.reload();
@@ -100,10 +111,15 @@ export const GoLiveModal: React.FC<GoLiveModalProps> = ({
 
   const onSetEraRewards = () => {
     setIsUpdatingEraRewards(true);
-    anchor
+    anchorContract
       .set_era_reward(
-        { era_reward: inputEraRewards },
-        COMPLEX_CALL_GAS
+        { 
+          era_reward: DecimalUtils.toU64(
+            new Decimal(inputEraRewards),
+            appchain.appchain_metadata?.fungible_token_metadata.decimals
+          ).toString()
+        },
+        Gas.COMPLEX_CALL_GAS
       )
       .then(() => {
         window.location.reload();
@@ -120,10 +136,10 @@ export const GoLiveModal: React.FC<GoLiveModalProps> = ({
 
   const onGoLive = () => {
     setIsSubmiting(true);
-    anchor
+    anchorContract
       .go_live(
         {},
-        COMPLEX_CALL_GAS
+        Gas.COMPLEX_CALL_GAS
       )
       .then(() => {
         window.location.reload();
@@ -176,6 +192,7 @@ export const GoLiveModal: React.FC<GoLiveModalProps> = ({
                     isDisabled={isUpdatingEraRewards}>Update</Button>
                 </InputRightElement>
               </InputGroup>
+              <FormHelperText>Token decimals: {appchain?.appchain_metadata.fungible_token_metadata.decimals}</FormHelperText>
             </FormControl>
           </List>
         </ModalBody>

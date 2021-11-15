@@ -1,6 +1,6 @@
 import { extendTheme, withDefaultColorScheme } from '@chakra-ui/react';
 
-const defaultTheme = {
+const config = {
   
   colors: {
     octoColor: {
@@ -23,7 +23,7 @@ const defaultTheme = {
    
     Container: {
       baseStyle: {
-        maxW: 'container.lg'
+        maxW: 'container.xl'
       }
     },
     Link: {
@@ -63,8 +63,8 @@ const defaultTheme = {
   }
 }
 
-export default extendTheme(
-  defaultTheme,
+export const defaultTheme = extendTheme(
+  config,
   withDefaultColorScheme({
     colorScheme: 'octoColor',
     components: ['Tabs']

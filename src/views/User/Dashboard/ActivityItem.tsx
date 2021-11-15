@@ -13,9 +13,10 @@ import {
 } from '@chakra-ui/react';
 
 import { ChevronRightIcon } from '@chakra-ui/icons';
-import octopusConfig from 'config/octopus';
+import { octopusConfig } from 'config';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { AccountId } from 'types';
 
 dayjs.extend(relativeTime);
 
@@ -26,18 +27,30 @@ const StyledItem = styled(Flex)`
   }
 `;
 
-const ActivityItem = ({ activity, ...rest }) => {
+type ActivityItemProps = {
+  accountId: AccountId;
+  boxShadow: string;
+  activity: {
+    action_kind: string;
+    block_timestamp: string;
+    hash: string;
+    args: any;
+    receiver_id: AccountId;
+  }
+}
+
+const ActivityItem: React.FC<ActivityItemProps> = ({ accountId, activity, boxShadow }) => {
   const { action_kind, block_timestamp, hash, receiver_id } = activity;
 
   const actionKinds = {
-    'TRANSFER': receiver_id === window.accountId ? 'Received NEAR' : 'Sent NEAR',
+    'TRANSFER': receiver_id === accountId ? 'Received NEAR' : 'Sent NEAR',
     'CREATE_ACCOUNT': 'New account created',
     'ADD_KEY': 'Access Key added',
     'FUNCTION_CALL': 'Method called'
   }
 
   const actionTo = {
-    'TRANSFER': receiver_id === window.accountId ? 'from' : 'to',
+    'TRANSFER': receiver_id === accountId ? 'from' : 'to',
     'CREATE_ACCOUNT': 'account',
     'ADD_KEY': 'for',
     'FUNCTION_CALL': `${activity.args?.method_name} in `,
@@ -56,7 +69,7 @@ const ActivityItem = ({ activity, ...rest }) => {
 
   return (
     <Link isExternal href={`${octopusConfig.explorerUrl}/transactions/${hash}`}>
-    <StyledItem alignItems="center" justifyContent="space-between" {...rest} pt="4" pb="4">
+    <StyledItem alignItems="center" justifyContent="space-between" pt="4" pb="4" boxShadow={boxShadow}>
       <Flex alignItems="flex-start" spacing="0" w="60%" flexDirection="column">
         <Heading fontSize="md" fontWeight="600">{actionKinds[action_kind]}</Heading>
         <Box fontSize="sm" whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis" w="100%">
@@ -68,7 +81,7 @@ const ActivityItem = ({ activity, ...rest }) => {
       </Flex>
       <HStack color="gray">
         <Text fontSize="sm">
-          {dayjs(block_timestamp.substr(0, 13) * 1).fromNow()}
+          {dayjs(block_timestamp.substr(0, 13) as any * 1).fromNow()}
         </Text>
         <ChevronRightIcon />
       </HStack>

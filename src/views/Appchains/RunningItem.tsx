@@ -1,5 +1,4 @@
 import React from 'react';
-import styled from 'styled-components';
 import { useSpring, animated, config as SpringConfig } from 'react-spring';
 
 import { 
@@ -8,54 +7,46 @@ import {
   Avatar,
   Heading,
   Text,
-  SimpleGrid,
   Icon,
   Button
 } from '@chakra-ui/react';
 
+import { OriginAppchainInfo } from 'types';
 import { HiOutlineArrowNarrowRight } from 'react-icons/hi';
 import { useNavigate } from 'react-router-dom';
 import { DecimalUtils } from 'utils';
-import { OCT_TOKEN_DECIMALS } from 'config/constants';
+import { OCT_TOKEN_DECIMALS } from 'primitives';
 import Decimal from 'decimal.js';
+import { AppchainListItem } from 'components';
 
-const StyledAppchainItem = styled(SimpleGrid)`
-  border-radius: 10px;
-  box-shadow: rgb(0 0 0 / 20%) 0px 0px 2px;
-  transition: transform 0.2s ease-in-out 0s, box-shadow 0.2s ease-in-out 0s;
-  cursor: pointer;
-  &:hover {
-    box-shadow: rgb(0 0 0 / 15%) 0px 0px 10px;
-    transform: scaleX(0.99);
-  }
-`;
+type RunningItemProps = {
+  appchain: OriginAppchainInfo;
+}
 
-const RunningItem = ({
-  appchain
-}: {
-  appchain: any;
-}) => {
+const RunningItem: React.FC<RunningItemProps> = ({ appchain }) => {
   const navigate = useNavigate();
-  const { appchain_id, appchain_metadata, validator_count, total_stake } = appchain;
+
   const { animatedStake } = useSpring({
     reset: true,
     from: { animatedStake: 0 },
-    animatedStake: DecimalUtils.fromString(total_stake, OCT_TOKEN_DECIMALS).toNumber(),
+    animatedStake: DecimalUtils.fromString(appchain.total_stake, OCT_TOKEN_DECIMALS).toNumber(),
     config: SpringConfig.slow
   });
 
   return (
    
-    <StyledAppchainItem boxShadow="octoShadow" columns={{ base: 13, md: 17 }} p={4} alignItems="center">
+    <AppchainListItem columns={{ base: 13, md: 17 }}
+      onClick={() => navigate(`/appchains/${appchain.appchain_id}`)}>
       <GridItem colSpan={5}>
         <HStack>
-          <Avatar name={appchain_id} size="xs" display={{ base: 'none', md: 'block' }} bg="blue.100"
-            src={appchain_metadata?.fungible_token_metadata?.icon} />
-          <Heading fontSize="lg">{appchain_id}</Heading>
+          <Avatar name={appchain.appchain_id} size="xs" display={{ base: 'none', md: 'block' }}
+            bg={appchain.appchain_metadata?.fungible_token_metadata?.icon ? 'white' : 'blue.100'}
+            src={appchain.appchain_metadata?.fungible_token_metadata?.icon} />
+          <Heading fontSize="lg">{appchain.appchain_id}</Heading>
         </HStack>
       </GridItem>
       <GridItem colSpan={4}>
-        <Text fontSize="xl">{validator_count}</Text>
+        <Text fontSize="xl">{appchain.validator_count}</Text>
       </GridItem>
       <GridItem colSpan={4}>
         <Text fontSize="md">
@@ -64,13 +55,13 @@ const RunningItem = ({
       </GridItem>
       
       <GridItem colSpan={4} textAlign="right">
-        <Button>
+        <Button size="sm">
           <Text>Enter</Text>
           <Icon as={HiOutlineArrowNarrowRight} ml="2" />
         </Button>
       </GridItem>
      
-    </StyledAppchainItem>
+    </AppchainListItem>
 
   );
 }
