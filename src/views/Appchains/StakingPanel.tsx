@@ -43,7 +43,7 @@ const StakingPanel: React.FC<StakingPanelProps> = ({ appchain, anchorContract })
   const [depositAmount, setDepositAmount] = useState<Decimal>(ZERO_DECIMAL);
   const [inputAmount, setInputAmount] = useState<Decimal>(ZERO_DECIMAL);
  
-  const [registerModalOpen, setRegsiterModalOpen] = useBoolean(false);
+  const [registerModalOpen, setRegisterModalOpen] = useBoolean(false);
   const [unbondPopoverOpen, setUnbondPopoverOpen] = useBoolean(false);
   const [stakeMorePopoverOpen, setStakeMorePopoverOpen] = useBoolean(false);
 
@@ -89,10 +89,10 @@ const StakingPanel: React.FC<StakingPanelProps> = ({ appchain, anchorContract })
   const onUnbond = () => {
     setIsUnbonding(true);
     anchorContract
-      .unbond_stake()
-      .then(_ => {
-        window.location.reload();
-      })
+      .unbond_stake(
+        {},
+        Gas.COMPLEX_CALL_GAS
+      )
       .catch(err => {
         toast({
           position: 'top-right',
@@ -209,7 +209,7 @@ const StakingPanel: React.FC<StakingPanelProps> = ({ appchain, anchorContract })
             }
           </HStack> :
 
-          <Button size="sm" colorScheme="octoColor" onClick={setRegsiterModalOpen.on}>Register Validator</Button>
+          <Button size="sm" colorScheme="octoColor" onClick={setRegisterModalOpen.on}>Register Validator</Button>
        
         }
       </Flex>
@@ -219,7 +219,7 @@ const StakingPanel: React.FC<StakingPanelProps> = ({ appchain, anchorContract })
       </Box>
       
     </Box>
-    <RegisterValidatorModal isOpen={registerModalOpen} onClose={setRegsiterModalOpen.off}
+    <RegisterValidatorModal isOpen={registerModalOpen} onClose={setRegisterModalOpen.off}
       anchorContract={anchorContract} />
     </>
   );

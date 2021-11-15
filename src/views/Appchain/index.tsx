@@ -40,13 +40,15 @@ import {
 import { 
   AiOutlineUser, 
   AiOutlineGlobal, 
-  AiFillGithub
+  AiFillGithub,
+  AiOutlineSearch
 } from 'react-icons/ai';
 
 import { 
   AppchainInfo, 
   AnchorContract,
-  AppchainSettings
+  AppchainSettings,
+  IndexRange
 } from 'types';
 
 import { 
@@ -66,10 +68,13 @@ import {
 import { useParams } from 'react-router-dom';
 import { DecimalUtils, ZERO_DECIMAL } from 'utils';
 
+import { IoMdTime } from 'react-icons/io';
 import { octopusConfig } from 'config';
 import { OCT_TOKEN_DECIMALS } from 'primitives';
 import { useGlobalStore } from 'stores';
 import Decimal from 'decimal.js';
+import dayjs from 'dayjs';
+import { Permissions } from './Permissions';
 
 export const Appchain: React.FC = () => {
   const { id } = useParams();
@@ -83,6 +88,8 @@ export const Appchain: React.FC = () => {
   const [totalIssuance, setTotalIssuance] = useState(ZERO_DECIMAL);
 
   const [appchainSettings, setAppchainSettings] = useState<AppchainSettings>();
+  const [stakingHistoryIndexRange, setStakingHistoryIndexRange] = useState<IndexRange>();
+
   const globalStore = useGlobalStore(state => state.globalStore);
   const { hasCopied: rpcEndpointCopied, onCopy: onRpcEndpointCopy } = useClipboard(appchainSettings?.rpcEndpoint);
 
@@ -158,7 +165,9 @@ export const Appchain: React.FC = () => {
                 'get_protocol_settings',
                 'get_validator_set_info_of',
                 'get_validator_list_of',
-                'get_delegator_deposit_of'
+                'get_delegator_deposit_of',
+                'get_index_range_of_staking_history',
+                'get_validator_rewards_of'
               ],
               changeMethods: [
                 'unbond_stake',
@@ -182,26 +191,32 @@ export const Appchain: React.FC = () => {
       return;
     }
 
-    anchorContract
-      .get_appchain_settings()
-      .then(({ rpc_endpoint, era_reward, subql_endpoint }) => {
-        setAppchainSettings({
-          rpcEndpoint: rpc_endpoint,
-          eraReward: DecimalUtils.fromString(
-            era_reward, 
-            appchainInfo.appchainMetadata.fungibleTokenMetadata.decimals
-          ),
-          subqlEndpoint: subql_endpoint
-        });
-
-        try {
-          const provider = new WsProvider(rpc_endpoint);
-          setApiPromise(new ApiPromise({ provider }));
-        } catch(err) {
-          console.log(err);
-        }
-        
+    Promise.all([
+      anchorContract.get_appchain_settings(),
+      anchorContract.get_index_range_of_staking_history()
+    ]).then(([{ rpc_endpoint, era_reward, subql_endpoint }, history]) => {
+      setAppchainSettings({
+        rpcEndpoint: rpc_endpoint,
+        eraReward: DecimalUtils.fromString(
+          era_reward, 
+          appchainInfo.appchainMetadata.fungibleTokenMetadata.decimals
+        ),
+        subqlEndpoint: subql_endpoint
       });
+
+      setStakingHistoryIndexRange({
+        startIndex: history.start_index as any * 1,
+        endIndex: history.end_index as any * 1
+      });
+
+      try {
+        const provider = new WsProvider(rpc_endpoint);
+        setApiPromise(new ApiPromise({ provider }));
+      } catch(err) {
+        console.log(err);
+      }
+      
+    });
   }, [anchorContract, appchainInfo]);
 
   useEffect(() => {
@@ -276,12 +291,55 @@ export const Appchain: React.FC = () => {
             <Heading fontSize="3xl">{id}</Heading>
             <StateBadge state={appchainInfo?.appchainState} />
           </HStack>
-          <Wrap mt={6}>
+          <HStack mt={3}>
+            <Skeleton isLoaded={!!appchainInfo}>
+              <HStack spacing={3}>
+                <Link isExternal color="gray"
+                  href={`${octopusConfig.nearExplorerUrl}/accounts/${appchainInfo?.appchainOwner}`}>
+                  <HStack spacing={1}>
+                    <Icon as={AiOutlineUser} />
+                    <Text fontSize="xs">{appchainInfo?.appchainOwner || 'loading'}</Text>
+                  </HStack>
+                </Link>
+                <HStack color="gray" spacing={1}>
+                  <Icon as={IoMdTime} />
+                  <Text fontSize="xs">
+                    {
+                      appchainInfo ?
+                      dayjs(
+                        appchainInfo.registeredTime.substr(0, 13) as any * 1
+                      ).format('YYYY-MM-DD HH:mm') :
+                      'loading'
+                    }
+                  </Text>
+                </HStack>
+              </HStack>
+            </Skeleton>
+          </HStack>
+          <Wrap mt={8}>
             <WrapItem>
               <Button size="sm" as={Link} isExternal href={appchainInfo?.appchainMetadata.websiteUrl}>
                 <HStack>
                   <Icon as={AiOutlineGlobal} />
                   <Text fontSize="xs">Website</Text>
+                  <ExternalLinkIcon color="gray" />
+                </HStack>
+              </Button>
+            </WrapItem>
+            <WrapItem>
+              <Button size="sm" as={Link} isExternal href={`${octopusConfig.octExplorerUrl}?appchain=${id}`}>
+                <HStack>
+                  <Icon as={AiOutlineSearch} />
+                  <Text fontSize="xs">Explorer</Text>
+                  <ExternalLinkIcon color="gray" />
+                </HStack>
+              </Button>
+            </WrapItem>
+            <WrapItem>
+              <Button size="sm" as={Link} isExternal href={appchainInfo?.appchainMetadata.functionSpecUrl}>
+                <HStack>
+                  <Icon as={AttachmentIcon} />
+                  <Text fontSize="xs">Function Spec</Text>
                   <ExternalLinkIcon color="gray" />
                 </HStack>
               </Button>
@@ -295,26 +353,6 @@ export const Appchain: React.FC = () => {
                 </HStack>
               </Button>
             </WrapItem>
-            <WrapItem>
-              <Skeleton isLoaded={!!appchainInfo}>
-              <Button size="sm" as={Link} isExternal href={`${octopusConfig.explorerUrl}/accounts/${appchainInfo?.appchainOwner}`}>
-                <HStack>
-                  <Icon as={AiOutlineUser} />
-                  <Text fontSize="xs">{appchainInfo?.appchainOwner || 'loading...'}</Text>
-                  <ExternalLinkIcon color="gray" />
-                </HStack>
-              </Button>
-              </Skeleton>
-            </WrapItem>
-            <WrapItem>
-              <Button size="sm" as={Link} isExternal href={appchainInfo?.appchainMetadata.functionSpecUrl}>
-                <HStack>
-                  <Icon as={AttachmentIcon} />
-                  <Text fontSize="xs">Function Spec</Text>
-                  <ExternalLinkIcon color="gray" />
-                </HStack>
-              </Button>
-            </WrapItem>
           </Wrap>
         </GridItem>
         <GridItem colSpan={6} display={['none', 'block']}>
@@ -323,10 +361,23 @@ export const Appchain: React.FC = () => {
             <SimpleGrid columns={2} w="50%">
               
               <Stat>
+                <StatLabel color="gray" fontSize="xs">Current Era</StatLabel>
+                <StatNumber fontSize="3xl">
+                  {
+                    stakingHistoryIndexRange ? 
+                    DecimalUtils.beautify(
+                      new Decimal(stakingHistoryIndexRange.endIndex),
+                      0
+                    ) : 0
+                  }
+                </StatNumber>
+              </Stat>
+
+              <Stat>
                 <StatLabel color="gray" fontSize="xs">Block Height</StatLabel>
                 {
                   bestBlock > 0 ?
-                  <StatNumber fontSize="3xl" fontWeight={700}>
+                  <StatNumber fontSize="3xl">
                     { DecimalUtils.beautify(new Decimal(bestBlock), 0) }
                   </StatNumber> :
                   <Flex minH="45px" alignItems="center">
@@ -337,31 +388,16 @@ export const Appchain: React.FC = () => {
                 <StatHelpText color="gray" fontSize="xs">
                   Finalized {
                     DecimalUtils.beautify(
-                      new Decimal(finalizedBlock),
-                      0
+                      new Decimal(finalizedBlock), 0
                     )
                   }
                 </StatHelpText>
               </Stat>
-            
-              <Stat>
-                <StatLabel color="gray" fontSize="xs">Total Issuance</StatLabel>
-                {
-                  totalIssuance.gt(ZERO_DECIMAL) ?
-                  <StatNumber fontSize="3xl" fontWeight={700}>
-                    { DecimalUtils.beautify(totalIssuance) }
-                  </StatNumber> :
-                  <Flex minH="45px" alignItems="center">
-                    <Spinner size="sm" />
-                  </Flex>
-                }
-              </Stat>
        
             </SimpleGrid>
  
-            <HStack>
-              <Button>Staking</Button>
-            </HStack>
+            <Permissions anchorContract={anchorContract} appchain={appchainInfo} 
+              stakingHistory={stakingHistoryIndexRange} />
           </Flex>
           <Divider mt={4} mb={4} />
           <SimpleGrid columns={17}>
@@ -399,17 +435,21 @@ export const Appchain: React.FC = () => {
                 </HStack>
               </VStack>
               </Skeleton>
-              <Skeleton isLoaded={!!appchainInfo}>
+             
               <VStack alignItems="flex-start" spacing={1} mt={4}>
-                <Text fontSize="xs" color="gray">Decimals</Text>
+                <Text fontSize="xs" color="gray">Total Issuance</Text>
                 <HStack w="100%">
-                  <Heading fontSize="sm" whiteSpace="nowrap"
-                    overflow="hidden" textOverflow="ellipsis">
-                    {appchainInfo?.appchainMetadata.fungibleTokenMetadata.decimals}
-                  </Heading>
+                  {
+                    totalIssuance.gt(ZERO_DECIMAL) ?
+                    <Heading fontSize="sm" whiteSpace="nowrap"
+                      overflow="hidden" textOverflow="ellipsis">
+                      { DecimalUtils.beautify(totalIssuance) }
+                    </Heading> :
+                    <Spinner size="sm" />
+                  }
                 </HStack>
               </VStack>
-              </Skeleton>
+             
             </GridItem>
             <GridItem colSpan={1}>
               <Center h="100%">

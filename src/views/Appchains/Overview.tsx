@@ -253,7 +253,7 @@ const Overview: React.FC<OverviewProps> = ({ appchainId, onDrawerClose }) => {
           }}>
             <HStack>
               <Skeleton isLoaded={!!appchain}>
-                <Heading fontSize="3xl">{appchain?.appchain_id || 'loading...'}</Heading>
+                <Heading fontSize="3xl">{appchain?.appchain_id || 'loading'}</Heading>
               </Skeleton>
               {
                 appchain ?
@@ -262,10 +262,10 @@ const Overview: React.FC<OverviewProps> = ({ appchainId, onDrawerClose }) => {
             </HStack>
             <Skeleton isLoaded={!!appchain}>
               <HStack color="gray" spacing={5} fontSize="sm">
-                <Link isExternal href={`${octopusConfig.explorerUrl}/accounts/${appchain?.appchain_owner}`}>
+                <Link isExternal href={`${octopusConfig.nearExplorerUrl}/accounts/${appchain?.appchain_owner}`}>
                   <HStack spacing={1}>
                     <Icon as={AiOutlineUser} />
-                    <Text>{appchain?.appchain_owner || 'loading...'}</Text>
+                    <Text>{appchain?.appchain_owner || 'loading'}</Text>
                   </HStack>
                 </Link>
 
@@ -345,7 +345,7 @@ const Overview: React.FC<OverviewProps> = ({ appchainId, onDrawerClose }) => {
                       <Icon as={FiAnchor} />
                       <Text>Anchor</Text>
                     </HStack>
-                    <Link href={`${octopusConfig.explorerUrl}/accounts/${appchain?.appchain_anchor}`} isExternal flex={1} overflow="hidden">
+                    <Link href={`${octopusConfig.nearExplorerUrl}/accounts/${appchain?.appchain_anchor}`} isExternal flex={1} overflow="hidden">
                       <HStack justifyContent={{ base: "start", sm: "end" }}>
                         <Heading fontSize="md" fontWeight={500} maxW="100%" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
                           {appchainId}.{octopusConfig.registryContractId}
@@ -599,7 +599,6 @@ const Overview: React.FC<OverviewProps> = ({ appchainId, onDrawerClose }) => {
                     }
                   </Flex>
                 </List>
-
 
               </Skeleton>
             </List>

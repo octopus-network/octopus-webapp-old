@@ -10,5 +10,6 @@ export const octopusConfig = {
   tokenContractId: TOKEN_CONTRACT,
   walletUrl: `https://wallet.${NETWORK}.near.org`,
   helperUrl: `https://helper.${NETWORK}.near.org`,
-  explorerUrl: `https://explorer.${NETWORK}.near.org`
+  nearExplorerUrl: `https://explorer.${NETWORK}.near.org`,
+  octExplorerUrl: `https://explorer.${NETWORK}.oct.network`
 };
