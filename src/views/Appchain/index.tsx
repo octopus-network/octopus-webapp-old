@@ -280,7 +280,7 @@ export const Appchain: React.FC = () => {
           </BreadcrumbItem>
         </Breadcrumb>
       </Box>
-      <SimpleGrid columns={[3, 9]} mt={6} gap={12} p={6} bg="white" boxShadow="rgb(0 0 0 / 20%) 0px 0px 2px" borderRadius="xl">
+      <SimpleGrid columns={{ base: 3, lg: 9 }} mt={6} gap={12} p={6} bg="white" boxShadow="rgb(0 0 0 / 20%) 0px 0px 2px" borderRadius="xl">
         <GridItem colSpan={3}>
           <HStack spacing={3}>
             <Avatar 
@@ -355,7 +355,7 @@ export const Appchain: React.FC = () => {
             </WrapItem>
           </Wrap>
         </GridItem>
-        <GridItem colSpan={6} display={['none', 'block']}>
+        <GridItem colSpan={6} display={{ base: 'none', lg: 'block' }}>
           <Flex justifyContent="space-between" alignItems="flex-start">
 
             <SimpleGrid columns={2} w="50%">

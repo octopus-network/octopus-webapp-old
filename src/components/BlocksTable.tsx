@@ -15,6 +15,7 @@ import {
   useBoolean,
   Wrap,
   WrapItem,
+  Heading,
   Tag
 } from '@chakra-ui/react';
 
@@ -95,7 +96,7 @@ export const BlocksTable: React.FC<BlocksTableProps> = ({ apiPromise, bestNumber
       <Thead>
         <Tr>
           <Th>Block</Th>
-          <Th display={['none', 'table-cell']}>Hash</Th>
+          <Th display={{ base: 'none', lg: 'table-cell' }}>Hash</Th>
           <Th>Extrinsics</Th>
         </Tr>
       </Thead>
@@ -106,12 +107,11 @@ export const BlocksTable: React.FC<BlocksTableProps> = ({ apiPromise, bestNumber
             return (
               <Tr key={`block-${idx}`}>
                 <Td>
-                  <Link href="#"
-                    _hover={{ textDecoration: 'underline' }}>
+                  <Heading fontSize="sm">
                     #{number}
-                  </Link>
+                  </Heading>
                 </Td>
-                <Td display={['none', 'table-cell']}>
+                <Td display={{ base: 'none', lg: 'table-cell' }}>
                   <Link href="#"
                     _hover={{ textDecoration: 'underline' }}>
                     {hash}
