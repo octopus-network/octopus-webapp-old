@@ -13,5 +13,7 @@ export { TokenInfoModal } from './TokenInfoModal';
 export { ValidatorsTable } from './ValidatorsTable';
 export { ConfirmBootingModal } from './ConfirmBootingModal';
 export { GoLiveModal } from './GoLiveModal';
-
+export { BlocksTable } from './BlocksTable';
 export { AppchainListItem } from './AppchainListItem';
+
+export { Pagination } from './Pagination';

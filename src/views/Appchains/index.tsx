@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 
 import { 
   Container,
@@ -139,49 +139,7 @@ export const Appchains: React.FC = () => {
 
   const initialFocusRef = React.useRef();
 
-  useEffect(() => {
-
-    const promises = [
-      AppchainState.Registered,
-      AppchainState.Auditing,
-      AppchainState.Dead,
-      AppchainState.InQueue,
-      AppchainState.Staging,
-      AppchainState.Booting,
-      AppchainState.Active
-    ].map(state => 
-      globalStore
-        .registryContract
-        .get_appchains_count_of({
-          appchain_state: state
-        })
-    );
-
-    Promise.all(promises).then(([
-      registeredCount, auditingCount, deadCount, inQueueCount, 
-      stagingCount, bootingCount, activeCount
-    ]) => {
-      setNumPreAudit(registeredCount as any * 1 + deadCount as any * 1);
-      setNumAuditing(auditingCount);
-      setNumInQueue(inQueueCount);
-      setNumStaging(stagingCount);
-      setNumBooting(bootingCount);
-      setNumActive(activeCount);
-    });
-
-    Promise.all([
-      globalStore.registryContract.get_owner(),
-      globalStore.registryContract.get_registry_settings()
-    ]).then(([owner, { operator_of_counting_voting_score }]) => {
-      setIsOwner(owner === globalStore.accountId);
-      setIsCounter(operator_of_counting_voting_score === globalStore.accountId);
-    });
-
-    loadingList();
-
-  }, [globalStore]);
-
-  const loadingList = async () => {
+  const loadingList = useCallback(async () => {
     setIsLoadingList(true);
     return Promise.all([
       [
@@ -228,7 +186,49 @@ export const Appchains: React.FC = () => {
       }
       setHighestVotes(highest);
     });
-  }
+  }, [globalStore]);
+
+  useEffect(() => {
+
+    const promises = [
+      AppchainState.Registered,
+      AppchainState.Auditing,
+      AppchainState.Dead,
+      AppchainState.InQueue,
+      AppchainState.Staging,
+      AppchainState.Booting,
+      AppchainState.Active
+    ].map(state => 
+      globalStore
+        .registryContract
+        .get_appchains_count_of({
+          appchain_state: state
+        })
+    );
+
+    Promise.all(promises).then(([
+      registeredCount, auditingCount, deadCount, inQueueCount, 
+      stagingCount, bootingCount, activeCount
+    ]) => {
+      setNumPreAudit(registeredCount as any * 1 + deadCount as any * 1);
+      setNumAuditing(auditingCount);
+      setNumInQueue(inQueueCount);
+      setNumStaging(stagingCount);
+      setNumBooting(bootingCount);
+      setNumActive(activeCount);
+    });
+
+    Promise.all([
+      globalStore.registryContract.get_owner(),
+      globalStore.registryContract.get_registry_settings()
+    ]).then(([owner, { operator_of_counting_voting_score }]) => {
+      setIsOwner(owner === globalStore.accountId);
+      setIsCounter(operator_of_counting_voting_score === globalStore.accountId);
+    });
+
+    loadingList();
+
+  }, [globalStore, loadingList]);
 
   const onDrawerClose = () => {
     navigate(`/appchains`);

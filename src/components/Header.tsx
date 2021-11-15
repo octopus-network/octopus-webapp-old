@@ -8,7 +8,6 @@ import {
   HStack, 
   Icon,
   IconButton,
-  Box, 
   Image,
   useBoolean,
   Link,
@@ -66,73 +65,70 @@ export const Header = () => {
 
   return (
     <>
-      <Box position="relative" zIndex="2">
-        <Container maxW="container.xl" pt="4" pb="4">
-          <Flex justify="space-between" alignItems="center">
-            <HStack spacing="12">
-              <RouterLink to="/">
-                <Image src={colorMode === 'light' ? logo : logoWhite} width="90px" />
-              </RouterLink>
-              <HStack spacing="5" display={{ base: 'none', lg: 'flex' }}>
-                <Link as={RouterLink} to="/home"_selected={selectedLinkStyle}
-                  aria-selected={/home/.test(locationPath)}>{t('Home')}</Link>
-                <Link as={RouterLink} to="/appchains" _selected={selectedLinkStyle}
-                  aria-selected={/appchains/.test(locationPath)}>{t('Appchains')}</Link>
-                <Link as={RouterLink} to="/bridge" _selected={selectedLinkStyle}
-                  aria-selected={/bridge/.test(locationPath)}>{t('Bridge')}</Link>
-               
-                {
-                  octopusConfig.networkId === 'testnet' ?
-                  <Link target="_blank" href="https://faucet.testnet.oct.network">{t('Faucet')}</Link> : null
-                }
-                
-                <Link target="_blank" href="https://docs.oct.network">{t('Docs')}</Link>
-              </HStack>
-            </HStack>
-            <HStack spacing={3} display={{ base: 'none', lg: 'flex' }} alignItems="center">
-              {/* <ColorModeSwitcher /> */}
-              <Link onClick={setLocalModalOpen.on}>
-                {t('localeName')} <Icon w={3} h={3} as={FaChevronDown} />
-              </Link>
+      <Container pt={4} pb={4}>
+        <Flex justify="space-between" alignItems="center">
+          <HStack spacing="12">
+            <RouterLink to="/">
+              <Image src={colorMode === 'light' ? logo : logoWhite} width="90px" />
+            </RouterLink>
+            <HStack spacing="5" display={{ base: 'none', lg: 'flex' }}>
+              <Link as={RouterLink} to="/home"_selected={selectedLinkStyle}
+                aria-selected={/home/.test(locationPath)}>{t('Home')}</Link>
+              <Link as={RouterLink} to="/appchains" _selected={selectedLinkStyle}
+                aria-selected={/appchains/.test(locationPath)}>{t('Appchains')}</Link>
+              <Link as={RouterLink} to="/bridge" _selected={selectedLinkStyle}
+                aria-selected={/bridge/.test(locationPath)}>{t('Bridge')}</Link>
+              
               {
-                globalStore.walletConnection?.isSignedIn() ?
-                <Menu placement="top-end">
-                  <MenuButton as={Button} variant="ghost">
-                    <HStack>
-                      <Avatar w="20px" h="20px" mr="1" />
-                      <Text maxW="100px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
-                        {globalStore.accountId}
-                      </Text>
-                    </HStack>
-                  </MenuButton>
-                  <MenuList>
-                    <RouterLink to="/user/dashboard">
-                      <MenuItem>{t('Dashboard')}</MenuItem>
-                    </RouterLink>
-                    <MenuDivider />
-                    <MenuItem onClick={onLogout}>{t('Sign out')}</MenuItem>
-                  </MenuList>
-                </Menu> :
-                <Button variant="outline" onClick={onLogin}>{t('Login')}</Button>
+                octopusConfig.networkId === 'testnet' ?
+                <Link target="_blank" href="https://faucet.testnet.oct.network">{t('Faucet')}</Link> : null
               }
+              
+              <Link target="_blank" href="https://docs.oct.network">{t('Docs')}</Link>
             </HStack>
-            <Menu placement="top-end">
-              <MenuButton as={IconButton} aria-label="menu" variant="unstyled" display={{ base: 'block', lg: 'none' }}>
-                <Icon w="6" h="6" as={FiMenu} />
-              </MenuButton>
-              <MenuList>
-                <RouterLink to="/home">
-                  <MenuItem>{t('Home')}</MenuItem>
-                </RouterLink>
-                <RouterLink to="/appchains">
-                  <MenuItem>{t('Appchains')}</MenuItem>
-                </RouterLink>
-              </MenuList>
-            </Menu>
-          </Flex>
-        </Container>
-        
-      </Box>
+          </HStack>
+          <HStack spacing={3} display={{ base: 'none', lg: 'flex' }} alignItems="center">
+            {/* <ColorModeSwitcher /> */}
+            <Link onClick={setLocalModalOpen.on}>
+              {t('localeName')} <Icon w={3} h={3} as={FaChevronDown} />
+            </Link>
+            {
+              globalStore.walletConnection?.isSignedIn() ?
+              <Menu placement="top-end">
+                <MenuButton as={Button} variant="ghost">
+                  <HStack>
+                    <Avatar w="20px" h="20px" mr="1" />
+                    <Text maxW="100px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
+                      {globalStore.accountId}
+                    </Text>
+                  </HStack>
+                </MenuButton>
+                <MenuList>
+                  <RouterLink to="/user/dashboard">
+                    <MenuItem>{t('Dashboard')}</MenuItem>
+                  </RouterLink>
+                  <MenuDivider />
+                  <MenuItem onClick={onLogout}>{t('Sign out')}</MenuItem>
+                </MenuList>
+              </Menu> :
+              <Button variant="outline" onClick={onLogin}>{t('Login')}</Button>
+            }
+          </HStack>
+          <Menu placement="top-end">
+            <MenuButton as={IconButton} aria-label="menu" variant="unstyled" display={{ base: 'block', lg: 'none' }}>
+              <Icon w="6" h="6" as={FiMenu} />
+            </MenuButton>
+            <MenuList>
+              <RouterLink to="/home">
+                <MenuItem>{t('Home')}</MenuItem>
+              </RouterLink>
+              <RouterLink to="/appchains">
+                <MenuItem>{t('Appchains')}</MenuItem>
+              </RouterLink>
+            </MenuList>
+          </Menu>
+        </Flex>
+      </Container>
       <LocaleModal isOpen={localeModalOpen} onClose={setLocalModalOpen.off} />
     </>
   );

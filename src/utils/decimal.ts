@@ -35,7 +35,7 @@ export class DecimalUtils {
 
     if (fixed === undefined) {
       fixed = 
-        input.gt(ZERO_DECIMAL) && input.lt(ONE_DECIMAL) ? 6 : 
+        input.gt(ZERO_DECIMAL) && input.lt(ONE_DECIMAL) ? 8 : 
         2;
     }
 

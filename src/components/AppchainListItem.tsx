@@ -11,7 +11,7 @@ export const AppchainListItem: React.FC<SimpleGridProps> = ({ children, ...rest 
   return (
     <SimpleGrid 
       {...rest}
-      p={4}
+      p={5}
       alignItems="center"
       borderRadius="xl"
       boxShadow="rgb(0 0 0 / 20%) 0px 0px 2px"

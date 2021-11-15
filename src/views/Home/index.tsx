@@ -69,7 +69,12 @@ const AppchainItem: React.FC<AppchainItemProps> = ({ appchain }) => {
       onClick={() => navigate(`/appchains/${appchain.appchain_id}`)}>
       <GridItem colSpan={5}>
         <HStack>
-          <Avatar name={appchain.appchain_id} size="sm" display={{ base: 'none', md: 'block' }} bg="blue.100" />
+          <Avatar 
+            size="sm" 
+            name={appchain.appchain_id} 
+            display={{ base: 'none', md: 'block' }}
+            src={appchain.appchain_metadata.fungible_token_metadata.icon} 
+            bg={appchain.appchain_metadata?.fungible_token_metadata?.icon ? 'white' : 'blue.100'} />
           <Heading fontSize="xl">{appchain.appchain_id}</Heading>
         </HStack>
       </GridItem>
@@ -177,7 +182,7 @@ export const Home: React.FC = () => {
             <RouterLink to="/appchains/join">
               <JoinButton colorScheme="octoColor" variant="outline">
                 <Text>{t('Join Octopus')}</Text>
-                <Icon as={HiOutlineArrowNarrowRight} ml="2" />
+                <Icon as={HiOutlineArrowNarrowRight} ml={2} />
               </JoinButton>
             </RouterLink>
           </Center>

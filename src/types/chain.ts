@@ -1,6 +1,5 @@
 import { FungibleTokenMetadata, AccountId, Time } from 'types';
-
-import BN from 'bn.js';
+import Decimal from 'decimal.js';
 
 export type AppchainId = string;
 
@@ -30,9 +29,9 @@ export type AppchainMetadata = {
   fungibleTokenMetadata: FungibleTokenMetadata;
   githubAddress: string;
   githubRelease: string;
-  idoAmountOfWrappedAppchainToken: BN;
-  initialEraReward: BN;
-  preminedWrappedAppchainToken: BN;
+  idoAmountOfWrappedAppchainToken: Decimal;
+  initialEraReward: Decimal;
+  preminedWrappedAppchainToken: Decimal;
   preminedWrappedAppchainTokenBeneficiary: AccountId;
   websiteUrl: string;
 }
@@ -71,14 +70,14 @@ export type AppchainInfo = {
   appchainMetadata: AppchainMetadata;
   appchainOwner: AccountId;
   appchainState: AppchainState;
-  downvoteDeposit: BN;
+  downvoteDeposit: Decimal;
   goLiveTime: Time;
-  registerDeposit: BN;
+  registerDeposit: Decimal;
   registeredTime: Time;
-  totalStake: BN;
-  upvoteDeposit: BN;
+  totalStake: Decimal;
+  upvoteDeposit: Decimal;
   validatorCount: number;
-  votingScore: BN;
+  votingScore: Decimal;
 }
 
 export type OriginAppchainSettings = {
@@ -90,5 +89,5 @@ export type OriginAppchainSettings = {
 export type AppchainSettings = {
   rpcEndpoint: string;
   subqlEndpoint: string;
-  eraReward: BN;
+  eraReward: Decimal;
 }

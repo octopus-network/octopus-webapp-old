@@ -19,12 +19,14 @@ import {
   useToast,
   HStack,
   useBoolean,
-  Image
+  Image,
+  Icon
 } from '@chakra-ui/react';
 
 import { Formik, Form, Field } from 'formik';
 import { useTranslation } from 'react-i18next';
 import { EditIcon } from '@chakra-ui/icons';
+import { HiOutlineArrowNarrowRight } from 'react-icons/hi';
 import { DecimalUtils, ZERO_DECIMAL } from 'utils';
 import { FAILED_TO_REDIRECT_MESSAGE, Gas, OCT_TOKEN_DECIMALS } from 'primitives';
 import { octopusConfig } from 'config';
@@ -176,10 +178,11 @@ export const Register: React.FC = () => {
 
   return (
     <>
-      <Container maxW="620px" mt={14} mb={16}>
+      <Container maxW="container.md" mt={14} mb={16}>
         <Box pb={10}>
           <Heading fontSize={{ base: '3xl', md: '4xl' }}>{t('Join Octopus Network')}</Heading>
         </Box>
+       
         <Formik
           initialValues={{
             appchainId: '',
@@ -197,7 +200,8 @@ export const Register: React.FC = () => {
           {(props) => (
 
             <Form>
-              <List spacing={5}>
+              <Box p={8} bg="white" boxShadow="rgb(0 0 0 / 20%) 0px 0px 2px" borderRadius="xl">
+              <List spacing={4}>
                 <Grid templateColumns="repeat(5, 1fr)" gap="6">
                   <GridItem colSpan={2}>
                     <Field name="appchainId" validate={validateAppchainId}>
@@ -343,7 +347,7 @@ export const Register: React.FC = () => {
                   </GridItem>
                 </Grid>
                 <Grid templateColumns="repeat(5, 1fr)" gap="6">
-                  <GridItem colSpan={3}>
+                  <GridItem colSpan={2}>
                     <Field name="email" validate={validateEmail}>
                       {({ field, form }) => (
                         <FormControl isInvalid={form.errors.email && form.touched.email} isRequired>
@@ -354,40 +358,41 @@ export const Register: React.FC = () => {
                       )}
                     </Field>
                   </GridItem>
-                  <GridItem colSpan={2}>
-                    <FormControl>
-                      <FormLabel>&nbsp;</FormLabel>
-                      <VStack alignItems="flex-start" spacing="0">
-                        <Flex alignItems="center">
-                          <Text mr="1" fontSize="sm">Auditing Fee:</Text>
-                          <Heading fontSize="md">
-                            { DecimalUtils.beautify(minimumRegisterDeposit) } OCT
-                          </Heading>
-                        </Flex>
-                        <Text color="gray" fontSize="xs">
-                          Balance: { DecimalUtils.beautify(accountBalance) } OCT
-                        </Text>
-                      </VStack>
-                    </FormControl>
+                  <GridItem colSpan={3}>
+                   
                   </GridItem>
                 </Grid>
 
               </List>
-              <Button
-                mt={8}
-                colorScheme="octoColor"
-                isLoading={props.isSubmitting}
-                disabled={props.isSubmitting || !globalStore.accountId}
-                type="submit"
-                size="lg"
-                isFullWidth={true}
-              >
-                {globalStore?.accountId ? t('Submit') : t('Please Login')}
-              </Button>
+              </Box>
+              <Flex justifyContent="space-between" alignItems="center" mt={8}>
+                <VStack alignItems="flex-start">
+                  <Flex alignItems="center">
+                    <Text mr="1" fontSize="sm">Auditing Fee:</Text>
+                    <Heading fontSize="md">
+                      { DecimalUtils.beautify(minimumRegisterDeposit) } OCT
+                    </Heading>
+                  </Flex>
+                  <Text color="gray" fontSize="xs">
+                    Balance: { DecimalUtils.beautify(accountBalance) } OCT
+                  </Text>
+                </VStack>
+                <Button
+                  
+                  colorScheme="octoColor"
+                  isLoading={props.isSubmitting}
+                  disabled={props.isSubmitting || !globalStore.accountId}
+                  type="submit"
+                  size="lg"
+                >
+                  {globalStore?.accountId ? t('Submit') : t('Please Login')}
+                  <Icon as={HiOutlineArrowNarrowRight} ml={2} />
+                </Button>
+              </Flex>
             </Form>
           )}
         </Formik>
-
+       
       </Container>
       <TokenInfoModal isOpen={tokenInfoModalOpen} onClose={setTokenInfoModalOpen.off}
         tokenInfo={tokenInfo} onUpdate={(info) => {

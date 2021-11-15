@@ -50,12 +50,14 @@ type ValidatorsTableProps = {
   anchorContract: AnchorContract;
   noAction?: boolean;
   appchainId: AppchainId;
+  size?: 'sm' | 'md' | 'lg'
 }
 
 export const ValidatorsTable: React.FC<ValidatorsTableProps> = ({
   anchorContract,
   noAction,
   appchainId,
+  size = 'sm'
 }) => {
 
   const toast = useToast();
@@ -154,7 +156,7 @@ export const ValidatorsTable: React.FC<ValidatorsTableProps> = ({
       <Skeleton isLoaded={validatorList !== undefined}>
         {
           validatorList?.length > 0 ?
-            <Table variant="simple" size="sm">
+            <Table variant="simple" size={size}>
               <Thead>
                 <Tr>
                   <Th>Validator Id</Th>
@@ -244,9 +246,9 @@ export const ValidatorsTable: React.FC<ValidatorsTableProps> = ({
             <NoValidators />
         }
       </Skeleton>
-      <RegisterDelegatorModal 
-        isOpen={registerDelegatorModalOpen} 
-        anchorContract={anchorContract} 
+      <RegisterDelegatorModal
+        isOpen={registerDelegatorModalOpen}
+        anchorContract={anchorContract}
         validatorAccountId={selectedValidatorAccountId}
         onClose={setRegisterDelegatorModalOpen.off} />
     </>

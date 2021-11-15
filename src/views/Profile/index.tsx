@@ -167,7 +167,7 @@ export const Profile: React.FC = () => {
 
   return (
     <Container maxW="container.md">
-      <Flex mt={5} alignItems="center" justifyContent="space-between">
+      <Flex mt={6} alignItems="center" justifyContent="space-between">
         <HStack>
           <HStack>
             <Icon as={CgProfile} w={5} h={5} />
@@ -192,7 +192,7 @@ export const Profile: React.FC = () => {
           </Button> : null
         }
       </Flex>
-      <Box mt={5} boxShadow="md" borderRadius="xl" p={4}>
+      <Box mt={6} bg="white" boxShadow="rgb(0 0 0 / 20%) 0px 0px 2px" borderRadius="xl" p={6}>
         <Flex alignItems="center" justifyContent="space-between">
           <Heading fontSize="md">Account ID</Heading>
           <HStack>

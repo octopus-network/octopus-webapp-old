@@ -23,7 +23,7 @@ const config = {
    
     Container: {
       baseStyle: {
-        maxW: 'container.lg'
+        maxW: 'container.xl'
       }
     },
     Link: {
