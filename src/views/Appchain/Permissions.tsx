@@ -47,7 +47,8 @@ import BN from 'bn.js';
 
 import { AiOutlineCloudServer } from 'react-icons/ai';
 
-import { DeployModal, RegisterValidatorModal } from 'components';
+import { RegisterValidatorModal } from 'components';
+import { DeployModal } from './DeployModal';
 
 type PermissionsProps = {
   anchorContract: AnchorContract;

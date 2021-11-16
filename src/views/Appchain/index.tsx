@@ -60,7 +60,6 @@ import {
 
 import {
   ValidatorsTable,
-  BlocksTable,
   StateBadge 
 } from 'components';
 
@@ -74,6 +73,7 @@ import { useGlobalStore } from 'stores';
 import Decimal from 'decimal.js';
 import dayjs from 'dayjs';
 import { Permissions } from './Permissions';
+import { BlocksTable } from './BlocksTable';
 
 export const Appchain: React.FC = () => {
   const { id } = useParams();
