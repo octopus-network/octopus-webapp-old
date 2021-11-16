@@ -38,10 +38,10 @@ import { RegisterValidatorModal } from 'components';
 type PermissionsProps = {
   anchorContract: AnchorContract;
   appchain: AppchainInfo;
-  stakingHistory: IndexRange;
+  currentEra: number;
 }
 
-export const Permissions: React.FC<PermissionsProps> = ({ anchorContract, appchain, stakingHistory }) => {
+export const Permissions: React.FC<PermissionsProps> = ({ anchorContract, appchain, currentEra }) => {
 
   const toast = useToast();
   const globalStore = useGlobalStore(state => state.globalStore);
@@ -91,22 +91,22 @@ export const Permissions: React.FC<PermissionsProps> = ({ anchorContract, appcha
       );
 
     });
-  }, [anchorContract, globalStore, stakingHistory]);
+  }, [anchorContract, globalStore]);
 
   useEffect(() => {
-    if (!stakingHistory || !globalStore.accountId) {
+    if (!globalStore.accountId || !anchorContract ||!currentEra) {
       return;
     }
     anchorContract
       .get_validator_rewards_of({
-        start_era: stakingHistory.startIndex.toFixed(),
-        end_era: stakingHistory.endIndex.toFixed(),
+        start_era: '0',
+        end_era: currentEra.toString(),
         validator_id: globalStore.accountId
       }).then(rewards => {
         console.log(rewards);
       });
 
-  }, [stakingHistory, globalStore, anchorContract]);
+  }, [currentEra, globalStore, anchorContract]);
 
   useEffect(() => {
     if (!appchain) return;

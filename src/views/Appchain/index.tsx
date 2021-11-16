@@ -47,8 +47,7 @@ import {
 import { 
   AppchainInfo, 
   AnchorContract,
-  AppchainSettings,
-  IndexRange
+  AppchainSettings
 } from 'types';
 
 import { 
@@ -88,7 +87,7 @@ export const Appchain: React.FC = () => {
   const [totalIssuance, setTotalIssuance] = useState(ZERO_DECIMAL);
 
   const [appchainSettings, setAppchainSettings] = useState<AppchainSettings>();
-  const [stakingHistoryIndexRange, setStakingHistoryIndexRange] = useState<IndexRange>();
+  const [currentEra, setCurrentEra] = useState<number>();
 
   const globalStore = useGlobalStore(state => state.globalStore);
   const { hasCopied: rpcEndpointCopied, onCopy: onRpcEndpointCopy } = useClipboard(appchainSettings?.rpcEndpoint);
@@ -191,32 +190,26 @@ export const Appchain: React.FC = () => {
       return;
     }
 
-    Promise.all([
-      anchorContract.get_appchain_settings(),
-      anchorContract.get_index_range_of_staking_history()
-    ]).then(([{ rpc_endpoint, era_reward, subql_endpoint }, history]) => {
-      setAppchainSettings({
-        rpcEndpoint: rpc_endpoint,
-        eraReward: DecimalUtils.fromString(
-          era_reward, 
-          appchainInfo.appchainMetadata.fungibleTokenMetadata.decimals
-        ),
-        subqlEndpoint: subql_endpoint
-      });
+    anchorContract
+      .get_appchain_settings()
+      .then(({ rpc_endpoint, era_reward, subql_endpoint }) => {
+        setAppchainSettings({
+          rpcEndpoint: rpc_endpoint,
+          eraReward: DecimalUtils.fromString(
+            era_reward, 
+            appchainInfo.appchainMetadata.fungibleTokenMetadata.decimals
+          ),
+          subqlEndpoint: subql_endpoint
+        });
 
-      setStakingHistoryIndexRange({
-        startIndex: history.start_index as any * 1,
-        endIndex: history.end_index as any * 1
+        try {
+          const provider = new WsProvider(rpc_endpoint);
+          setApiPromise(new ApiPromise({ provider }));
+        } catch(err) {
+          console.log(err);
+        }
+        
       });
-
-      try {
-        const provider = new WsProvider(rpc_endpoint);
-        setApiPromise(new ApiPromise({ provider }));
-      } catch(err) {
-        console.log(err);
-      }
-      
-    });
   }, [anchorContract, appchainInfo]);
 
   useEffect(() => {
@@ -226,6 +219,7 @@ export const Appchain: React.FC = () => {
 
     let unsubNewHeads = () => {};
     let unsubNewFinalizedHeads = () => {};
+    let unsubCurrentEra = () => {};
 
     apiPromise.on('connected', () => {
       
@@ -242,6 +236,11 @@ export const Appchain: React.FC = () => {
 
       unsubNewFinalizedHeads = await apiPromise.rpc.chain.subscribeFinalizedHeads((finalizedHeader) => {
         setFinalizedBlock(finalizedHeader.number.toNumber());
+      });
+
+      
+      apiPromise.query.octopusLpos.currentEra((era) => {
+        setCurrentEra(era.value.toNumber());
       });
 
       const amount = await apiPromise.query.balances?.totalIssuance();
@@ -364,11 +363,11 @@ export const Appchain: React.FC = () => {
                 <StatLabel color="gray" fontSize="xs">Current Era</StatLabel>
                 <StatNumber fontSize="3xl">
                   {
-                    stakingHistoryIndexRange ? 
+                    currentEra !== undefined ?
                     DecimalUtils.beautify(
-                      new Decimal(stakingHistoryIndexRange.endIndex),
+                      new Decimal(currentEra),
                       0
-                    ) : 0
+                    ) : <Spinner size="sm" />
                   }
                 </StatNumber>
               </Stat>
@@ -397,7 +396,7 @@ export const Appchain: React.FC = () => {
             </SimpleGrid>
  
             <Permissions anchorContract={anchorContract} appchain={appchainInfo} 
-              stakingHistory={stakingHistoryIndexRange} />
+              currentEra={currentEra} />
           </Flex>
           <Divider mt={4} mb={4} />
           <SimpleGrid columns={17}>
