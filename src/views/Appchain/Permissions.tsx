@@ -107,7 +107,7 @@ export const Permissions: React.FC<PermissionsProps> = ({ anchorContract, appcha
       .get_validator_rewards_of({
         start_era: stakingHistory.startIndex.toFixed(),
         end_era: stakingHistory.endIndex.toFixed(),
-        validator_id: globalStore.accountId
+        validator_id: 'alice-octopus.testnet'
       }).then(rewards => {
         console.log(rewards);
       });
