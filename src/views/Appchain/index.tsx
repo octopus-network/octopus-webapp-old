@@ -47,8 +47,7 @@ import {
 import { 
   AppchainInfo, 
   AnchorContract,
-  AppchainSettings,
-  IndexRange
+  AppchainSettings
 } from 'types';
 
 import { 
@@ -88,7 +87,7 @@ export const Appchain: React.FC = () => {
   const [totalIssuance, setTotalIssuance] = useState(ZERO_DECIMAL);
 
   const [appchainSettings, setAppchainSettings] = useState<AppchainSettings>();
-  const [stakingHistoryIndexRange, setStakingHistoryIndexRange] = useState<IndexRange>();
+  const [currentEra, setCurrentEra] = useState<number>();
 
   const globalStore = useGlobalStore(state => state.globalStore);
   const { hasCopied: rpcEndpointCopied, onCopy: onRpcEndpointCopy } = useClipboard(appchainSettings?.rpcEndpoint);
@@ -167,7 +166,8 @@ export const Appchain: React.FC = () => {
                 'get_validator_list_of',
                 'get_delegator_deposit_of',
                 'get_index_range_of_staking_history',
-                'get_validator_rewards_of'
+                'get_validator_rewards_of',
+                'get_wrapped_appchain_token'
               ],
               changeMethods: [
                 'unbond_stake',
@@ -175,7 +175,8 @@ export const Appchain: React.FC = () => {
                 'go_live',
                 'set_rpc_endpoint',
                 'set_subql_endpoint',
-                'set_era_reward'
+                'set_era_reward',
+                'withdraw_validator_rewards'
               ]
             }
           );
@@ -191,32 +192,26 @@ export const Appchain: React.FC = () => {
       return;
     }
 
-    Promise.all([
-      anchorContract.get_appchain_settings(),
-      anchorContract.get_index_range_of_staking_history()
-    ]).then(([{ rpc_endpoint, era_reward, subql_endpoint }, history]) => {
-      setAppchainSettings({
-        rpcEndpoint: rpc_endpoint,
-        eraReward: DecimalUtils.fromString(
-          era_reward, 
-          appchainInfo.appchainMetadata.fungibleTokenMetadata.decimals
-        ),
-        subqlEndpoint: subql_endpoint
-      });
+    anchorContract
+      .get_appchain_settings()
+      .then(({ rpc_endpoint, era_reward, subql_endpoint }) => {
+        setAppchainSettings({
+          rpcEndpoint: rpc_endpoint,
+          eraReward: DecimalUtils.fromString(
+            era_reward, 
+            appchainInfo.appchainMetadata.fungibleTokenMetadata.decimals
+          ),
+          subqlEndpoint: subql_endpoint
+        });
 
-      setStakingHistoryIndexRange({
-        startIndex: history.start_index as any * 1,
-        endIndex: history.end_index as any * 1
+        try {
+          const provider = new WsProvider(rpc_endpoint);
+          setApiPromise(new ApiPromise({ provider }));
+        } catch(err) {
+          console.log(err);
+        }
+        
       });
-
-      try {
-        const provider = new WsProvider(rpc_endpoint);
-        setApiPromise(new ApiPromise({ provider }));
-      } catch(err) {
-        console.log(err);
-      }
-      
-    });
   }, [anchorContract, appchainInfo]);
 
   useEffect(() => {
@@ -226,7 +221,7 @@ export const Appchain: React.FC = () => {
 
     let unsubNewHeads = () => {};
     let unsubNewFinalizedHeads = () => {};
-
+   
     apiPromise.on('connected', () => {
       
     });
@@ -236,12 +231,20 @@ export const Appchain: React.FC = () => {
         return;
       }
 
-      unsubNewHeads = await apiPromise.rpc.chain.subscribeNewHeads((lastHeader) => {
+      apiPromise.rpc.chain.subscribeNewHeads((lastHeader) => {
         setBestBlock(lastHeader.number.toNumber());
+      }).then(unsub => {
+        unsubNewHeads = unsub;
       });
 
-      unsubNewFinalizedHeads = await apiPromise.rpc.chain.subscribeFinalizedHeads((finalizedHeader) => {
+      apiPromise.rpc.chain.subscribeFinalizedHeads((finalizedHeader) => {
         setFinalizedBlock(finalizedHeader.number.toNumber());
+      }).then(unsub => {
+        unsubNewFinalizedHeads = unsub;
+      });
+      
+      apiPromise.query.octopusLpos.currentEra((era) => {
+        setCurrentEra(era.value.toNumber());
       });
 
       const amount = await apiPromise.query.balances?.totalIssuance();
@@ -280,7 +283,7 @@ export const Appchain: React.FC = () => {
           </BreadcrumbItem>
         </Breadcrumb>
       </Box>
-      <SimpleGrid columns={[3, 9]} mt={6} gap={12} p={6} bg="white" boxShadow="rgb(0 0 0 / 20%) 0px 0px 2px" borderRadius="xl">
+      <SimpleGrid columns={{ base: 3, lg: 9 }} mt={6} gap={12} p={6} bg="white" boxShadow="rgb(0 0 0 / 20%) 0px 0px 2px" borderRadius="xl">
         <GridItem colSpan={3}>
           <HStack spacing={3}>
             <Avatar 
@@ -355,7 +358,7 @@ export const Appchain: React.FC = () => {
             </WrapItem>
           </Wrap>
         </GridItem>
-        <GridItem colSpan={6} display={['none', 'block']}>
+        <GridItem colSpan={6} display={{ base: 'none', lg: 'block' }}>
           <Flex justifyContent="space-between" alignItems="flex-start">
 
             <SimpleGrid columns={2} w="50%">
@@ -364,11 +367,11 @@ export const Appchain: React.FC = () => {
                 <StatLabel color="gray" fontSize="xs">Current Era</StatLabel>
                 <StatNumber fontSize="3xl">
                   {
-                    stakingHistoryIndexRange ? 
+                    currentEra !== undefined ?
                     DecimalUtils.beautify(
-                      new Decimal(stakingHistoryIndexRange.endIndex),
+                      new Decimal(currentEra),
                       0
-                    ) : 0
+                    ) : <Spinner size="sm" />
                   }
                 </StatNumber>
               </Stat>
@@ -395,9 +398,10 @@ export const Appchain: React.FC = () => {
               </Stat>
        
             </SimpleGrid>
- 
-            <Permissions anchorContract={anchorContract} appchain={appchainInfo} 
-              stakingHistory={stakingHistoryIndexRange} />
+            <Skeleton isLoaded={!!currentEra}>
+              <Permissions anchorContract={anchorContract} appchain={appchainInfo} 
+                currentEra={currentEra} />
+            </Skeleton>
           </Flex>
           <Divider mt={4} mb={4} />
           <SimpleGrid columns={17}>

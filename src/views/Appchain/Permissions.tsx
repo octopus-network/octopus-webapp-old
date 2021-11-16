@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 
 import {
   HStack,
@@ -10,17 +10,28 @@ import {
   PopoverContent,
   PopoverBody,
   Flex,
+  VStack,
   PopoverFooter,
   Input,
   useToast,
   Box,
-  Heading
+  Icon,
+  Heading,
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogCloseButton,
+  AlertDialogBody,
+  AlertDialogOverlay,
+  AlertDialogFooter
 } from '@chakra-ui/react';
 
 import {
+  TokenContract,
   AnchorContract, 
   AppchainInfo,
-  IndexRange
+  RewardHistory,
+  AccountId
 } from 'types';
 
 import { 
@@ -32,16 +43,19 @@ import {
 import { useGlobalStore } from 'stores';
 import { DecimalUtils, ZERO_DECIMAL } from 'utils';
 import Decimal from 'decimal.js';
+import BN from 'bn.js';
 
-import { RegisterValidatorModal } from 'components';
+import { AiOutlineCloudServer } from 'react-icons/ai';
+
+import { DeployModal, RegisterValidatorModal } from 'components';
 
 type PermissionsProps = {
   anchorContract: AnchorContract;
   appchain: AppchainInfo;
-  stakingHistory: IndexRange;
+  currentEra: number;
 }
 
-export const Permissions: React.FC<PermissionsProps> = ({ anchorContract, appchain, stakingHistory }) => {
+export const Permissions: React.FC<PermissionsProps> = ({ anchorContract, appchain, currentEra }) => {
 
   const toast = useToast();
   const globalStore = useGlobalStore(state => state.globalStore);
@@ -55,6 +69,8 @@ export const Permissions: React.FC<PermissionsProps> = ({ anchorContract, appcha
   const [downvoteDeposit, setDownvoteDeposit] = useState<Decimal>(ZERO_DECIMAL);
 
   const [registerModalOpen, setRegisterModalOpen] = useBoolean(false);
+  const [deployModalOpen, setDeployModalOpen] = useBoolean(false);
+
   const [stakeMorePopoverOpen, setStakeMorePopoverOpen] = useBoolean(false);
   const [isStaking, setIsStaking] = useState(false);
 
@@ -63,10 +79,19 @@ export const Permissions: React.FC<PermissionsProps> = ({ anchorContract, appcha
   const [withdrawingDownvotes, setWithdrawingDownvotes] = useState(false);
 
   const [isUnbonding, setIsUnbonding] = useState(false);
+  const [isClaiming, setIsClaiming] = useState(false);
+
+  const [depositAlertOpen, setDepositAlertOpen] = useBoolean(false);
   const [unbondPopoverOpen, setUnbondPopoverOpen] = useBoolean(false);
+
+  const [rewards, setRewards] = useState<RewardHistory[]>();
+  const [wrappedAppchainTokenContractId, setWrappedAppchainTokenContractId] = useState<AccountId>();
+  // const [wrappedAppchainTokenFTBalance, setWrappedAppchainTokenFTBalance] = useState<Decimal>(ZERO_DECIMAL);
+  const [wrappedAppchainTokenStorageBalance, setWrappedAppchainTokenStorageBalance] = useState<Decimal>(ZERO_DECIMAL);
 
   const initialFocusRef = React.useRef();
   const stakeAmountInputRef = React.useRef();
+  const cancelRef = React.useRef();
 
   useEffect(() => {
     if (!anchorContract || !globalStore.accountId) {
@@ -77,12 +102,14 @@ export const Permissions: React.FC<PermissionsProps> = ({ anchorContract, appcha
         .get_validator_deposit_of({
           validator_id: globalStore.accountId
         }),
-      
+
+      anchorContract.get_wrapped_appchain_token(),
+
       anchorContract
         .get_unbonded_stakes_of({
           account_id: globalStore.accountId
         })
-    ]).then(([deposit]) => {
+    ]).then(([deposit, wrappedToken]) => {
       setDepositAmount(
         DecimalUtils.fromString(
           deposit,
@@ -90,23 +117,64 @@ export const Permissions: React.FC<PermissionsProps> = ({ anchorContract, appcha
         )
       );
 
+      setWrappedAppchainTokenContractId(wrappedToken.contract_account);
+
+      const wrappedTokencontract = new TokenContract(
+        globalStore.walletConnection.account(),
+        wrappedToken.contract_account,
+        {
+          viewMethods: ['storage_balance_of', 'ft_balance_of'],
+          changeMethods: []
+        }
+      );
+
+      Promise.all([
+        wrappedTokencontract.storage_balance_of({ account_id: globalStore.accountId }),
+        // wrappedTokencontract.ft_balance_of({ account_id: globalStore.accountId })
+      ]).then(([storage, balance]) => {
+
+        setWrappedAppchainTokenStorageBalance(
+          storage?.total ? DecimalUtils.fromString(storage.total, 24) : ZERO_DECIMAL
+        );
+      
+        // setWrappedAppchainTokenFTBalance(
+        //   balance ? DecimalUtils.fromString(
+        //     balance, 
+        //     appchain?.appchainMetadata.fungibleTokenMetadata.decimals
+        //   ) : ZERO_DECIMAL
+        // );
+      });
     });
-  }, [anchorContract, globalStore, stakingHistory]);
+  }, [anchorContract, globalStore, appchain]);
 
   useEffect(() => {
-    if (!stakingHistory || !globalStore.accountId) {
+    if (!globalStore.accountId || !anchorContract ||!currentEra || !appchain) {
       return;
     }
     anchorContract
       .get_validator_rewards_of({
-        start_era: stakingHistory.startIndex.toFixed(),
-        end_era: stakingHistory.endIndex.toFixed(),
+        start_era: '0',
+        end_era: currentEra.toString(),
         validator_id: globalStore.accountId
       }).then(rewards => {
-        console.log(rewards);
+        setRewards(rewards.map(({ reward, is_withdrawn, era_number }) => ({
+          reward: DecimalUtils.fromString(reward, appchain.appchainMetadata.fungibleTokenMetadata.decimals),
+          isWithdrawn: is_withdrawn,
+          eraNumber: (era_number as any) * 1
+        })));
       });
 
-  }, [stakingHistory, globalStore, anchorContract]);
+  }, [currentEra, globalStore, anchorContract, appchain]);
+
+  const unwithdraedAmount = useMemo(() => {
+    if (!rewards?.length) {
+      return ZERO_DECIMAL;
+    }
+
+    return rewards.filter(r => !r.isWithdrawn)
+        .reduce((total, next) => total.plus(next.reward), ZERO_DECIMAL);
+
+  }, [rewards]);
 
   useEffect(() => {
     if (!appchain) return;
@@ -246,116 +314,205 @@ export const Permissions: React.FC<PermissionsProps> = ({ anchorContract, appcha
       });
   }
 
+  const onClaimRewards = async () => {
+    setIsClaiming(true);
+  
+    try {
+      
+      if (wrappedAppchainTokenStorageBalance.lte(ZERO_DECIMAL)) {
+        setDepositAlertOpen.on();
+        return;
+      }
+
+      await anchorContract
+        .withdraw_validator_rewards(
+          {
+            validator_id: globalStore.accountId
+          },
+          Gas.COMPLEX_CALL_GAS
+        );
+    } catch(err) {
+      toast({
+        position: 'top-right',
+        title: 'Error',
+        description: err.toString(),
+        status: 'error'
+      });
+    }
+
+    setIsClaiming(false);
+  }
+
+  const onDepositAlertClose = () => {
+    setDepositAlertOpen.off();
+    setIsClaiming(false);
+  }
+
+  const onDepositStorage = () => {
+    globalStore.walletConnection.account().functionCall({
+      contractId: wrappedAppchainTokenContractId,
+      methodName: 'storage_deposit',
+      args: { account_id: globalStore.accountId },
+      gas: new BN(Gas.SIMPLE_CALL_GAS),
+      attachedDeposit: new BN('1250000000000000000000')
+    });
+  }
+
   return (
     <>
-      <HStack>
+      <VStack alignItems="flex-end">
         {
-          upvoteDeposit.gt(ZERO_DECIMAL) || downvoteDeposit.gt(ZERO_DECIMAL) ?
-          <Popover
-            initialFocusRef={initialFocusRef}
-            placement="bottom"
-            isOpen={withdrawVotesPopoverOpen}
-            onClose={setWithdrawVotesPopoverOpen.off}
-          >
-            <PopoverTrigger>
-              <Button onClick={setWithdrawVotesPopoverOpen.on} colorScheme="octoColor" isDisabled={withdrawVotesPopoverOpen}>
-                Withdraw Votes
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent>
-              <PopoverBody>
-                <Box p={2}>
-                  {
-                    upvoteDeposit.gt(ZERO_DECIMAL) ?
-                      <Flex>
-                        <Text>
-                          Your Upvotes: {DecimalUtils.beautify(upvoteDeposit)}
-                        </Text>
-                        <Button size="xs" colorScheme="octoColor" ml={2} variant="outline" isLoading={withdrawingUpvotes}
-                          isDisabled={withdrawingUpvotes || withdrawingDownvotes} onClick={onWithdrawUpvotes}>Withdraw</Button>
-                      </Flex> : null
-                  }
-                  {
-                    downvoteDeposit.gt(ZERO_DECIMAL) ?
-                      <Flex mt={3}>
-                        <Text>
-                          Your Downvotes: {DecimalUtils.beautify(downvoteDeposit)}
-                        </Text>
-                        <Button size="xs" colorScheme="octoColor" ml={2} variant="outline" isLoading={withdrawingDownvotes}
-                          isDisabled={withdrawingUpvotes || withdrawingDownvotes} onClick={onWithdrawDownvotes}>Withdraw</Button>
-                      </Flex> : null
-                  }
+          unwithdraedAmount.gt(ZERO_DECIMAL) ?
+          <Button colorScheme="octoColor" onClick={onClaimRewards} isLoading={isClaiming} isDisabled={isClaiming}>
+            Claim { DecimalUtils.beautify(unwithdraedAmount) } {appchain?.appchainMetadata.fungibleTokenMetadata.symbol}
+          </Button> :
 
-                </Box>
-              </PopoverBody>
-            </PopoverContent>
-          </Popover> :
           depositAmount.gt(ZERO_DECIMAL) ?
-          <>
-            <Popover
-              initialFocusRef={initialFocusRef}
-              placement="bottom"
-              isOpen={stakeMorePopoverOpen}
-              onClose={setStakeMorePopoverOpen.off}
-              >
-              <PopoverTrigger>
-                <Button colorScheme="octoColor" onClick={setStakeMorePopoverOpen.toggle}
-                  isDisabled={stakeMorePopoverOpen}>Stake more</Button>
-              </PopoverTrigger>
-              <PopoverContent>
-                <PopoverBody>
-                  <Flex p={2}>
-                    <Input placeholder="amount of OCT" ref={stakeAmountInputRef} 
-                      onChange={onAmountChange} type="number" />
-                  </Flex>
-                </PopoverBody>
-                <PopoverFooter d="flex" justifyContent="space-between" alignItems="center">
-                  <Text fontSize="sm" color="gray">
-                    Staked: {
-                      DecimalUtils.beautify(depositAmount)
-                    } OCT
-                  </Text>
-                  <Button size="sm" onClick={onIncreaseStake} colorScheme="octoColor" 
-                    isLoading={isStaking} isDisabled={isStaking}>Stake More</Button>
-                </PopoverFooter>
-              </PopoverContent>
-            </Popover>
-            <Popover
-              initialFocusRef={initialFocusRef}
-              placement="bottom"
-              isOpen={unbondPopoverOpen}
-              onClose={setUnbondPopoverOpen.off}
-              >
-              <PopoverTrigger>
-                <Button colorScheme="red" onClick={setUnbondPopoverOpen.toggle}
-                  isDisabled={unbondPopoverOpen}>Unbond</Button>
-              </PopoverTrigger>
-              <PopoverContent>
-                <PopoverBody>
-                  <Flex p={2}>
-                    <Heading fontSize="lg">Are you confirm to unbond stake?</Heading>
-                  </Flex>
-                </PopoverBody>
-                <PopoverFooter d="flex" justifyContent="space-between" alignItems="center">
-                  <Text fontSize="sm" color="gray">
-                    Staked: {
-                      DecimalUtils.beautify(depositAmount)
-                    } OCT
-                  </Text>
-                  <Button size="sm" onClick={onUnbond} colorScheme="octoColor" 
-                    isLoading={isUnbonding} isDisabled={isUnbonding}>Confirm</Button>
-                </PopoverFooter>
-              </PopoverContent>
-            </Popover>
-          </> :
-          <Button colorScheme="octoColor" isDisabled={!globalStore.accountId}
-            onClick={setRegisterModalOpen.on}>
-            Register Validator
-          </Button>
+          <Button colorScheme="octoColor"
+            onClick={setDeployModalOpen.on}>
+            <Icon as={AiOutlineCloudServer} mr={1} /> Validator Deploy Tool
+          </Button> : null
         }
-      </HStack>
+        <HStack>
+          {
+            upvoteDeposit.gt(ZERO_DECIMAL) || downvoteDeposit.gt(ZERO_DECIMAL) ?
+            <Popover
+              initialFocusRef={initialFocusRef}
+              placement="bottom"
+              isOpen={withdrawVotesPopoverOpen}
+              onClose={setWithdrawVotesPopoverOpen.off}
+            >
+              <PopoverTrigger>
+                <Button onClick={setWithdrawVotesPopoverOpen.on} colorScheme="octoColor" isDisabled={withdrawVotesPopoverOpen}>
+                  Withdraw Votes
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent>
+                <PopoverBody>
+                  <Box p={2}>
+                    {
+                      upvoteDeposit.gt(ZERO_DECIMAL) ?
+                        <Flex>
+                          <Text>
+                            Your Upvotes: {DecimalUtils.beautify(upvoteDeposit)}
+                          </Text> d
+                          <Button size="xs" colorScheme="octoColor" ml={2} variant="outline" isLoading={withdrawingUpvotes}
+                            isDisabled={withdrawingUpvotes || withdrawingDownvotes} onClick={onWithdrawUpvotes}>Withdraw</Button>
+                        </Flex> : null
+                    }
+                    {
+                      downvoteDeposit.gt(ZERO_DECIMAL) ?
+                        <Flex mt={3}>
+                          <Text>
+                            Your Downvotes: {DecimalUtils.beautify(downvoteDeposit)}
+                          </Text>
+                          <Button size="xs" colorScheme="octoColor" ml={2} variant="outline" isLoading={withdrawingDownvotes}
+                            isDisabled={withdrawingUpvotes || withdrawingDownvotes} onClick={onWithdrawDownvotes}>Withdraw</Button>
+                        </Flex> : null
+                    }
+
+                  </Box>
+                </PopoverBody>
+              </PopoverContent>
+            </Popover> :
+            depositAmount.gt(ZERO_DECIMAL) ?
+            <>
+              <Popover
+                initialFocusRef={initialFocusRef}
+                placement="bottom"
+                isOpen={stakeMorePopoverOpen}
+                onClose={setStakeMorePopoverOpen.off}
+                >
+                <PopoverTrigger>
+                  <Button colorScheme="octoColor" size="sm" variant="ghost"
+                    onClick={setStakeMorePopoverOpen.toggle}
+                    isDisabled={stakeMorePopoverOpen}>Stake more</Button>
+                </PopoverTrigger>
+                <PopoverContent>
+                  <PopoverBody>
+                    <Flex p={2}>
+                      <Input placeholder="amount of OCT" ref={stakeAmountInputRef} 
+                        onChange={onAmountChange} type="number" />
+                    </Flex>
+                  </PopoverBody>
+                  <PopoverFooter d="flex" justifyContent="space-between" alignItems="center">
+                    <Text fontSize="sm" color="gray">
+                      Staked: {
+                        DecimalUtils.beautify(depositAmount)
+                      } OCT
+                    </Text>
+                    <Button size="sm" onClick={onIncreaseStake} colorScheme="octoColor"
+                      isLoading={isStaking} isDisabled={isStaking}>Stake More</Button>
+                  </PopoverFooter>
+                </PopoverContent>
+              </Popover>
+              <Popover
+                initialFocusRef={initialFocusRef}
+                placement="bottom"
+                isOpen={unbondPopoverOpen}
+                onClose={setUnbondPopoverOpen.off}
+                >
+                <PopoverTrigger>
+                  <Button colorScheme="red" size="sm" variant="ghost"
+                    onClick={setUnbondPopoverOpen.toggle}
+                    isDisabled={unbondPopoverOpen}>Unbond</Button>
+                </PopoverTrigger>
+                <PopoverContent>
+                  <PopoverBody>
+                    <Flex p={2}>
+                      <Heading fontSize="lg">Are you confirm to unbond stake?</Heading>
+                    </Flex>
+                  </PopoverBody>
+                  <PopoverFooter d="flex" justifyContent="space-between" alignItems="center">
+                    <Text fontSize="sm" color="gray">
+                      Staked: {
+                        DecimalUtils.beautify(depositAmount)
+                      } OCT
+                    </Text>
+                    <Button size="sm" onClick={onUnbond} colorScheme="octoColor" 
+                      isLoading={isUnbonding} isDisabled={isUnbonding}>Confirm</Button>
+                  </PopoverFooter>
+                </PopoverContent>
+              </Popover>
+            </> :
+            <Button colorScheme="octoColor" isDisabled={!globalStore.accountId}
+              onClick={setRegisterModalOpen.on}>
+              Register Validator
+            </Button>
+          }
+        </HStack>
+        
+      </VStack>
       <RegisterValidatorModal isOpen={registerModalOpen} onClose={setRegisterModalOpen.off}
         anchorContract={anchorContract} />
+
+      <DeployModal isOpen={deployModalOpen} onClose={setDeployModalOpen.off}
+        appchain={appchain} />
+
+      <AlertDialog
+        motionPreset="slideInBottom"
+        leastDestructiveRef={cancelRef}
+        onClose={onDepositAlertClose}
+        isOpen={depositAlertOpen}
+        isCentered
+      >
+        <AlertDialogOverlay />
+        <AlertDialogContent>
+          <AlertDialogHeader>Setup Account</AlertDialogHeader>
+          <AlertDialogCloseButton />
+          <AlertDialogBody>
+            It seems that you haven't setup your account on wrapped {appchain?.appchainMetadata.fungibleTokenMetadata.symbol} token yet
+          </AlertDialogBody>
+          <AlertDialogFooter>
+            <Button ref={cancelRef} onClick={onDepositAlertClose}>
+              Maybe Later
+            </Button>
+            <Button colorScheme="octoColor" ml={3} onClick={onDepositStorage}>
+              Setup Right Now
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

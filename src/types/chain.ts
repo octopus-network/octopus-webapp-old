@@ -1,4 +1,10 @@
-import { FungibleTokenMetadata, AccountId, Time } from 'types';
+import { 
+  FungibleTokenMetadata, 
+  OriginFungibleTokenMetadata,
+  AccountId, 
+  Time 
+} from 'types';
+
 import Decimal from 'decimal.js';
 
 export type AppchainId = string;
@@ -106,4 +112,19 @@ export type OriginRewardHistory = {
   era_number: string;
   reward: string;
   is_withdrawn: boolean;
+}
+
+export type RewardHistory = {
+  eraNumber: number;
+  reward: Decimal;
+  isWithdrawn: boolean;
+}
+
+export type OriginWrappedAppchainToken = {
+  metadata: OriginFungibleTokenMetadata;
+  contract_account: AccountId;
+  premined_beneficiary: AccountId;
+  premined_balance: string;
+  changed_balance: string;
+  price_in_usd: string;
 }
