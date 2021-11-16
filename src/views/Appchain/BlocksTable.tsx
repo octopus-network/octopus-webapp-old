@@ -16,6 +16,7 @@ import {
   Wrap,
   WrapItem,
   Heading,
+  Text,
   Tag
 } from '@chakra-ui/react';
 
@@ -114,7 +115,7 @@ export const BlocksTable: React.FC<BlocksTableProps> = ({ apiPromise, bestNumber
                 <Td display={{ base: 'none', lg: 'table-cell' }}>
                   <Link href="#"
                     _hover={{ textDecoration: 'underline' }}>
-                    {hash}
+                    <Text fontSize="sm">{hash}</Text>
                   </Link>
                 </Td>
                 <Td>
