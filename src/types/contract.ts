@@ -10,12 +10,16 @@ import {
   AppchainId,
   FungibleTokenMetadata,
   OriginIndexRange,
-  OriginRewardHistory
+  OriginRewardHistory,
+  OriginWrappedAppchainToken,
+  StorageDeposit
 } from 'types';
 
 type FtBalanceOfArgs = {
   account_id: AccountId
 }
+
+type StorageBalanceOfArgs = FtBalanceOfArgs;
 
 type FtTransferCallArgs = {
   receiver_id: AccountId;
@@ -104,10 +108,18 @@ type GetValidatorRewardsOfArgs = {
   validator_id: AccountId;
 }
 
+type WtidrawValidatorRewardsArgs = {
+  validator_id: AccountId;
+}
+
 export class TokenContract extends Contract {
  
   ft_balance_of(args: FtBalanceOfArgs): Promise<string> {
     return this.ft_balance_of(args);
+  };
+
+  storage_balance_of(args: StorageBalanceOfArgs): Promise<StorageDeposit> {
+    return this.storage_balance_of(args);
   };
 
   ft_transfer_call(args: FtTransferCallArgs, gas: string, deposit: number) {
@@ -242,5 +254,13 @@ export class AnchorContract extends Contract {
 
   go_live(args: {}, gas: string) {
     return this.go_live(args, gas);
+  }
+
+  withdraw_validator_rewards(args: WtidrawValidatorRewardsArgs, gas: string) {
+    return this.withdraw_validator_rewards(args, gas);
+  }
+
+  get_wrapped_appchain_token(): Promise<OriginWrappedAppchainToken> {
+    return this.get_wrapped_appchain_token();
   }
 }
