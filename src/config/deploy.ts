@@ -5,7 +5,7 @@ export const rpcEndpoint = 'wss://chuubnzu9i.execute-api.ap-northeast-1.amazonaw
 
 export const baseImages: SubstrateImage[] = [
   {
-    image: 'gcr.io/octopus-dev-309403/substrate-octopus@sha256:5b4694fa7bf522fee76ecd607a76e312b19757005977de4c7c0c2c9869e31934',
-    label: 'Substrate 0.9.8'
+    image: 'us-central1-docker.pkg.dev/octopus-prod/octopus-appchains/barnacle@sha256:3676ff8f9cee2b398345883b286795ada6ae8afa78691ccc653eaa262cbda251',
+    label: 'Barnacle v0.9.12-alpha.2'
   }
 ]
