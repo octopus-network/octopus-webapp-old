@@ -54,7 +54,7 @@ export const DeployModal: React.FC<DeployModalProps> = ({ appchain, isOpen, onCl
   const [refreshFactor, setRefreshFactor] = useState<any>();
 
   const authKey = useMemo(() => {
-    return `cloud_${cloudVendor}_access-key_${accessKey}_appchain_${appchain?.appchainId}`;
+    return `appchain-${appchain?.appchainId}-cloud-${cloudVendor}-${accessKey}`;
   }, [appchain, cloudVendor, accessKey]);
 
   useEffect(() => {
@@ -94,6 +94,7 @@ export const DeployModal: React.FC<DeployModalProps> = ({ appchain, isOpen, onCl
         cloud_vendor: cloudVendor,
         access_key: accessKey,
         base_image: image,
+        chain_spec: deployConfig.baseImages.find(im => im.image === image)?.chain
       }, {
         headers: {
           authorization: authKey
