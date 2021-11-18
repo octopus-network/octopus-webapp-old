@@ -20,12 +20,13 @@ import {
   Badge,
   useClipboard,
   Button,
-  useToast
+  useToast,
+  Link
 } from '@chakra-ui/react';
 
 import { Pagination } from 'components';
 import { deployConfig } from 'config';
-import { CopyIcon, CheckIcon } from '@chakra-ui/icons';
+import { CopyIcon, CheckIcon, DownloadIcon } from '@chakra-ui/icons';
 import { BsFillInfoCircleFill } from 'react-icons/bs';
 import axios from 'axios';
 
@@ -44,6 +45,10 @@ type TaskRowProps = {
 
 const TaskRow: React.FC<TaskRowProps> = ({ task, authKey, onUpdate }) => {
   const { hasCopied: hasUuidCopied, onCopy: onCopyUuid } = useClipboard(task.uuid);
+  const { hasCopied: hasInstanceCopied, onCopy: onCopyInstance } = useClipboard(
+    task.instance ? `${task.instance.user}@${task.instance.ip}` : ''
+  );
+
   const [loadingType, setLoadingType] = useState<string>();
   const toast = useToast();
 
@@ -135,7 +140,7 @@ const TaskRow: React.FC<TaskRowProps> = ({ task, authKey, onUpdate }) => {
     <Tr>
       <Td>
         <HStack>
-          <Text fontSize="sm" whiteSpace="nowrap" w="calc(160px - 30px)"
+          <Text fontSize="sm" whiteSpace="nowrap" w="calc(140px - 30px)"
             overflow="hidden" textOverflow="ellipsis">
             {task.uuid}
           </Text>
@@ -147,9 +152,22 @@ const TaskRow: React.FC<TaskRowProps> = ({ task, authKey, onUpdate }) => {
       <Td>
         <Badge size="sm" colorScheme={task.state.color}>{task.state.label}</Badge>
       </Td>
-     
       <Td>
-        <Tag size="sm">{task.image?.label}</Tag>
+        {
+          task.instance ?
+          <HStack>
+            <Text fontSize="sm" whiteSpace="nowrap" w="calc(160px - 30px)"
+              overflow="hidden" textOverflow="ellipsis">
+              {task.instance.user}@{task.instance.ip}
+            </Text>
+            <IconButton aria-label="copy" onClick={onCopyInstance} size="sm">
+              { hasInstanceCopied ? <CheckIcon /> : <CopyIcon /> }
+            </IconButton>
+          </HStack> : '-'
+        }
+      </Td>
+      <Td>
+        <Tag size="sm" whiteSpace="nowrap">{task.image?.label}</Tag>
       </Td>
       <Td>
         <HStack>
@@ -161,15 +179,23 @@ const TaskRow: React.FC<TaskRowProps> = ({ task, authKey, onUpdate }) => {
             variant="outline">Apply</Button> : null
         }
         {
+          task.state.state === 12 ?
+          <Button size="sm" colorScheme="octoColor" as={Link} isExternal
+            href={task.instance.sshKey}
+            variant="outline"><DownloadIcon mr={1} /> RSA</Button> : null
+        }
+        {
           (
             task.state.state === 11 ||
-            task.state.state === 21
+            task.state.state === 21 ||
+            task.state.state === 12
           ) ?
           <Button size="sm" colorScheme="red" onClick={onDestroy}
             isLoading={loadingType === 'destroy'} 
             isDisabled={loadingType === 'destroy'}
             variant="outline">Destroy</Button> : null
         }
+        
         {
           (
             task.state.state === 0 ||
@@ -202,6 +228,7 @@ export const TasksTable: React.FC<TasksTableProps> = ({ refreshFactor, authKey, 
         authorization: authKey
       }
     }).then(res => {
+      
       const states: Record<string, TaskState> = {
         '0': { label: 'init', color: 'blue', state: 0 },
         '10': { label: 'applying', color: 'teal', state: 10 },
@@ -216,6 +243,12 @@ export const TasksTable: React.FC<TasksTableProps> = ({ refreshFactor, authKey, 
         uuid: item.uuid,
         state: states[item.state],
         user: item.user,
+        instance: 
+          item.instance ? {
+            user: item.instance.user,
+            ip: item.instance.ip,
+            sshKey: item.instance.ssh_key
+          } : null,
         image: deployConfig.baseImages.find(image => image.image === item.task.base_image)
       })));
     });
@@ -230,7 +263,7 @@ export const TasksTable: React.FC<TasksTableProps> = ({ refreshFactor, authKey, 
           <Tr>
             <Th>UUID</Th>
             <Th>State</Th>
-          
+            <Th>Instance</Th>
             <Th>Image</Th>
             <Th>Operation</Th>
           </Tr>

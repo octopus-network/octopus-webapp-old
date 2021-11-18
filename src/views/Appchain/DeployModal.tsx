@@ -125,7 +125,7 @@ export const DeployModal: React.FC<DeployModalProps> = ({ appchain, isOpen, onCl
           '480px' :
           isInDeploy ?
             '460px' :
-            'container.md'
+            'container.lg'
       } transition="all .3s ease">
         <ModalHeader></ModalHeader>
         <ModalCloseButton />

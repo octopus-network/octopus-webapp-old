@@ -220,7 +220,7 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
           </HStack>
           
           <Text fontSize="xs" color="gray">
-            Rwards: {DecimalUtils.beautify(totalRewards)} {appchain?.appchainMetadata.fungibleTokenMetadata.symbol}
+            Rewards: {DecimalUtils.beautify(totalRewards)} {appchain?.appchainMetadata.fungibleTokenMetadata.symbol}
             {
               unwithdraedAmount.gt(ZERO_DECIMAL) ? 
               `, unclaimed: ${DecimalUtils.beautify(unwithdraedAmount)} ${appchain?.appchainMetadata.fungibleTokenMetadata.symbol}` : ''
@@ -323,11 +323,15 @@ export const ValidatorsTable: React.FC<ValidatorsTableProps> = ({
   }, [anchorContract]);
 
   useEffect(() => {
-
-    apiPromise?.query?.session?.validators()
-      .then(vs => {
-        setAppchainValidators(vs.map(v => v.toString()));
-      });
+    
+    if (apiPromise) {
+      setTimeout(() => {
+        apiPromise?.query?.session?.validators()
+          .then(vs => {
+            setAppchainValidators(vs.map(v => v.toString()));
+          });
+      }, 1000);
+    }
   }, [apiPromise]);
 
   const onRegisterDelegator = (id: string) => {
@@ -357,6 +361,7 @@ export const ValidatorsTable: React.FC<ValidatorsTableProps> = ({
                 {
                   validatorList.map((v, idx) => {
                     const base58Address = encodeAddress(v.validatorIdInAppchain);
+
                     return (
                       <ValidatorRow 
                         key={`validator-${idx}`} 
@@ -367,7 +372,7 @@ export const ValidatorsTable: React.FC<ValidatorsTableProps> = ({
                         anchorContract={anchorContract} 
                         noAction={noAction} 
                         base58Address={base58Address}
-                        isInAppchain={appchainValidators?.indexOf(base58Address) >= 0}
+                        isInAppchain={appchainValidators?.some(s => s === base58Address)}
                         apiPromise={apiPromise}
                         onRegisterDelegator={onRegisterDelegator} />
                     );
