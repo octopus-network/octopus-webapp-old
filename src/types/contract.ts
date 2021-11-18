@@ -12,7 +12,8 @@ import {
   OriginIndexRange,
   OriginRewardHistory,
   OriginWrappedAppchainToken,
-  StorageDeposit
+  StorageDeposit,
+  OriginAppchainValidator
 } from 'types';
 
 type FtBalanceOfArgs = {
@@ -228,7 +229,7 @@ export class AnchorContract extends Contract {
     return this.get_protocol_settings();
   }
 
-  get_validator_list_of(): Promise<any[]> {
+  get_validator_list_of(): Promise<OriginAppchainValidator[]> {
     return this.get_validator_list_of();
   }
 

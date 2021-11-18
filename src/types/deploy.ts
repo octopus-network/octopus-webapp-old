@@ -18,6 +18,7 @@ export type OriginTask = {
 
 export type SubstrateImage = {
   label: string;
+  chain: string;
   image: string;
 }
 

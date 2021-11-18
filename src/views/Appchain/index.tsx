@@ -88,7 +88,7 @@ export const Appchain: React.FC = () => {
 
   const [appchainSettings, setAppchainSettings] = useState<AppchainSettings>();
   const [currentEra, setCurrentEra] = useState<number>();
-
+  
   const globalStore = useGlobalStore(state => state.globalStore);
   const { hasCopied: rpcEndpointCopied, onCopy: onRpcEndpointCopy } = useClipboard(appchainSettings?.rpcEndpoint);
 
@@ -227,10 +227,7 @@ export const Appchain: React.FC = () => {
     });
 
     apiPromise.on('ready', async () => {
-      if (!apiPromise.isReady) {
-        return;
-      }
-
+     
       apiPromise.rpc.chain.subscribeNewHeads((lastHeader) => {
         setBestBlock(lastHeader.number.toNumber());
       }).then(unsub => {
@@ -242,13 +239,15 @@ export const Appchain: React.FC = () => {
       }).then(unsub => {
         unsubNewFinalizedHeads = unsub;
       });
-      
-      apiPromise.query.octopusLpos.currentEra((era) => {
-        setCurrentEra(era.value.toNumber());
-      });
 
-      const amount = await apiPromise.query.balances?.totalIssuance();
+      const [era, amount]: any = await Promise.all([
+        apiPromise.query.octopusLpos.currentEra(),
+        apiPromise.query.balances?.totalIssuance(),
+        
+      ]);
 
+      setCurrentEra(era.value.toNumber());
+   
       setTotalIssuance(
         DecimalUtils.fromString(
           amount.toString(),
@@ -398,7 +397,7 @@ export const Appchain: React.FC = () => {
               </Stat>
        
             </SimpleGrid>
-            <Skeleton isLoaded={!!currentEra}>
+            <Skeleton isLoaded={currentEra !== undefined}>
               <Permissions anchorContract={anchorContract} appchain={appchainInfo} 
                 currentEra={currentEra} />
             </Skeleton>
@@ -440,7 +439,7 @@ export const Appchain: React.FC = () => {
               </VStack>
               </Skeleton>
              
-              <VStack alignItems="flex-start" spacing={1} mt={4}>
+              <VStack alignItems="flex-start" spacing={1} mt={3}>
                 <Text fontSize="xs" color="gray">Total Issuance</Text>
                 <HStack w="100%">
                   {
@@ -481,8 +480,9 @@ export const Appchain: React.FC = () => {
                 </HStack>
               </VStack>
               </Skeleton>
+
               <Skeleton isLoaded={!!appchainInfo}>
-              <VStack alignItems="flex-start" spacing={1} mt={4}>
+              <VStack alignItems="flex-start" spacing={1} mt={3}>
                 <HStack color="gray">
                   <Text fontSize="xs">Premined Amount</Text>
                   <QuestionOutlineIcon boxSize={3} />
@@ -494,6 +494,27 @@ export const Appchain: React.FC = () => {
                       appchainInfo ? 
                       DecimalUtils.beautify(
                         appchainInfo.appchainMetadata.preminedWrappedAppchainToken
+                      ) :
+                      'loading'
+                    }
+                  </Heading>
+                </HStack>
+              </VStack>
+              </Skeleton>
+
+              <Skeleton isLoaded={!!appchainSettings}>
+              <VStack alignItems="flex-start" spacing={1} mt={3}>
+                <HStack color="gray">
+                  <Text fontSize="xs">Era Reward</Text>
+                  <QuestionOutlineIcon boxSize={3} />
+                </HStack>
+                <HStack w="100%">
+                  <Heading fontSize="sm" whiteSpace="nowrap"
+                    overflow="hidden" textOverflow="ellipsis">
+                    {
+                      appchainSettings ? 
+                      DecimalUtils.beautify(
+                        appchainSettings.eraReward
                       ) :
                       'loading'
                     }
@@ -516,7 +537,8 @@ export const Appchain: React.FC = () => {
               <BlocksTable apiPromise={apiPromise} bestNumber={bestBlock} />
             </TabPanel>
             <TabPanel pl={0} pr={0}>
-              <ValidatorsTable anchorContract={anchorContract} appchainId={id} size="md" />
+              <ValidatorsTable anchorContract={anchorContract} appchainId={id} size="md" 
+                currentEra={currentEra} appchain={appchainInfo} apiPromise={apiPromise} />
             </TabPanel>
           </TabPanels>
         </Tabs>
