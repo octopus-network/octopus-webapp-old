@@ -32,7 +32,7 @@ import {
 
 import { HiOutlineArrowNarrowRight } from 'react-icons/hi';
 import { TasksTable } from './TasksTable';
-import { deployConfig } from 'config';
+import { deployConfig, octopusConfig } from 'config';
 import axios from 'axios';
 import { RepeatIcon } from '@chakra-ui/icons';
 
@@ -94,7 +94,7 @@ export const DeployModal: React.FC<DeployModalProps> = ({ appchain, isOpen, onCl
         cloud_vendor: cloudVendor,
         access_key: accessKey,
         base_image: image,
-        chain_spec: deployConfig.baseImages.find(im => im.image === image)?.chain
+        chain_spec: `${appchain?.appchainId}-${octopusConfig.networkId}`
       }, {
         headers: {
           authorization: authKey
