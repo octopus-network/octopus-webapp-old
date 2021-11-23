@@ -158,11 +158,11 @@ export const RegisterValidatorModal: React.FC<RegisterValidatorModalProps> = ({
               <Input id="validatorId" placeholder="appchain base58 address, eg: 5CaLqqE3..." onChange={onChangeValidatorId} autoFocus />
             </FormControl>
             <FormControl isRequired>
-              <FormLabel htmlFor="amount">{t('Deposit Amount')}</FormLabel>
-              <Input id="amount" placeholder="deposit amount" onChange={onChangeAmount} 
+              <FormLabel htmlFor="amount">{t('Staking Amount')}</FormLabel>
+              <Input id="amount" placeholder="staking amount" onChange={onChangeAmount} 
                 defaultValue={amount.toNumber() || ''} type="number" />
               <FormHelperText>
-                minimum deposit: { DecimalUtils.beautify(minimumDeposit) } OCT
+                minimum staking amount: { DecimalUtils.beautify(minimumDeposit) } OCT
               </FormHelperText>
             </FormControl>
             
