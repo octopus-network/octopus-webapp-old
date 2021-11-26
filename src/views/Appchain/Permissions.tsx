@@ -17,6 +17,7 @@ import {
   Box,
   Icon,
   Heading,
+  SimpleGrid,
   AlertDialog,
   AlertDialogContent,
   AlertDialogHeader,
@@ -25,6 +26,9 @@ import {
   AlertDialogOverlay,
   AlertDialogFooter
 } from '@chakra-ui/react';
+
+import { FiKey } from 'react-icons/fi';
+import { ApiPromise } from '@polkadot/api';
 
 import {
   TokenContract,
@@ -49,14 +53,16 @@ import { AiOutlineCloudServer } from 'react-icons/ai';
 
 import { RegisterValidatorModal } from 'components';
 import { DeployModal } from './DeployModal';
+import { SetSessionKeyModal } from './SetSessionKeyModal';
 
 type PermissionsProps = {
   anchorContract: AnchorContract;
   appchain: AppchainInfo;
   currentEra: number;
+  apiPromise: ApiPromise;
 }
 
-export const Permissions: React.FC<PermissionsProps> = ({ anchorContract, appchain, currentEra }) => {
+export const Permissions: React.FC<PermissionsProps> = ({ anchorContract, appchain, currentEra, apiPromise }) => {
 
   const toast = useToast();
   const globalStore = useGlobalStore(state => state.globalStore);
@@ -71,6 +77,8 @@ export const Permissions: React.FC<PermissionsProps> = ({ anchorContract, appcha
 
   const [registerModalOpen, setRegisterModalOpen] = useBoolean(false);
   const [deployModalOpen, setDeployModalOpen] = useBoolean(false);
+  const [setSessionKeyModalOpen, setSetSessionKeyModalOpen] = useBoolean(false);
+  const [deployToolAlertOpen, setDeployToolAlertOpen] = useBoolean(false);
 
   const [stakeMorePopoverOpen, setStakeMorePopoverOpen] = useBoolean(false);
   const [isStaking, setIsStaking] = useState(false);
@@ -364,7 +372,7 @@ export const Permissions: React.FC<PermissionsProps> = ({ anchorContract, appcha
       <VStack alignItems="flex-end">
         <HStack>
           <Button colorScheme="octoColor" variant="outline"
-            onClick={setDeployModalOpen.on}>
+            onClick={setDeployToolAlertOpen.on}>
             <Icon as={AiOutlineCloudServer} mr={1} /> Deploy Tool
           </Button>
           {
@@ -487,8 +495,9 @@ export const Permissions: React.FC<PermissionsProps> = ({ anchorContract, appcha
       <RegisterValidatorModal isOpen={registerModalOpen} onClose={setRegisterModalOpen.off}
         anchorContract={anchorContract} />
 
-      <DeployModal isOpen={deployModalOpen} onClose={setDeployModalOpen.off}
-        appchain={appchain} />
+      <DeployModal isOpen={deployModalOpen} onClose={setDeployModalOpen.off} appchain={appchain} />
+      
+      <SetSessionKeyModal isOpen={setSessionKeyModalOpen} onClose={setSetSessionKeyModalOpen.off} apiPromise={apiPromise} />
 
       <AlertDialog
         motionPreset="slideInBottom"
@@ -514,6 +523,43 @@ export const Permissions: React.FC<PermissionsProps> = ({ anchorContract, appcha
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog
+        motionPreset="slideInBottom"
+        leastDestructiveRef={cancelRef}
+        onClose={setDeployToolAlertOpen.off}
+        isOpen={deployToolAlertOpen}
+        isCentered
+      >
+        <AlertDialogOverlay />
+        <AlertDialogContent>
+          <AlertDialogHeader>Deploy Tool</AlertDialogHeader>
+          <AlertDialogCloseButton />
+          <AlertDialogBody p={6}>
+            <SimpleGrid columns={2} gap={6}>
+              <Flex p={6} alignItems="center" flexDirection="column" cursor="pointer"  onClick={() => {
+                  setDeployToolAlertOpen.off();
+                  setSetSessionKeyModalOpen.on();
+                }}
+                borderWidth={1} borderRadius="lg" _hover={{ color: '#0845A5', borderColor: '#0845A5' }}>
+                <Icon as={FiKey} boxSize={10} />
+                <Text fontSize="sm" mt={1}>Set Session Key</Text>
+              </Flex>
+              <Flex p={6} alignItems="center" flexDirection="column" cursor="pointer" onClick={() => {
+                  setDeployToolAlertOpen.off();
+                  setDeployModalOpen.on();
+                }}
+                borderWidth={1} borderRadius="lg" _hover={{ color: '#0845A5', borderColor: '#0845A5' }}>
+                <Icon as={AiOutlineCloudServer} boxSize={10} />
+                <Text fontSize="sm" mt={1}>Deploy Node</Text>
+              </Flex>
+            </SimpleGrid>
+            <Box mb={4} />
+          </AlertDialogBody>
+          
+        </AlertDialogContent>
+      </AlertDialog>
+
     </>
   );
 }

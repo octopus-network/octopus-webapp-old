@@ -399,7 +399,7 @@ export const Appchain: React.FC = () => {
             </SimpleGrid>
             <Skeleton isLoaded={currentEra !== undefined}>
               <Permissions anchorContract={anchorContract} appchain={appchainInfo} 
-                currentEra={currentEra} />
+                currentEra={currentEra} apiPromise={apiPromise} />
             </Skeleton>
           </Flex>
           <Divider mt={4} mb={4} />
