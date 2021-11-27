@@ -94,7 +94,7 @@ export const DeployModal: React.FC<DeployModalProps> = ({ appchain, isOpen, onCl
         cloud_vendor: cloudVendor,
         access_key: accessKey,
         base_image: image,
-        chain_spec: `${appchain?.appchainId}-${octopusConfig.networkId}`
+        chain_spec: `octopus-${octopusConfig.networkId}`
       }, {
         headers: {
           authorization: authKey
