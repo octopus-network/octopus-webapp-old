@@ -46,6 +46,7 @@ import {
 
 import { useGlobalStore } from 'stores';
 import { DecimalUtils, ZERO_DECIMAL } from 'utils';
+
 import Decimal from 'decimal.js';
 import BN from 'bn.js';
 
@@ -373,7 +374,7 @@ export const Permissions: React.FC<PermissionsProps> = ({ anchorContract, appcha
         <HStack>
           <Button colorScheme="octoColor" variant="outline"
             onClick={setDeployToolAlertOpen.on}>
-            <Icon as={AiOutlineCloudServer} mr={1} /> Deploy Tool
+            <Icon as={AiOutlineCloudServer} mr={1} /> Deploy Tools
           </Button>
           {
             upvoteDeposit.gt(ZERO_DECIMAL) || downvoteDeposit.gt(ZERO_DECIMAL) ?
@@ -533,18 +534,10 @@ export const Permissions: React.FC<PermissionsProps> = ({ anchorContract, appcha
       >
         <AlertDialogOverlay />
         <AlertDialogContent>
-          <AlertDialogHeader>Deploy Tool</AlertDialogHeader>
+          <AlertDialogHeader>Deploy Tools</AlertDialogHeader>
           <AlertDialogCloseButton />
           <AlertDialogBody p={6}>
             <SimpleGrid columns={2} gap={6}>
-              <Flex p={6} alignItems="center" flexDirection="column" cursor="pointer"  onClick={() => {
-                  setDeployToolAlertOpen.off();
-                  setSetSessionKeyModalOpen.on();
-                }}
-                borderWidth={1} borderRadius="lg" _hover={{ color: '#0845A5', borderColor: '#0845A5' }}>
-                <Icon as={FiKey} boxSize={10} />
-                <Text fontSize="sm" mt={1}>Set Session Key</Text>
-              </Flex>
               <Flex p={6} alignItems="center" flexDirection="column" cursor="pointer" onClick={() => {
                   setDeployToolAlertOpen.off();
                   setDeployModalOpen.on();
@@ -552,6 +545,14 @@ export const Permissions: React.FC<PermissionsProps> = ({ anchorContract, appcha
                 borderWidth={1} borderRadius="lg" _hover={{ color: '#0845A5', borderColor: '#0845A5' }}>
                 <Icon as={AiOutlineCloudServer} boxSize={10} />
                 <Text fontSize="sm" mt={1}>Deploy Node</Text>
+              </Flex>
+              <Flex p={6} alignItems="center" flexDirection="column" cursor="pointer"  onClick={() => {
+                  setDeployToolAlertOpen.off();
+                  setSetSessionKeyModalOpen.on();
+                }}
+                borderWidth={1} borderRadius="lg" _hover={{ color: '#0845A5', borderColor: '#0845A5' }}>
+                <Icon as={FiKey} boxSize={10} />
+                <Text fontSize="sm" mt={1}>Set Session Key</Text>
               </Flex>
             </SimpleGrid>
             <Box mb={4} />

@@ -22,7 +22,7 @@ import {
 } from '@chakra-ui/react';
 
 import { ApiPromise } from '@polkadot/api';
-
+import { isHex } from '@polkadot/util';
 import type { InjectedAccountWithMeta } from '@polkadot/extension-inject/types';
 import { isWeb3Injected, web3FromSource, web3Enable, web3Accounts } from '@polkadot/extension-dapp';
 
@@ -61,6 +61,14 @@ export const SetSessionKeyModal: React.FC<SetSessionKeyModalProps> = ({ apiPromi
     );
   }
 
+  const onKeyChange = (key: string) => {
+    if (isHex(key) && key.length === 324) {
+      setKey(key);
+    } else {
+      setKey('');
+    }
+  }
+
   const onSubmit = async () => {
     setIsSubmiting.on();
     const injected = await web3FromSource(currentAccount.meta.source);
@@ -77,6 +85,7 @@ export const SetSessionKeyModal: React.FC<SetSessionKeyModalProps> = ({ apiPromi
           position: 'top-right'
         });
       }).catch(err => {
+        setIsSubmiting.off();
         throw new Error(err.toString());
       });
     } catch(err) {
@@ -117,7 +126,7 @@ export const SetSessionKeyModal: React.FC<SetSessionKeyModalProps> = ({ apiPromi
           </FormControl>
           <FormControl mt={2}>
             <FormLabel>Session Key</FormLabel>
-            <Input type="text" placeholder="Your session key" autoFocus onChange={e => setKey(e.target.value)} />
+            <Input type="text" placeholder="Your session key" autoFocus onChange={e => onKeyChange(e.target.value)} />
           </FormControl>
           <Box mt={5}>
             <Button colorScheme="octoColor" isFullWidth isDisabled={!key || !currentAccount} 
