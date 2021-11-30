@@ -11,3 +11,22 @@ export type GlobalStore = {
   tokenContract: TokenContract;
   registryContract: RegistryContract;
 }
+
+export type Transaction = {
+  hash: string;
+  status: 'success'|'error'|'loading';
+  message: string;
+  summary: string;
+  addedTime: number;
+  from: string;
+  appchainId: string;
+}
+
+export type Message = {
+  duration?: number;
+  doNotAutoRemove?: boolean;
+  title: string;
+  description: string;
+  status: 'success'|'error'|'info'|'loading';
+  link?: string;
+}

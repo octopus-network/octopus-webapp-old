@@ -6,12 +6,16 @@ import {
   useColorModeValue
 } from '@chakra-ui/react';
 
-export const AppchainListItem: React.FC<SimpleGridProps> = ({ children, ...rest }) => {
+type AppchainListItemProps = SimpleGridProps & {
+  size?: 'sm' | 'lg';
+}
+
+export const AppchainListItem: React.FC<AppchainListItemProps> = ({ children, size = 'lg', ...rest }) => {
   const bg = useColorModeValue('white', 'blackAlpha.800');
   return (
     <SimpleGrid 
       {...rest}
-      p={5}
+      p={size === 'lg' ? 5 : 4}
       alignItems="center"
       borderRadius="xl"
       boxShadow="rgb(0 0 0 / 20%) 0px 0px 2px"

@@ -113,6 +113,11 @@ type WtidrawValidatorRewardsArgs = {
   validator_id: AccountId;
 }
 
+type BurnWrappedAppchainTokenArgs = {
+  receiver_id: String;
+  amount: string;
+}
+
 export class TokenContract extends Contract {
  
   ft_balance_of(args: FtBalanceOfArgs): Promise<string> {
@@ -263,5 +268,9 @@ export class AnchorContract extends Contract {
 
   get_wrapped_appchain_token(): Promise<OriginWrappedAppchainToken> {
     return this.get_wrapped_appchain_token();
+  }
+
+  burn_wrapped_appchain_token(args: BurnWrappedAppchainTokenArgs, gas: string) {
+    return this.burn_wrapped_appchain_token(args, gas);
   }
 }

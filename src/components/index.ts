@@ -15,3 +15,4 @@ export { ConfirmBootingModal } from './ConfirmBootingModal';
 export { GoLiveModal } from './GoLiveModal';
 export { AppchainListItem } from './AppchainListItem';
 export { Pagination } from './Pagination';
+export { AmountInput } from './AmountInput';

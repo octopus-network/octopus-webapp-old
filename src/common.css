@@ -2,11 +2,25 @@ html {
   height: 100%;
 }
 
-
 .chakra-progress__indicator {
   stroke-linecap: round;
 }
 
 .chakra-toast__inner {
   min-width: 0!important;
+}
+
+@keyframes hue {
+  0% {
+      -webkit-filter: hue-rotate(0deg)
+  }
+
+  to {
+      -webkit-filter: hue-rotate(-1turn)
+  }
+}
+
+#chakra-toast-manager-top-right {
+  margin-top: 65px;
+  margin-right: 20px;
 }

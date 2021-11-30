@@ -41,13 +41,15 @@ import {
   AiOutlineUser, 
   AiOutlineGlobal, 
   AiFillGithub,
-  AiOutlineSearch
+  AiOutlineSearch,
+  AiOutlineSwap
 } from 'react-icons/ai';
 
 import { 
   AppchainInfo, 
   AnchorContract,
-  AppchainSettings
+  AppchainSettings,
+  AppchainState
 } from 'types';
 
 import { 
@@ -63,7 +65,7 @@ import {
   StateBadge 
 } from 'components';
 
-import { useParams } from 'react-router-dom';
+import { useParams, Link as RouterLink } from 'react-router-dom';
 import { DecimalUtils, ZERO_DECIMAL } from 'utils';
 
 import { IoMdTime } from 'react-icons/io';
@@ -192,6 +194,9 @@ export const Appchain: React.FC = () => {
       return;
     }
 
+    let unsubNewHeads = () => {};
+    let unsubNewFinalizedHeads = () => {};
+
     anchorContract
       .get_appchain_settings()
       .then(({ rpc_endpoint, era_reward, subql_endpoint }) => {
@@ -206,67 +211,55 @@ export const Appchain: React.FC = () => {
 
         try {
           const provider = new WsProvider(rpc_endpoint);
-          setApiPromise(new ApiPromise({ provider }));
+          const api = new ApiPromise({ provider });
+          
+          api.on('ready', async () => {
+     
+            api.rpc.chain.subscribeNewHeads((lastHeader) => {
+              setBestBlock(lastHeader.number.toNumber());
+            }).then(unsub => {
+              unsubNewHeads = unsub;
+            });
+      
+            api.rpc.chain.subscribeFinalizedHeads((finalizedHeader) => {
+              setFinalizedBlock(finalizedHeader.number.toNumber());
+            }).then(unsub => {
+              unsubNewFinalizedHeads = unsub;
+            });
+      
+            const [era, amount]: any = await Promise.all([
+              api.query.octopusLpos.currentEra(),
+              api.query.balances?.totalIssuance(),
+              
+            ]);
+      
+            setCurrentEra(era.value.toNumber());
+         
+            setTotalIssuance(
+              DecimalUtils.fromString(
+                amount.toString(),
+                api.registry.chainDecimals[0]
+              )
+            );
+          });
+
+          api.isReady.then(api => {
+            setApiPromise(api);
+          });
+          
         } catch(err) {
           console.log(err);
         }
         
       });
-  }, [anchorContract, appchainInfo]);
-
-  useEffect(() => {
-    if (!apiPromise) {
-      return;
-    }
-
-    let unsubNewHeads = () => {};
-    let unsubNewFinalizedHeads = () => {};
-   
-    apiPromise.on('connected', () => {
-      
-    });
-
-    apiPromise.on('ready', async () => {
-     
-      apiPromise.rpc.chain.subscribeNewHeads((lastHeader) => {
-        setBestBlock(lastHeader.number.toNumber());
-      }).then(unsub => {
-        unsubNewHeads = unsub;
-      });
-
-      apiPromise.rpc.chain.subscribeFinalizedHeads((finalizedHeader) => {
-        setFinalizedBlock(finalizedHeader.number.toNumber());
-      }).then(unsub => {
-        unsubNewFinalizedHeads = unsub;
-      });
-
-      const [era, amount]: any = await Promise.all([
-        apiPromise.query.octopusLpos.currentEra(),
-        apiPromise.query.balances?.totalIssuance(),
-        
-      ]);
-
-      setCurrentEra(era.value.toNumber());
-   
-      setTotalIssuance(
-        DecimalUtils.fromString(
-          amount.toString(),
-          apiPromise.registry.chainDecimals[0]
-        )
-      );
-    });
-
-    apiPromise.once('error', () => {
-      apiPromise.disconnect();
-    });
 
     return () => {
       unsubNewHeads();
       unsubNewFinalizedHeads();
     }
+  }, [anchorContract, appchainInfo]);
 
-  }, [apiPromise, appchainInfo]);
-
+ 
   return (
     <Container mt={6} mb={6} maxW="container.xl">
       <Box>
@@ -337,6 +330,18 @@ export const Appchain: React.FC = () => {
                 </HStack>
               </Button>
             </WrapItem>
+            {
+              appchainInfo?.appchainState === AppchainState.Active ?
+              <WrapItem>
+                <Button size="sm" as={RouterLink} to={`/bridge/${appchainInfo?.appchainId}`}>
+                  <HStack>
+                    <Icon as={AiOutlineSwap} />
+                    <Text fontSize="xs">Bridge</Text>
+                   
+                  </HStack>
+                </Button>
+              </WrapItem> : null
+            }
             <WrapItem>
               <Button size="sm" as={Link} isExternal href={appchainInfo?.appchainMetadata.functionSpecUrl}>
                 <HStack>

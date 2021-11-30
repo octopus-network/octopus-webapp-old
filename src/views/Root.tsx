@@ -56,12 +56,28 @@ export const Root: React.FC = () => {
   const toastIdRef = useRef<any>();
 
   const { globalStore, updateGlobalStore } = useGlobalStore();
-
+  // const { appendTxn, updateTxn } = useTransactionStore();
+  
   const checkRedirect = useCallback(() => {
     if (/appchains\/join/.test(location.pathname)) {
       navigate('/appchains');
     }
   }, [location.pathname, navigate]);
+
+  const checkBridge = useCallback((hashes, status) => {
+    if (/bridge/.test(location.pathname)) {
+      console.log(hashes, status);
+      // appendTxn({
+      //   from: globalStore.accountId,
+      //   message: 'Transfer Asset',
+      //   summary: `Transfer ${amount} ${bridgeToken.symbol} to ${targetAddress}`,
+      //   addedTime: new Date().getTime(),
+      //   status: 'loading',
+      //   hash: hashes,
+      //   appchainId: appchain.appchain_id
+      // });
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     if (!globalStore.accountId) {
@@ -79,6 +95,7 @@ export const Root: React.FC = () => {
       provider
         .txStatus(transactionHashes, globalStore.accountId)
         .then(status => {
+          console.log(status);
           const { receipts_outcome } = status;
           let message = '';
           for (let i = 0; i < receipts_outcome.length; i++) {
@@ -97,6 +114,7 @@ export const Root: React.FC = () => {
               variant: 'left-accent',
               status: 'success'
             });
+            checkBridge(transactionHashes, status);
             checkRedirect();
           }
         }).catch(err => {
@@ -124,7 +142,7 @@ export const Root: React.FC = () => {
     const newUrl = `${protocol}//${host}${pathname}${params ? '?' + params : ''}${hash}`;
     window.history.pushState({ path: newUrl }, '', newUrl);
 
-  }, [errorMessage, transactionHashes, checkRedirect, toast, urlParams, globalStore]);
+  }, [errorMessage, transactionHashes, checkBridge, checkRedirect, toast, urlParams, globalStore]);
 
   // init near
   useEffect(() => {
@@ -186,20 +204,23 @@ export const Root: React.FC = () => {
   }, [updateGlobalStore]);
 
   return (
-    <Container minH="100vh" maxW="full" 
-      bgImage={bgImage} bgSize="100% 100vh" bgRepeat="no-repeat">
-      <Header />
-      {
-        (
-          !!!globalStore.registryContract ||
-          !!!globalStore.walletConnection
-        ) ?
-        <Center minH="20vh">
-          <Spinner size="xl" thickness="6px" speed="1s" color="gray.500" />
-        </Center> :
-        <Outlet />
-      }
-      <Footer />
-    </Container>
+    <>
+      <Container minH="100vh" maxW="full" 
+        bgImage={bgImage} bgSize="100% 100vh" bgRepeat="no-repeat">
+        <Header />
+        {
+          (
+            !!!globalStore.registryContract ||
+            !!!globalStore.walletConnection
+          ) ?
+          <Center minH="20vh">
+            <Spinner size="xl" thickness="6px" speed="1s" color="gray.500" />
+          </Center> :
+          <Outlet />
+        }
+        <Footer />
+        
+      </Container>
+    </>
   );
 }
