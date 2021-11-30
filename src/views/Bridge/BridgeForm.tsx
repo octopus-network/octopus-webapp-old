@@ -145,7 +145,7 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
       setIsLoadingBalance.off();
       setBalance(ZERO_DECIMAL);
     }
-  }, [apiPromise, nearAccount, appchainAccount, isReverse, setIsLoadingBalance, bridgeToken, appchainTokenContract]);
+  }, [apiPromise, nearAccount, appchainAccount, isReverse, bridgeToken, appchainTokenContract]);
 
   useEffect(() => {
     if (tokens?.length) {
