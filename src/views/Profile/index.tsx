@@ -50,7 +50,7 @@ export const Profile: React.FC = () => {
   const [validatorProfile, setValidatorProfile] = useState<ValidatorProfile>();
   const [anchor, setAnchor] = useState<any>();
 
-  const { hasCopied: hasCopiedValidatorId, onCopy: onCopyValidatorId } = useClipboard(validatorProfile?.validatorId);
+  const { hasCopied: hasCopiedValidatorId, onCopy: onCopyValidatorId } = useClipboard(validatorProfile ? encodeAddress(validatorProfile.validatorId) : '');
   const { hasCopied: hasCopiedEmail, onCopy: onCopyEmail } = useClipboard(validatorProfile?.email);
   
   useEffect(() => {

@@ -35,9 +35,7 @@ type BlockData = {
 }
 
 async function getHeaderByBlockNumber(api: ApiPromise, num: number): Promise<BlockData> {
-  if (!api.isReady || !api.isConnected) {
-    return Promise.resolve(null);
-  }
+ 
   return api.rpc.chain.getBlockHash(num)
     .then(hash => Promise.all([
       api.rpc.chain.getBlock(hash),
@@ -70,7 +68,7 @@ export const BlocksTable: React.FC<BlocksTableProps> = ({ apiPromise, bestNumber
   }, []);
 
   useEffect(() => {
-    if (bestNumber < 1 || !apiPromise?.isReady || isPaused) {
+    if (bestNumber < 1 || !apiPromise || isPaused) {
       return;
     }
 

@@ -12,7 +12,8 @@ import {
   OriginIndexRange,
   OriginRewardHistory,
   OriginWrappedAppchainToken,
-  StorageDeposit
+  StorageDeposit,
+  OriginAppchainValidator
 } from 'types';
 
 type FtBalanceOfArgs = {
@@ -110,6 +111,11 @@ type GetValidatorRewardsOfArgs = {
 
 type WtidrawValidatorRewardsArgs = {
   validator_id: AccountId;
+}
+
+type BurnWrappedAppchainTokenArgs = {
+  receiver_id: String;
+  amount: string;
 }
 
 export class TokenContract extends Contract {
@@ -228,7 +234,7 @@ export class AnchorContract extends Contract {
     return this.get_protocol_settings();
   }
 
-  get_validator_list_of(): Promise<any[]> {
+  get_validator_list_of(): Promise<OriginAppchainValidator[]> {
     return this.get_validator_list_of();
   }
 
@@ -262,5 +268,9 @@ export class AnchorContract extends Contract {
 
   get_wrapped_appchain_token(): Promise<OriginWrappedAppchainToken> {
     return this.get_wrapped_appchain_token();
+  }
+
+  burn_wrapped_appchain_token(args: BurnWrappedAppchainTokenArgs, gas: string) {
+    return this.burn_wrapped_appchain_token(args, gas);
   }
 }

@@ -176,7 +176,7 @@ export const GoLiveModal: React.FC<GoLiveModalProps> = ({
             <FormControl isRequired>
               <FormLabel>Subql Endpoint</FormLabel>
               <InputGroup>
-                <Input type="text" placeholder="rpc endpoint" defaultValue={subqlEndpoint} onChange={e => setInputSubqlEndpoint(e.target.value)} />
+                <Input type="text" placeholder="subql endpoint" defaultValue={subqlEndpoint} onChange={e => setInputSubqlEndpoint(e.target.value)} />
                 <InputRightElement w="auto" mr={1}>
                   <Button size="sm" isLoading={isUpdatingSubqlEndpoint} onClick={onSetSubqlEndpoint}
                     isDisabled={isUpdatingSubqlEndpoint}>Update</Button>

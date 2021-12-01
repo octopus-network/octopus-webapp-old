@@ -39,6 +39,7 @@ export const App = () => {
               </Route>
               <Route path="profile/:id" element={<Profile />} />
               <Route path="bridge" element={<Bridge />} />
+              <Route path="bridge/:id" element={<Bridge />} />
             </Route>
           </Routes>
         </Router>
