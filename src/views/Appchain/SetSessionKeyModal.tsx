@@ -100,7 +100,7 @@ export const SetSessionKeyModal: React.FC<SetSessionKeyModalProps> = ({ apiPromi
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} isCentered motionPreset="slideInBottom">
       <ModalOverlay />
       <ModalContent>
         <ModalHeader></ModalHeader>

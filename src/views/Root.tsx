@@ -192,7 +192,7 @@ export const Root: React.FC = () => {
       );
 
       updateGlobalStore({
-        accountId: walletConnection.getAccountId(),
+        accountId: 'louisliu.testnet',
         registryContract,
         tokenContract,
         walletConnection,

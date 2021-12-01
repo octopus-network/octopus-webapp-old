@@ -215,13 +215,13 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
             {
               isInAppchain ?
               <Box transform="scale(.8)" transformOrigin="left">
-                <Tooltip label="Great! You are in the appchain validator list.">
+                <Tooltip label="Great! You are in the appchain validator list, it means you can get your rewards normaly">
                   <Badge colorScheme="yellow" variant="outline" borderRadius="xl">Staking</Badge>
                 </Tooltip>
               </Box> : 
               <Box transform="scale(.8)" transformOrigin="left">
                 <Tooltip label="You are not in appchain validator list yet, you may have to wait until the next era.">
-                <Badge colorScheme="blue" variant="outline" borderRadius="xl">Staker</Badge>
+                  <Badge colorScheme="blue" variant="outline" borderRadius="xl">Staker</Badge>
                 </Tooltip>
               </Box>
             }

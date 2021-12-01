@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import {
   Table,
@@ -9,7 +9,6 @@ import {
   Tbody,
   Flex,
   Skeleton,
-  Center,
   HStack,
   Text,
   IconButton,
@@ -21,7 +20,8 @@ import {
   useClipboard,
   Button,
   useToast,
-  Link
+  Link,
+  VStack
 } from '@chakra-ui/react';
 
 import { Pagination } from 'components';
@@ -30,11 +30,13 @@ import { CopyIcon, CheckIcon, DownloadIcon } from '@chakra-ui/icons';
 import { BsFillInfoCircleFill } from 'react-icons/bs';
 import axios from 'axios';
 
-import { Task, TaskState, OriginTask } from 'types';
+import { Task } from 'types';
 
 type TasksTableProps = TableProps & {
   authKey: string;
-  refreshFactor: any;
+  tasks: Task[];
+  onRefresh: VoidFunction;
+  onGoDeploy: VoidFunction;
 }
 
 type TaskRowProps = {
@@ -212,48 +214,12 @@ const TaskRow: React.FC<TaskRowProps> = ({ task, authKey, onUpdate }) => {
   );
 }
 
-export const TasksTable: React.FC<TasksTableProps> = ({ refreshFactor, authKey, ...props }) => {
+export const TasksTable: React.FC<TasksTableProps> = ({ authKey, tasks, onGoDeploy, onRefresh, ...props }) => {
 
   const [page, setPage] = useState(1);
   const [total] = useState(0);
   const [pageSize] = useState(10);
-
-  const [tasks, setTasks] = useState<Task[]>();
-  const [refreshFactorInternal, setRefreshFactorInternal] = useState<any>();
-
-  useEffect(() => {
-    setTasks(null);
-    axios.get(`${deployConfig.apiHost}/api/tasks`, {
-      headers: {
-        authorization: authKey
-      }
-    }).then(res => {
-      
-      const states: Record<string, TaskState> = {
-        '0': { label: 'init', color: 'blue', state: 0 },
-        '10': { label: 'applying', color: 'teal', state: 10 },
-        '11': { label: 'apply failed', color: 'red', state: 11 },
-        '12': { label: 'apply success', color: 'green', state: 12 },
-        '20': { label: 'destroying', color: 'teal', state: 20 },
-        '21': { label: 'destroy failed', color: 'orange', state: 21 },
-        '22': { label: 'destroyed', color: 'gray', state: 22 }
-      }
-
-      setTasks(res.data.map((item: OriginTask): Task => ({
-        uuid: item.uuid,
-        state: states[item.state],
-        user: item.user,
-        instance: 
-          item.instance ? {
-            user: item.instance.user,
-            ip: item.instance.ip,
-            sshKey: item.instance.ssh_key
-          } : null,
-        image: deployConfig.baseImages.find(image => image.image === item.task.base_image)
-      })));
-    });
-  }, [authKey, refreshFactor, refreshFactorInternal]);
-
+  
   return (
     <Skeleton isLoaded={!!tasks}>
     {
@@ -261,7 +227,7 @@ export const TasksTable: React.FC<TasksTableProps> = ({ refreshFactor, authKey, 
       <Table variant="simple" {...props}>
         <Thead>
           <Tr>
-            <Th>UUID</Th>
+            <Th>Node ID</Th>
             <Th>State</Th>
             <Th>Instance</Th>
             <Th>Image</Th>
@@ -272,19 +238,19 @@ export const TasksTable: React.FC<TasksTableProps> = ({ refreshFactor, authKey, 
           {
             tasks?.map((task, idx) => {
               return (
-                <TaskRow key={`task-${idx}`} task={task} authKey={authKey} 
-                  onUpdate={factor => setRefreshFactorInternal(factor)} />
+                <TaskRow key={`task-${idx}`} task={task} authKey={authKey} onUpdate={onRefresh} />
               );
             })
           }
         </Tbody>
       </Table> :
-      <Center minH="100px">
-        <HStack color="gray">
-          <Icon as={BsFillInfoCircleFill} />
-          <Heading fontSize="md">No Data</Heading>
-        </HStack>
-      </Center>
+      <Flex minH="180px" flexDirection="column" alignItems="center" justifyContent="center">
+        <VStack color="gray">
+          <Icon as={BsFillInfoCircleFill} boxSize={10} />
+          <Heading fontSize="md">No Found Node</Heading>
+        </VStack>
+        <Button size="sm" colorScheme="octoColor" mt={4} onClick={onGoDeploy}>Deploy Node</Button>
+      </Flex>
     }
    
     {

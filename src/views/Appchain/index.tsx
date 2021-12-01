@@ -18,7 +18,6 @@ import {
   Text,
   Avatar,
   Button,
-  Icon,
   Divider,
   Link,
   Skeleton,
@@ -31,10 +30,12 @@ import {
   useClipboard,
   Spinner,
   Stat,
+  Icon,
   StatLabel,
   StatNumber,
   StatHelpText,
-  Center
+  Center,
+  useBoolean
 } from '@chakra-ui/react';
 
 import { 
@@ -44,6 +45,8 @@ import {
   AiOutlineSearch,
   AiOutlineSwap
 } from 'react-icons/ai';
+
+import { BiUserCircle } from 'react-icons/bi';
 
 import { 
   AppchainInfo, 
@@ -74,8 +77,8 @@ import { OCT_TOKEN_DECIMALS } from 'primitives';
 import { useGlobalStore } from 'stores';
 import Decimal from 'decimal.js';
 import dayjs from 'dayjs';
-import { Permissions } from './Permissions';
 import { BlocksTable } from './BlocksTable';
+import { ValidatorPanel } from './ValidatorPanel';
 
 export const Appchain: React.FC = () => {
   const { id } = useParams();
@@ -90,6 +93,8 @@ export const Appchain: React.FC = () => {
 
   const [appchainSettings, setAppchainSettings] = useState<AppchainSettings>();
   const [currentEra, setCurrentEra] = useState<number>();
+
+  const [validatorPanelOpen, setValidatorPanelOpen] = useBoolean(false);
   
   const globalStore = useGlobalStore(state => state.globalStore);
   const { hasCopied: rpcEndpointCopied, onCopy: onRpcEndpointCopy } = useClipboard(appchainSettings?.rpcEndpoint);
@@ -261,293 +266,298 @@ export const Appchain: React.FC = () => {
 
  
   return (
-    <Container mt={6} mb={6} maxW="container.xl">
-      <Box>
-        <Breadcrumb fontSize="sm">
-          <BreadcrumbItem color="gray">
-            <BreadcrumbLink href="/">Home</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbItem color="gray">
-            <BreadcrumbLink href="/appchains">Appchains</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbItem isCurrentPage>
-            <BreadcrumbLink href="#">{id}</BreadcrumbLink>
-          </BreadcrumbItem>
-        </Breadcrumb>
-      </Box>
-      <SimpleGrid columns={{ base: 3, lg: 9 }} mt={6} gap={12} p={6} bg="white" boxShadow="rgb(0 0 0 / 20%) 0px 0px 2px" borderRadius="xl">
-        <GridItem colSpan={3}>
-          <HStack spacing={3}>
-            <Avatar 
-              size="sm"
-              src={appchainInfo?.appchainMetadata.fungibleTokenMetadata?.icon} 
-              name={appchainInfo?.appchainId}
-              bg={appchainInfo?.appchainMetadata.fungibleTokenMetadata?.icon ? 'transparent' : 'blue.100'} />
-            <Heading fontSize="3xl">{id}</Heading>
-            <StateBadge state={appchainInfo?.appchainState} />
-          </HStack>
-          <HStack mt={3}>
-            <Skeleton isLoaded={!!appchainInfo}>
-              <HStack spacing={3}>
-                <Link isExternal color="gray"
-                  href={`${octopusConfig.nearExplorerUrl}/accounts/${appchainInfo?.appchainOwner}`}>
-                  <HStack spacing={1}>
-                    <Icon as={AiOutlineUser} />
-                    <Text fontSize="xs">{appchainInfo?.appchainOwner || 'loading'}</Text>
+    <>
+      <Container mt={6} mb={6} maxW="container.xl">
+        <Box>
+          <Breadcrumb fontSize="sm">
+            <BreadcrumbItem color="gray">
+              <BreadcrumbLink href="/">Home</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbItem color="gray">
+              <BreadcrumbLink href="/appchains">Appchains</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbItem isCurrentPage>
+              <BreadcrumbLink href="#">{id}</BreadcrumbLink>
+            </BreadcrumbItem>
+          </Breadcrumb>
+        </Box>
+        <SimpleGrid columns={{ base: 3, lg: 9 }} mt={6} gap={12} p={6} bg="white" boxShadow="rgb(0 0 0 / 20%) 0px 0px 2px" borderRadius="xl">
+          <GridItem colSpan={3}>
+            <HStack spacing={3}>
+              <Avatar 
+                size="sm"
+                src={appchainInfo?.appchainMetadata.fungibleTokenMetadata?.icon} 
+                name={appchainInfo?.appchainId}
+                bg={appchainInfo?.appchainMetadata.fungibleTokenMetadata?.icon ? 'transparent' : 'blue.100'} />
+              <Heading fontSize="3xl">{id}</Heading>
+              <StateBadge state={appchainInfo?.appchainState} />
+            </HStack>
+            <HStack mt={3}>
+              <Skeleton isLoaded={!!appchainInfo}>
+                <HStack spacing={3}>
+                  <Link isExternal color="gray"
+                    href={`${octopusConfig.nearExplorerUrl}/accounts/${appchainInfo?.appchainOwner}`}>
+                    <HStack spacing={1}>
+                      <Icon as={AiOutlineUser} />
+                      <Text fontSize="xs">{appchainInfo?.appchainOwner || 'loading'}</Text>
+                    </HStack>
+                  </Link>
+                  <HStack color="gray" spacing={1}>
+                    <Icon as={IoMdTime} />
+                    <Text fontSize="xs">
+                      {
+                        appchainInfo ?
+                        dayjs(
+                          appchainInfo.registeredTime.substr(0, 13) as any * 1
+                        ).format('YYYY-MM-DD HH:mm') :
+                        'loading'
+                      }
+                    </Text>
                   </HStack>
-                </Link>
-                <HStack color="gray" spacing={1}>
-                  <Icon as={IoMdTime} />
-                  <Text fontSize="xs">
-                    {
-                      appchainInfo ?
-                      dayjs(
-                        appchainInfo.registeredTime.substr(0, 13) as any * 1
-                      ).format('YYYY-MM-DD HH:mm') :
-                      'loading'
-                    }
-                  </Text>
                 </HStack>
-              </HStack>
-            </Skeleton>
-          </HStack>
-          <Wrap mt={8}>
-            <WrapItem>
-              <Button size="sm" as={Link} isExternal href={appchainInfo?.appchainMetadata.websiteUrl}>
-                <HStack>
-                  <Icon as={AiOutlineGlobal} />
-                  <Text fontSize="xs">Website</Text>
-                  <ExternalLinkIcon color="gray" />
-                </HStack>
-              </Button>
-            </WrapItem>
-            <WrapItem>
-              <Button size="sm" as={Link} isExternal href={`${octopusConfig.octExplorerUrl}?appchain=${id}`}>
-                <HStack>
-                  <Icon as={AiOutlineSearch} />
-                  <Text fontSize="xs">Explorer</Text>
-                  <ExternalLinkIcon color="gray" />
-                </HStack>
-              </Button>
-            </WrapItem>
-            {
-              appchainInfo?.appchainState === AppchainState.Active ?
+              </Skeleton>
+            </HStack>
+            <Wrap mt={8}>
               <WrapItem>
-                <Button size="sm" as={RouterLink} to={`/bridge/${appchainInfo?.appchainId}`}>
+                <Button size="sm" as={Link} isExternal href={appchainInfo?.appchainMetadata.websiteUrl}>
                   <HStack>
-                    <Icon as={AiOutlineSwap} />
-                    <Text fontSize="xs">Bridge</Text>
-                   
+                    <Icon as={AiOutlineGlobal} />
+                    <Text fontSize="xs">Website</Text>
+                    <ExternalLinkIcon color="gray" />
                   </HStack>
                 </Button>
-              </WrapItem> : null
-            }
-            <WrapItem>
-              <Button size="sm" as={Link} isExternal href={appchainInfo?.appchainMetadata.functionSpecUrl}>
-                <HStack>
-                  <Icon as={AttachmentIcon} />
-                  <Text fontSize="xs">Function Spec</Text>
-                  <ExternalLinkIcon color="gray" />
-                </HStack>
-              </Button>
-            </WrapItem>
-            <WrapItem>
-              <Button size="sm" as={Link} isExternal href={appchainInfo?.appchainMetadata.githubAddress}>
-                <HStack>
-                  <Icon as={AiFillGithub} />
-                  <Text fontSize="xs">Github</Text>
-                  <ExternalLinkIcon color="gray" />
-                </HStack>
-              </Button>
-            </WrapItem>
-          </Wrap>
-        </GridItem>
-        <GridItem colSpan={6} display={{ base: 'none', lg: 'block' }}>
-          <Flex justifyContent="space-between" alignItems="flex-start">
+              </WrapItem>
+              <WrapItem>
+                <Button size="sm" as={Link} isExternal href={`${octopusConfig.octExplorerUrl}?appchain=${id}`}>
+                  <HStack>
+                    <Icon as={AiOutlineSearch} />
+                    <Text fontSize="xs">Explorer</Text>
+                    <ExternalLinkIcon color="gray" />
+                  </HStack>
+                </Button>
+              </WrapItem>
+              {
+                appchainInfo?.appchainState === AppchainState.Active ?
+                <WrapItem>
+                  <Button size="sm" as={RouterLink} to={`/bridge/${appchainInfo?.appchainId}`}>
+                    <HStack>
+                      <Icon as={AiOutlineSwap} />
+                      <Text fontSize="xs">Bridge</Text>
+                    
+                    </HStack>
+                  </Button>
+                </WrapItem> : null
+              }
+              <WrapItem>
+                <Button size="sm" as={Link} isExternal href={appchainInfo?.appchainMetadata.functionSpecUrl}>
+                  <HStack>
+                    <Icon as={AttachmentIcon} />
+                    <Text fontSize="xs">Function Spec</Text>
+                    <ExternalLinkIcon color="gray" />
+                  </HStack>
+                </Button>
+              </WrapItem>
+              <WrapItem>
+                <Button size="sm" as={Link} isExternal href={appchainInfo?.appchainMetadata.githubAddress}>
+                  <HStack>
+                    <Icon as={AiFillGithub} />
+                    <Text fontSize="xs">Github</Text>
+                    <ExternalLinkIcon color="gray" />
+                  </HStack>
+                </Button>
+              </WrapItem>
+            </Wrap>
+          </GridItem>
+          <GridItem colSpan={6} display={{ base: 'none', lg: 'block' }}>
+            <Flex justifyContent="space-between" alignItems="flex-start">
 
-            <SimpleGrid columns={2} w="50%">
-              
-              <Stat>
-                <StatLabel color="gray" fontSize="xs">Current Era</StatLabel>
-                <StatNumber fontSize="3xl">
-                  {
-                    currentEra !== undefined ?
-                    DecimalUtils.beautify(
-                      new Decimal(currentEra),
-                      0
-                    ) : <Spinner size="sm" />
-                  }
-                </StatNumber>
-              </Stat>
-
-              <Stat>
-                <StatLabel color="gray" fontSize="xs">Block Height</StatLabel>
-                {
-                  bestBlock > 0 ?
-                  <StatNumber fontSize="3xl">
-                    { DecimalUtils.beautify(new Decimal(bestBlock), 0) }
-                  </StatNumber> :
-                  <Flex minH="45px" alignItems="center">
-                    <Spinner size="sm" />
-                  </Flex>
-                }
+              <SimpleGrid columns={2} w="50%">
                 
-                <StatHelpText color="gray" fontSize="xs">
-                  Finalized {
-                    DecimalUtils.beautify(
-                      new Decimal(finalizedBlock), 0
-                    )
-                  }
-                </StatHelpText>
-              </Stat>
-       
-            </SimpleGrid>
-            <Skeleton isLoaded={currentEra !== undefined}>
-              <Permissions anchorContract={anchorContract} appchain={appchainInfo} 
-                currentEra={currentEra} apiPromise={apiPromise} />
-            </Skeleton>
-          </Flex>
-          <Divider mt={4} mb={4} />
-          <SimpleGrid columns={17}>
-            <GridItem colSpan={5}>
-              <Skeleton isLoaded={!!appchainSettings}>
-              <VStack alignItems="flex-start" spacing={1}>
-                <Text fontSize="xs" color="gray">Rpc Endpoint</Text>
-                <HStack w="100%">
-                  <Heading fontSize="sm" whiteSpace="nowrap"
-                    overflow="hidden" textOverflow="ellipsis" w="calc(100% - 40px)">
-                    {appchainSettings?.rpcEndpoint || 'loading'}
-                  </Heading>
-                  <IconButton aria-label="copy" size="xs" onClick={onRpcEndpointCopy}>
-                    { rpcEndpointCopied ? <CheckIcon /> : <CopyIcon /> }
-                  </IconButton>
-                </HStack>
-              </VStack>
-              </Skeleton>
-            </GridItem>
-            <GridItem colSpan={1}>
-              <Center h="100%">
-                <Divider orientation="vertical" />
-              </Center>
-            </GridItem>
-            <GridItem colSpan={5}>
-              <Skeleton isLoaded={!!appchainInfo}>
-              <VStack alignItems="flex-start" spacing={1}>
-                <Text fontSize="xs" color="gray">Token</Text>
-                <HStack w="100%">
-                  <Heading fontSize="sm" whiteSpace="nowrap"
-                    overflow="hidden" textOverflow="ellipsis">
-                    {appchainInfo?.appchainMetadata.fungibleTokenMetadata.name || 'loading'}
-                    ({appchainInfo?.appchainMetadata.fungibleTokenMetadata.symbol})
-                  </Heading>
-                </HStack>
-              </VStack>
-              </Skeleton>
-             
-              <VStack alignItems="flex-start" spacing={1} mt={3}>
-                <Text fontSize="xs" color="gray">Total Issuance</Text>
-                <HStack w="100%">
+                <Stat>
+                  <StatLabel color="gray" fontSize="xs">Current Era</StatLabel>
+                  <StatNumber fontSize="3xl">
+                    {
+                      currentEra !== undefined ?
+                      DecimalUtils.beautify(
+                        new Decimal(currentEra),
+                        0
+                      ) : <Spinner size="sm" />
+                    }
+                  </StatNumber>
+                </Stat>
+
+                <Stat>
+                  <StatLabel color="gray" fontSize="xs">Block Height</StatLabel>
                   {
-                    totalIssuance.gt(ZERO_DECIMAL) ?
+                    bestBlock > 0 ?
+                    <StatNumber fontSize="3xl">
+                      { DecimalUtils.beautify(new Decimal(bestBlock), 0) }
+                    </StatNumber> :
+                    <Flex minH="45px" alignItems="center">
+                      <Spinner size="sm" />
+                    </Flex>
+                  }
+                  
+                  <StatHelpText color="gray" fontSize="xs">
+                    Finalized {
+                      DecimalUtils.beautify(
+                        new Decimal(finalizedBlock), 0
+                      )
+                    }
+                  </StatHelpText>
+                </Stat>
+        
+              </SimpleGrid>
+              <Button colorScheme="octoColor" isDisabled={!globalStore!.accountId} onClick={setValidatorPanelOpen.on}>
+                <Icon as={BiUserCircle} mr={1} />
+                Validator Panel
+              </Button>
+            
+            </Flex>
+            <Divider mt={4} mb={4} />
+            <SimpleGrid columns={17}>
+              <GridItem colSpan={5}>
+                <Skeleton isLoaded={!!appchainSettings}>
+                <VStack alignItems="flex-start" spacing={1}>
+                  <Text fontSize="xs" color="gray">Rpc Endpoint</Text>
+                  <HStack w="100%">
+                    <Heading fontSize="sm" whiteSpace="nowrap"
+                      overflow="hidden" textOverflow="ellipsis" w="calc(100% - 40px)">
+                      {appchainSettings?.rpcEndpoint || 'loading'}
+                    </Heading>
+                    <IconButton aria-label="copy" size="xs" onClick={onRpcEndpointCopy}>
+                      { rpcEndpointCopied ? <CheckIcon /> : <CopyIcon /> }
+                    </IconButton>
+                  </HStack>
+                </VStack>
+                </Skeleton>
+              </GridItem>
+              <GridItem colSpan={1}>
+                <Center h="100%">
+                  <Divider orientation="vertical" />
+                </Center>
+              </GridItem>
+              <GridItem colSpan={5}>
+                <Skeleton isLoaded={!!appchainInfo}>
+                <VStack alignItems="flex-start" spacing={1}>
+                  <Text fontSize="xs" color="gray">Token</Text>
+                  <HStack w="100%">
                     <Heading fontSize="sm" whiteSpace="nowrap"
                       overflow="hidden" textOverflow="ellipsis">
-                      { DecimalUtils.beautify(totalIssuance) }
-                    </Heading> :
-                    <Spinner size="sm" />
-                  }
-                </HStack>
-              </VStack>
-             
-            </GridItem>
-            <GridItem colSpan={1}>
-              <Center h="100%">
-                <Divider orientation="vertical" />
-              </Center>
-            </GridItem>
-            <GridItem colSpan={5}>
-              <Skeleton isLoaded={!!appchainInfo}>
-              <VStack alignItems="flex-start" spacing={1}>
-                <HStack color="gray">
-                  <Text fontSize="xs">IDO Amount</Text>
-                  <QuestionOutlineIcon boxSize={3} />
-                </HStack>
-                <HStack w="100%">
-                  <Heading fontSize="sm" whiteSpace="nowrap"
-                    overflow="hidden" textOverflow="ellipsis">
+                      {appchainInfo?.appchainMetadata.fungibleTokenMetadata.name || 'loading'}
+                      ({appchainInfo?.appchainMetadata.fungibleTokenMetadata.symbol})
+                    </Heading>
+                  </HStack>
+                </VStack>
+                </Skeleton>
+              
+                <VStack alignItems="flex-start" spacing={1} mt={3}>
+                  <Text fontSize="xs" color="gray">Total Issuance</Text>
+                  <HStack w="100%">
                     {
-                      appchainInfo ? 
-                      DecimalUtils.beautify(
-                        appchainInfo.appchainMetadata.idoAmountOfWrappedAppchainToken
-                      ) :
-                      'loading'
+                      totalIssuance.gt(ZERO_DECIMAL) ?
+                      <Heading fontSize="sm" whiteSpace="nowrap"
+                        overflow="hidden" textOverflow="ellipsis">
+                        { DecimalUtils.beautify(totalIssuance) }
+                      </Heading> :
+                      <Spinner size="sm" />
                     }
-                  </Heading>
-                </HStack>
-              </VStack>
-              </Skeleton>
+                  </HStack>
+                </VStack>
+              
+              </GridItem>
+              <GridItem colSpan={1}>
+                <Center h="100%">
+                  <Divider orientation="vertical" />
+                </Center>
+              </GridItem>
+              <GridItem colSpan={5}>
+                <Skeleton isLoaded={!!appchainInfo}>
+                <VStack alignItems="flex-start" spacing={1}>
+                  <HStack color="gray">
+                    <Text fontSize="xs">IDO Amount</Text>
+                    <QuestionOutlineIcon boxSize={3} />
+                  </HStack>
+                  <HStack w="100%">
+                    <Heading fontSize="sm" whiteSpace="nowrap"
+                      overflow="hidden" textOverflow="ellipsis">
+                      {
+                        appchainInfo ? 
+                        DecimalUtils.beautify(
+                          appchainInfo.appchainMetadata.idoAmountOfWrappedAppchainToken
+                        ) :
+                        'loading'
+                      }
+                    </Heading>
+                  </HStack>
+                </VStack>
+                </Skeleton>
 
-              <Skeleton isLoaded={!!appchainInfo}>
-              <VStack alignItems="flex-start" spacing={1} mt={3}>
-                <HStack color="gray">
-                  <Text fontSize="xs">Premined Amount</Text>
-                  <QuestionOutlineIcon boxSize={3} />
-                </HStack>
-                <HStack w="100%">
-                  <Heading fontSize="sm" whiteSpace="nowrap"
-                    overflow="hidden" textOverflow="ellipsis">
-                    {
-                      appchainInfo ? 
-                      DecimalUtils.beautify(
-                        appchainInfo.appchainMetadata.preminedWrappedAppchainToken
-                      ) :
-                      'loading'
-                    }
-                  </Heading>
-                </HStack>
-              </VStack>
-              </Skeleton>
+                <Skeleton isLoaded={!!appchainInfo}>
+                <VStack alignItems="flex-start" spacing={1} mt={3}>
+                  <HStack color="gray">
+                    <Text fontSize="xs">Premined Amount</Text>
+                    <QuestionOutlineIcon boxSize={3} />
+                  </HStack>
+                  <HStack w="100%">
+                    <Heading fontSize="sm" whiteSpace="nowrap"
+                      overflow="hidden" textOverflow="ellipsis">
+                      {
+                        appchainInfo ? 
+                        DecimalUtils.beautify(
+                          appchainInfo.appchainMetadata.preminedWrappedAppchainToken
+                        ) :
+                        'loading'
+                      }
+                    </Heading>
+                  </HStack>
+                </VStack>
+                </Skeleton>
 
-              <Skeleton isLoaded={!!appchainSettings}>
-              <VStack alignItems="flex-start" spacing={1} mt={3}>
-                <HStack color="gray">
-                  <Text fontSize="xs">Era Reward</Text>
-                  <QuestionOutlineIcon boxSize={3} />
-                </HStack>
-                <HStack w="100%">
-                  <Heading fontSize="sm" whiteSpace="nowrap"
-                    overflow="hidden" textOverflow="ellipsis">
-                    {
-                      appchainSettings ? 
-                      DecimalUtils.beautify(
-                        appchainSettings.eraReward
-                      ) :
-                      'loading'
-                    }
-                  </Heading>
-                </HStack>
-              </VStack>
-              </Skeleton>
-            </GridItem>
-          </SimpleGrid>
-        </GridItem>
-      </SimpleGrid>
-      <Box mt={6} p={6} bg="white" boxShadow="rgb(0 0 0 / 20%) 0px 0px 2px" borderRadius="xl">
-        <Tabs>
-          <TabList>
-            <Tab>Blocks</Tab>
-            <Tab>Validators</Tab>
-          </TabList>
-          <TabPanels>
-            <TabPanel pl={0} pr={0}>
-              <BlocksTable apiPromise={apiPromise} bestNumber={bestBlock} />
-            </TabPanel>
-            <TabPanel pl={0} pr={0}>
-              <ValidatorsTable anchorContract={anchorContract} appchainId={id} size="md" 
-                currentEra={currentEra} appchain={appchainInfo} apiPromise={apiPromise} />
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
-      </Box>
-    </Container>
+                <Skeleton isLoaded={!!appchainSettings}>
+                <VStack alignItems="flex-start" spacing={1} mt={3}>
+                  <HStack color="gray">
+                    <Text fontSize="xs">Era Reward</Text>
+                    <QuestionOutlineIcon boxSize={3} />
+                  </HStack>
+                  <HStack w="100%">
+                    <Heading fontSize="sm" whiteSpace="nowrap"
+                      overflow="hidden" textOverflow="ellipsis">
+                      {
+                        appchainSettings ? 
+                        DecimalUtils.beautify(
+                          appchainSettings.eraReward
+                        ) :
+                        'loading'
+                      }
+                    </Heading>
+                  </HStack>
+                </VStack>
+                </Skeleton>
+              </GridItem>
+            </SimpleGrid>
+          </GridItem>
+        </SimpleGrid>
+        <Box mt={6} p={6} bg="white" boxShadow="rgb(0 0 0 / 20%) 0px 0px 2px" borderRadius="xl">
+          <Tabs>
+            <TabList>
+              <Tab>Blocks</Tab>
+              <Tab>Validators</Tab>
+            </TabList>
+            <TabPanels>
+              <TabPanel pl={0} pr={0}>
+                <BlocksTable apiPromise={apiPromise} bestNumber={bestBlock} />
+              </TabPanel>
+              <TabPanel pl={0} pr={0}>
+                <ValidatorsTable anchorContract={anchorContract} appchainId={id} size="md" 
+                  currentEra={currentEra} appchain={appchainInfo} apiPromise={apiPromise} />
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
+        </Box>
+      </Container>
+      <ValidatorPanel appchain={appchainInfo} anchorContract={anchorContract} currentEra={currentEra}
+        isOpen={validatorPanelOpen} onClose={setValidatorPanelOpen.off} apiPromise={apiPromise} />
+    </>
   );
 }
