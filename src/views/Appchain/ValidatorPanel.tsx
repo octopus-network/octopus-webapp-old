@@ -72,9 +72,18 @@ type ValidatorPanelProps = {
   apiPromise: ApiPromise;
   isOpen: boolean;
   onClose: VoidFunction;
+  onSwitchMode: VoidFunction;
 }
 
-export const ValidatorPanel: React.FC<ValidatorPanelProps> = ({ appchain, isOpen, onClose, anchorContract, currentEra, apiPromise }) => {
+export const ValidatorPanel: React.FC<ValidatorPanelProps> = ({ 
+  appchain, 
+  isOpen, 
+  onClose, 
+  anchorContract,
+  currentEra, 
+  apiPromise,
+  onSwitchMode
+}) => {
   const [inputAccessKey, setInputAccessKey] = useState();
   const [accessKey, setAccessKey] = useState(window.localStorage.getItem('accessKey'));
   const [cloudVendor] = useState('AWS');
@@ -225,7 +234,7 @@ export const ValidatorPanel: React.FC<ValidatorPanelProps> = ({ appchain, isOpen
         '0': { label: 'init', color: 'blue', state: 0 },
         '10': { label: 'applying', color: 'teal', state: 10 },
         '11': { label: 'apply failed', color: 'red', state: 11 },
-        '12': { label: 'apply success', color: 'green', state: 12 },
+        '12': { label: 'running', color: 'green', state: 12 },
         '20': { label: 'destroying', color: 'teal', state: 20 },
         '21': { label: 'destroy failed', color: 'orange', state: 21 },
         '22': { label: 'destroyed', color: 'gray', state: 22 }
@@ -418,9 +427,10 @@ export const ValidatorPanel: React.FC<ValidatorPanelProps> = ({ appchain, isOpen
                     <Heading fontSize="xl">
                       Deploy New Validator Node
                     </Heading> :
-                    <Heading fontSize="xl">
-                      Validator Panel
-                    </Heading>
+                    <HStack>
+                      <Heading fontSize="xl">Validator Panel</Heading>
+                      <Button size="xs" variant="ghost" colorScheme="octoColor" onClick={onSwitchMode}>Switch to Manual Deploy mode</Button>
+                    </HStack>
               }
             </Box>
             {
@@ -441,6 +451,16 @@ export const ValidatorPanel: React.FC<ValidatorPanelProps> = ({ appchain, isOpen
                       onClick={onNextStep}
                       isDisabled={!inputAccessKey}>
                       Enter <Icon as={HiOutlineArrowNarrowRight} ml={2} />
+                    </Button>
+                  </Box>
+                  <Box mt={3}>
+                    <Button
+                      isFullWidth
+                      borderRadius="full"
+                      
+                      onClick={onSwitchMode}
+                      variant="ghost">
+                      Manual Deploy Mode
                     </Button>
                   </Box>
                 </> :

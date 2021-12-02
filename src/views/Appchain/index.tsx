@@ -35,7 +35,13 @@ import {
   StatNumber,
   StatHelpText,
   Center,
-  useBoolean
+  useBoolean,
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogCloseButton,
+  AlertDialogBody,
+  AlertDialogOverlay
 } from '@chakra-ui/react';
 
 import { 
@@ -43,7 +49,9 @@ import {
   AiOutlineGlobal, 
   AiFillGithub,
   AiOutlineSearch,
-  AiOutlineSwap
+  AiOutlineSwap,
+  AiTwotoneThunderbolt, 
+  AiTwotoneTool
 } from 'react-icons/ai';
 
 import { BiUserCircle } from 'react-icons/bi';
@@ -79,6 +87,7 @@ import Decimal from 'decimal.js';
 import dayjs from 'dayjs';
 import { BlocksTable } from './BlocksTable';
 import { ValidatorPanel } from './ValidatorPanel';
+import { ValidatorPanelManual } from './ValidatorPanelManual';
 
 export const Appchain: React.FC = () => {
   const { id } = useParams();
@@ -90,14 +99,19 @@ export const Appchain: React.FC = () => {
   const [bestBlock, setBestBlock] = useState(0);
   const [finalizedBlock, setFinalizedBlock] = useState(0);
   const [totalIssuance, setTotalIssuance] = useState(ZERO_DECIMAL);
+  const [validatorMode, setValidatorMode] = useState(window.localStorage.getItem('validatorMode'));
 
   const [appchainSettings, setAppchainSettings] = useState<AppchainSettings>();
   const [currentEra, setCurrentEra] = useState<number>();
 
   const [validatorPanelOpen, setValidatorPanelOpen] = useBoolean(false);
+  const [validatorModeAlertOpen, setValidatorModeAlertOpen] = useBoolean(false);
+  const [validatorPanelManualOpen, setValidatorPanelManualOpen] = useBoolean(false);
   
   const globalStore = useGlobalStore(state => state.globalStore);
   const { hasCopied: rpcEndpointCopied, onCopy: onRpcEndpointCopy } = useClipboard(appchainSettings?.rpcEndpoint);
+
+  const cancelRef = React.useRef();
 
   useEffect(() => {
 
@@ -264,7 +278,41 @@ export const Appchain: React.FC = () => {
     }
   }, [anchorContract, appchainInfo]);
 
- 
+  const onOpenValidatorPanel = () => {
+    if (validatorMode === 'autoDeploy') {
+      setValidatorPanelOpen.on();
+    } else if (validatorMode === 'manualDeploy') {
+      setValidatorPanelManualOpen.on();
+    } else {
+      setValidatorModeAlertOpen.on();
+    }
+  }
+
+  const onSetValidatorMode = (mode: 'autoDeploy' | 'manualDeploy') => {
+    window.localStorage.setItem('validatorMode', mode);
+    setValidatorMode(mode);
+    setValidatorModeAlertOpen.off();
+    if (mode === 'autoDeploy') {
+      setValidatorPanelOpen.on();
+    } else {
+      setValidatorPanelManualOpen.on();
+    }
+  }
+
+  const onSwitchMode = () => {
+    if (validatorMode === 'autoDeploy') {
+      setValidatorPanelOpen.off();
+      setValidatorPanelManualOpen.on();
+      setValidatorMode('manualDeploy');
+      window.localStorage.setItem('validatorMode', 'manualDeploy');
+    } else if (validatorMode === 'manualDeploy') {
+      setValidatorPanelManualOpen.off();
+      setValidatorPanelOpen.on();
+      setValidatorMode('autoDeploy');
+      window.localStorage.setItem('validatorMode', 'autoDeploy');
+    }
+  }
+
   return (
     <>
       <Container mt={6} mb={6} maxW="container.xl">
@@ -408,7 +456,7 @@ export const Appchain: React.FC = () => {
                 </Stat>
         
               </SimpleGrid>
-              <Button colorScheme="octoColor" isDisabled={!globalStore!.accountId} onClick={setValidatorPanelOpen.on}>
+              <Button colorScheme="octoColor" isDisabled={!globalStore!.accountId} onClick={onOpenValidatorPanel}>
                 <Icon as={BiUserCircle} mr={1} />
                 Validator Panel
               </Button>
@@ -556,8 +604,41 @@ export const Appchain: React.FC = () => {
           </Tabs>
         </Box>
       </Container>
+
+      <AlertDialog
+        motionPreset="slideInBottom"
+        leastDestructiveRef={cancelRef}
+        onClose={setValidatorModeAlertOpen.off}
+        isOpen={validatorModeAlertOpen}
+        isCentered
+      >
+        <AlertDialogOverlay />
+        <AlertDialogContent>
+          <AlertDialogHeader>Choose Mode</AlertDialogHeader>
+          <AlertDialogCloseButton />
+          <AlertDialogBody>
+            <SimpleGrid columns={2} gap={6}>
+              <Flex p={6} alignItems="center" flexDirection="column" cursor="pointer" onClick={() => onSetValidatorMode('autoDeploy')}
+                borderWidth={1} borderRadius="lg" _hover={{ color: '#0845A5', borderColor: '#0845A5' }}>
+                <Icon as={AiTwotoneThunderbolt} boxSize={10} />
+                <Text fontSize="sm" mt={1}>Auto Deploy</Text>
+              </Flex>
+              <Flex p={6} alignItems="center" flexDirection="column" cursor="pointer" onClick={() => onSetValidatorMode('manualDeploy')}
+                borderWidth={1} borderRadius="lg" _hover={{ color: '#0845A5', borderColor: '#0845A5' }}>
+                <Icon as={AiTwotoneTool} boxSize={10} />
+                <Text fontSize="sm" mt={1}>Manual Deploy</Text>
+              </Flex>
+            </SimpleGrid>
+            <Box mb={4} />
+          </AlertDialogBody>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <ValidatorPanel appchain={appchainInfo} anchorContract={anchorContract} currentEra={currentEra}
-        isOpen={validatorPanelOpen} onClose={setValidatorPanelOpen.off} apiPromise={apiPromise} />
+        isOpen={validatorPanelOpen} onClose={setValidatorPanelOpen.off} apiPromise={apiPromise} onSwitchMode={onSwitchMode} />
+
+      <ValidatorPanelManual appchain={appchainInfo} anchorContract={anchorContract} currentEra={currentEra}
+        isOpen={validatorPanelManualOpen} onClose={setValidatorPanelManualOpen.off} apiPromise={apiPromise} onSwitchMode={onSwitchMode} />
     </>
   );
 }
