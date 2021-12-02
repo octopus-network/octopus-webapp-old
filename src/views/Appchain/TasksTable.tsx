@@ -36,6 +36,7 @@ type TasksTableProps = TableProps & {
   authKey: string;
   tasks: Task[];
   onRefresh: VoidFunction;
+  isRefreshing: boolean;
   onGoDeploy: VoidFunction;
 }
 
@@ -214,14 +215,14 @@ const TaskRow: React.FC<TaskRowProps> = ({ task, authKey, onUpdate }) => {
   );
 }
 
-export const TasksTable: React.FC<TasksTableProps> = ({ authKey, tasks, onGoDeploy, onRefresh, ...props }) => {
+export const TasksTable: React.FC<TasksTableProps> = ({ authKey, tasks, onGoDeploy, onRefresh, isRefreshing, ...props }) => {
 
   const [page, setPage] = useState(1);
   const [total] = useState(0);
   const [pageSize] = useState(10);
   
   return (
-    <Skeleton isLoaded={!!tasks}>
+    <Skeleton isLoaded={!isRefreshing}>
     {
       tasks?.length ?
       <Table variant="simple" {...props}>

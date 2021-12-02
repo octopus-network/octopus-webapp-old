@@ -114,6 +114,7 @@ export const ValidatorPanel: React.FC<ValidatorPanelProps> = ({
   const [inputAmount, setInputAmount] = useState(ZERO_DECIMAL);
   const [stakeMorePopoverOpen, setStakeMorePopoverOpen] = useBoolean(false);
   const [isStaking, setIsStaking] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useBoolean(false);
   const [unbondPopoverOpen, setUnbondPopoverOpen] = useBoolean(false);
 
   const authKey = useMemo(() => {
@@ -223,13 +224,13 @@ export const ValidatorPanel: React.FC<ValidatorPanelProps> = ({
   const onRefresh = React.useRef<any>();
 
   onRefresh.current = () => {
-    setTasks(null);
+    setIsRefreshing.on();
     axios.get(`${deployConfig.apiHost}/api/tasks`, {
       headers: {
         authorization: authKey
       }
     }).then(res => {
-
+      setIsRefreshing.off();
       const states: Record<string, TaskState> = {
         '0': { label: 'init', color: 'blue', state: 0 },
         '10': { label: 'applying', color: 'teal', state: 10 },
@@ -457,7 +458,6 @@ export const ValidatorPanel: React.FC<ValidatorPanelProps> = ({
                     <Button
                       isFullWidth
                       borderRadius="full"
-                      
                       onClick={onSwitchMode}
                       variant="ghost">
                       Manual Deploy Mode
@@ -587,7 +587,7 @@ export const ValidatorPanel: React.FC<ValidatorPanelProps> = ({
                     </Flex>
                     <Divider mt={3} mb={3} />
                     <Box>
-                      <TasksTable authKey={authKey} onGoDeploy={setIsInDeploy.on} tasks={tasks} onRefresh={onRefresh.current} />
+                      <TasksTable authKey={authKey} onGoDeploy={setIsInDeploy.on} tasks={tasks} isRefreshing={isRefreshing} onRefresh={onRefresh.current} />
                     </Box>
                   </>
             }
