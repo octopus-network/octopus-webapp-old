@@ -325,7 +325,6 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
             <Box flex={1} ml={2}>
               <Input 
                 fontSize="md"
-                textAlign="right"
                 placeholder={isReverse ? `${appchain?.appchain_id} account (ss58 address)` : 'near account'} 
                 variant="unstyled" 
                 defaultValue={isReverse ? appchainAccount : nearAccount}

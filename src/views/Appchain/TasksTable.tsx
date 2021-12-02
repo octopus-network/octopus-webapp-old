@@ -26,7 +26,7 @@ import {
 
 import { Pagination } from 'components';
 import { deployConfig } from 'config';
-import { CopyIcon, CheckIcon, DownloadIcon } from '@chakra-ui/icons';
+import { CopyIcon, CheckIcon, DownloadIcon, RepeatIcon } from '@chakra-ui/icons';
 import { BsFillInfoCircleFill } from 'react-icons/bs';
 import axios from 'axios';
 
@@ -36,6 +36,7 @@ type TasksTableProps = TableProps & {
   authKey: string;
   tasks: Task[];
   onRefresh: VoidFunction;
+  isRefreshing: boolean;
   onGoDeploy: VoidFunction;
 }
 
@@ -214,14 +215,14 @@ const TaskRow: React.FC<TaskRowProps> = ({ task, authKey, onUpdate }) => {
   );
 }
 
-export const TasksTable: React.FC<TasksTableProps> = ({ authKey, tasks, onGoDeploy, onRefresh, ...props }) => {
+export const TasksTable: React.FC<TasksTableProps> = ({ authKey, tasks, onGoDeploy, onRefresh, isRefreshing, ...props }) => {
 
   const [page, setPage] = useState(1);
   const [total] = useState(0);
   const [pageSize] = useState(10);
   
   return (
-    <Skeleton isLoaded={!!tasks}>
+    <Skeleton isLoaded={!isRefreshing}>
     {
       tasks?.length ?
       <Table variant="simple" {...props}>
@@ -245,9 +246,14 @@ export const TasksTable: React.FC<TasksTableProps> = ({ authKey, tasks, onGoDepl
         </Tbody>
       </Table> :
       <Flex minH="180px" flexDirection="column" alignItems="center" justifyContent="center">
-        <VStack color="gray">
-          <Icon as={BsFillInfoCircleFill} boxSize={10} />
-          <Heading fontSize="md">No Found Node</Heading>
+        <VStack>
+          <Icon color="gray" as={BsFillInfoCircleFill} boxSize={10} />
+          <HStack>
+            <Heading  color="gray" fontSize="md">No Found Node</Heading>
+            <IconButton aria-label="refresh" onClick={onRefresh} size="sm" variant="ghost">
+              <RepeatIcon />
+            </IconButton>
+          </HStack>
         </VStack>
         <Button size="sm" colorScheme="octoColor" mt={4} onClick={onGoDeploy}>Deploy Node</Button>
       </Flex>
