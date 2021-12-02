@@ -526,7 +526,7 @@ const Overview: React.FC<OverviewProps> = ({ appchainId, onDrawerClose }) => {
                         </HStack>
                     }
                   </Flex>
-                  {/* <Flex justifyContent="space-between" fontSize="sm">
+                  <Flex justifyContent="space-between" fontSize="sm">
                     <Text fontSize="xs">Era Reward</Text>
                     {
                       isEditing ?
@@ -543,7 +543,7 @@ const Overview: React.FC<OverviewProps> = ({ appchainId, onDrawerClose }) => {
                           </Heading>
                         </HStack>
                     }
-                  </Flex> */}
+                  </Flex>
                   <Divider />
                   <Flex justifyContent="space-between" fontSize="sm">
                     <Text fontSize="xs">Token Name</Text>
