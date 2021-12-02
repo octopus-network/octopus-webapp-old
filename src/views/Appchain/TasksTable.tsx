@@ -26,7 +26,7 @@ import {
 
 import { Pagination } from 'components';
 import { deployConfig } from 'config';
-import { CopyIcon, CheckIcon, DownloadIcon } from '@chakra-ui/icons';
+import { CopyIcon, CheckIcon, DownloadIcon, RepeatIcon } from '@chakra-ui/icons';
 import { BsFillInfoCircleFill } from 'react-icons/bs';
 import axios from 'axios';
 
@@ -245,9 +245,14 @@ export const TasksTable: React.FC<TasksTableProps> = ({ authKey, tasks, onGoDepl
         </Tbody>
       </Table> :
       <Flex minH="180px" flexDirection="column" alignItems="center" justifyContent="center">
-        <VStack color="gray">
-          <Icon as={BsFillInfoCircleFill} boxSize={10} />
-          <Heading fontSize="md">No Found Node</Heading>
+        <VStack>
+          <Icon color="gray" as={BsFillInfoCircleFill} boxSize={10} />
+          <HStack>
+            <Heading  color="gray" fontSize="md">No Found Node</Heading>
+            <IconButton aria-label="refresh" onClick={onRefresh} size="sm" variant="ghost">
+              <RepeatIcon />
+            </IconButton>
+          </HStack>
         </VStack>
         <Button size="sm" colorScheme="octoColor" mt={4} onClick={onGoDeploy}>Deploy Node</Button>
       </Flex>
