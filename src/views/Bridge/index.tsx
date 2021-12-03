@@ -109,33 +109,33 @@ export const Bridge: React.FC = () => {
       return;
     }
 
-    txns.forEach(txn => {
+    // txns.forEach(txn => {
     
-      if (txn.status === 'loading') {
+    //   if (txn.status === 'loading') {
     
-        if (!toast.isActive(txn.hash)) {
-          toast({
-            id: txn.hash,
-            position: 'top-right',
-            title: txn.message,
-            description: txn.summary,
-            status: 'info',
-            duration: null,
-            isClosable: true,
-            render: (e) => ToastRender(txn, e.onClose)
-          });
-        }
-      } else if (txn.status === 'error') {
-        if (toast.isActive(txn.hash)) {
-          toast.update(txn.hash, {
-            title: 'Error',
-            description: txn.message,
-            status: 'error',
-            duration: 3500
-          });
-        }
-      }
-    });
+    //     if (!toast.isActive(txn.hash)) {
+    //       toast({
+    //         id: txn.hash,
+    //         position: 'top-right',
+    //         title: txn.message,
+    //         description: txn.summary,
+    //         status: 'info',
+    //         duration: null,
+    //         isClosable: true,
+    //         render: (e) => ToastRender(txn, e.onClose)
+    //       });
+    //     }
+    //   } else if (txn.status === 'error') {
+    //     if (toast.isActive(txn.hash)) {
+    //       toast.update(txn.hash, {
+    //         title: 'Error',
+    //         description: txn.message,
+    //         status: 'error',
+    //         duration: 3500
+    //       });
+    //     }
+    //   }
+    // });
   }, [transactions, toast]);
 
   useEffect(() => {

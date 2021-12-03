@@ -303,26 +303,26 @@ export const Appchains: React.FC = () => {
       </Flex>
       <Box mt={8}>
         <Flex alignItems="center">
-          <Heading fontSize="xl" color="gray" mr={2} id="pre_audit">{t('Pre-Audit')}</Heading>
-          <Tooltip label="The appchains have registered, or in auditing/dead state.">
+          <Heading fontSize="xl" color="gray" mr={2} id="active">{t('Running')}</Heading>
+          <Tooltip label="Active appchains">
             <QuestionOutlineIcon color="gray" cursor="pointer" />
           </Tooltip>
         </Flex>
         <Box mt={4}>
-          <Skeleton isLoaded={!!preAuditAppchains}>
+          <Skeleton isLoaded={!!activeAppchains}>
             {
-              preAuditAppchains?.length ?
+              activeAppchains?.length ?
               <>
-                <SimpleGrid columns={{ base: 10, md: 14 }} color="gray" pl={4} pr={4} pb={2} fontSize="sm">
+                <SimpleGrid columns={{ base: 13, md: 17 }} color="gray" pl={4} pr={4} pb={2} fontSize="sm">
                   <GridItem colSpan={5}>{t('ID')}</GridItem>
-                  <GridItem colSpan={4} display={{ base: 'none', md: 'block' }}>{t('Founder')}</GridItem>
-                  <GridItem colSpan={4}>{t('State')}</GridItem>
-                  <GridItem colSpan={1} />
+                  <GridItem colSpan={4}>{t('Validators')}</GridItem>
+                  <GridItem colSpan={4}>{t('Staked')}</GridItem>
+                  <GridItem colSpan={4} display={{ base: 'none', md: 'block' }} />
                 </SimpleGrid>
                 <List spacing={3}>
                 {
-                  preAuditAppchains.map((appchain, idx) => (
-                    <RegisteredItem appchain={appchain} key={`appchain-${idx}`} /> 
+                  activeAppchains.map((appchain, idx) => (
+                    <RunningItem appchain={appchain} key={`appchain-${idx}`} /> 
                   ))
                 }
                 </List>
@@ -334,26 +334,57 @@ export const Appchains: React.FC = () => {
       </Box>
       <Box mt={8}>
         <Flex alignItems="center">
-          <Heading fontSize="xl" color="gray" mr={2} id="auditing">{t('Auditing')}</Heading>
-          <Tooltip label="Auditing appchains">
+          <Heading fontSize="xl" color="gray" mr={2} id="booting">{t('Booting')}</Heading>
+          <Tooltip label="Booting appchains">
             <QuestionOutlineIcon color="gray" cursor="pointer" />
           </Tooltip>
         </Flex>
         <Box mt={4}>
-          <Skeleton isLoaded={!!auditingAppchains}>
+          <Skeleton isLoaded={!!bootingAppchains}>
             {
-              auditingAppchains?.length ?
+              bootingAppchains?.length ?
               <>
                 <SimpleGrid columns={{ base: 10, md: 14 }} color="gray" pl={4} pr={4} pb={2} fontSize="sm">
                   <GridItem colSpan={5}>{t('ID')}</GridItem>
-                  <GridItem colSpan={4} display={{ base: 'none', md: 'block' }}>{t('Founder')}</GridItem>
-                  <GridItem colSpan={4}>{t('State')}</GridItem>
+                  <GridItem colSpan={4}>{t('Validators')}</GridItem>
+                  <GridItem colSpan={4}>{t('Staked')}</GridItem>
+                  <GridItem colSpan={1} display={{ base: 'none', md: 'block' }} />
+                </SimpleGrid>
+                <List spacing={3}>
+                {
+                  bootingAppchains.map((appchain, idx) => (
+                    <BootingItem appchain={appchain} key={`appchain-${idx}`} /> 
+                  ))
+                }
+                </List>
+              </> :
+              <NoAppchains />
+            }
+          </Skeleton>
+        </Box>
+      </Box>
+      <Box mt={8}>
+        <Flex alignItems="center">
+          <Heading fontSize="xl" color="gray" mr={2} id="staking">{t('Staking')}</Heading>
+          <Tooltip label="Validators and Delegators can deposit OCT for the appchain in this state. (There can be only one appchain in this state)">
+            <QuestionOutlineIcon color="gray" cursor="pointer" />
+          </Tooltip>
+        </Flex>
+        <Box mt={4}>
+          <Skeleton isLoaded={!!stakingAppchains}>
+            {
+              stakingAppchains?.length ?
+              <>
+                <SimpleGrid columns={{ base: 10, md: 14 }} color="gray" pl={4} pr={4} pb={2} fontSize="sm">
+                  <GridItem colSpan={5}>{t('ID')}</GridItem>
+                  <GridItem colSpan={4} display={{ base: 'none', md: 'block' }}>{t('Validators')}</GridItem>
+                  <GridItem colSpan={4}>{t('Staked')}</GridItem>
                   <GridItem colSpan={1} />
                 </SimpleGrid>
                 <List spacing={3}>
                 {
-                  auditingAppchains.map((appchain, idx) => (
-                    <RegisteredItem appchain={appchain} key={`appchain-${idx}`} /> 
+                  stakingAppchains.map((appchain, idx) => (
+                    <StagingItem appchain={appchain} key={`appchain-${idx}`} /> 
                   ))
                 }
                 </List>
@@ -484,26 +515,26 @@ export const Appchains: React.FC = () => {
       </Box>
       <Box mt={8}>
         <Flex alignItems="center">
-          <Heading fontSize="xl" color="gray" mr={2} id="staking">{t('Staking')}</Heading>
-          <Tooltip label="Validators and Delegators can deposit OCT for the appchain in this state. (There can be only one appchain in this state)">
+          <Heading fontSize="xl" color="gray" mr={2} id="auditing">{t('Auditing')}</Heading>
+          <Tooltip label="Auditing appchains">
             <QuestionOutlineIcon color="gray" cursor="pointer" />
           </Tooltip>
         </Flex>
         <Box mt={4}>
-          <Skeleton isLoaded={!!stakingAppchains}>
+          <Skeleton isLoaded={!!auditingAppchains}>
             {
-              stakingAppchains?.length ?
+              auditingAppchains?.length ?
               <>
                 <SimpleGrid columns={{ base: 10, md: 14 }} color="gray" pl={4} pr={4} pb={2} fontSize="sm">
                   <GridItem colSpan={5}>{t('ID')}</GridItem>
-                  <GridItem colSpan={4} display={{ base: 'none', md: 'block' }}>{t('Validators')}</GridItem>
-                  <GridItem colSpan={4}>{t('Staked')}</GridItem>
+                  <GridItem colSpan={4} display={{ base: 'none', md: 'block' }}>{t('Founder')}</GridItem>
+                  <GridItem colSpan={4}>{t('State')}</GridItem>
                   <GridItem colSpan={1} />
                 </SimpleGrid>
                 <List spacing={3}>
                 {
-                  stakingAppchains.map((appchain, idx) => (
-                    <StagingItem appchain={appchain} key={`appchain-${idx}`} /> 
+                  auditingAppchains.map((appchain, idx) => (
+                    <RegisteredItem appchain={appchain} key={`appchain-${idx}`} /> 
                   ))
                 }
                 </List>
@@ -515,26 +546,26 @@ export const Appchains: React.FC = () => {
       </Box>
       <Box mt={8}>
         <Flex alignItems="center">
-          <Heading fontSize="xl" color="gray" mr={2} id="booting">{t('Booting')}</Heading>
-          <Tooltip label="Booting appchains">
+          <Heading fontSize="xl" color="gray" mr={2} id="pre_audit">{t('Pre-Audit')}</Heading>
+          <Tooltip label="The appchains have registered, or in auditing/dead state.">
             <QuestionOutlineIcon color="gray" cursor="pointer" />
           </Tooltip>
         </Flex>
         <Box mt={4}>
-          <Skeleton isLoaded={!!bootingAppchains}>
+          <Skeleton isLoaded={!!preAuditAppchains}>
             {
-              bootingAppchains?.length ?
+              preAuditAppchains?.length ?
               <>
                 <SimpleGrid columns={{ base: 10, md: 14 }} color="gray" pl={4} pr={4} pb={2} fontSize="sm">
                   <GridItem colSpan={5}>{t('ID')}</GridItem>
-                  <GridItem colSpan={4}>{t('Validators')}</GridItem>
-                  <GridItem colSpan={4}>{t('Staked')}</GridItem>
-                  <GridItem colSpan={1} display={{ base: 'none', md: 'block' }} />
+                  <GridItem colSpan={4} display={{ base: 'none', md: 'block' }}>{t('Founder')}</GridItem>
+                  <GridItem colSpan={4}>{t('State')}</GridItem>
+                  <GridItem colSpan={1} />
                 </SimpleGrid>
                 <List spacing={3}>
                 {
-                  bootingAppchains.map((appchain, idx) => (
-                    <BootingItem appchain={appchain} key={`appchain-${idx}`} /> 
+                  preAuditAppchains.map((appchain, idx) => (
+                    <RegisteredItem appchain={appchain} key={`appchain-${idx}`} /> 
                   ))
                 }
                 </List>
@@ -543,38 +574,7 @@ export const Appchains: React.FC = () => {
             }
           </Skeleton>
         </Box>
-      </Box>
-      <Box mt={8}>
-        <Flex alignItems="center">
-          <Heading fontSize="xl" color="gray" mr={2} id="active">{t('Running')}</Heading>
-          <Tooltip label="Active appchains">
-            <QuestionOutlineIcon color="gray" cursor="pointer" />
-          </Tooltip>
-        </Flex>
-        <Box mt={4}>
-          <Skeleton isLoaded={!!activeAppchains}>
-            {
-              activeAppchains?.length ?
-              <>
-                <SimpleGrid columns={{ base: 13, md: 17 }} color="gray" pl={4} pr={4} pb={2} fontSize="sm">
-                  <GridItem colSpan={5}>{t('ID')}</GridItem>
-                  <GridItem colSpan={4}>{t('Validators')}</GridItem>
-                  <GridItem colSpan={4}>{t('Staked')}</GridItem>
-                  <GridItem colSpan={4} display={{ base: 'none', md: 'block' }} />
-                </SimpleGrid>
-                <List spacing={3}>
-                {
-                  activeAppchains.map((appchain, idx) => (
-                    <RunningItem appchain={appchain} key={`appchain-${idx}`} /> 
-                  ))
-                }
-                </List>
-              </> :
-              <NoAppchains />
-            }
-          </Skeleton>
-        </Box>
-      </Box>
+      </Box>      
     </Container>
     <Drawer placement="right" isOpen={!isLoadingList && !!id} onClose={onDrawerClose} size="lg">
       <DrawerOverlay />

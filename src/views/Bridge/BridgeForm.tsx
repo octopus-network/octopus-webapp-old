@@ -54,7 +54,7 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
 
   const [appchainTokenContract, setAppchainTokenContract] = useState<TokenContract>();
   const [anchorContract, setAnchorContract] = useState<AnchorContract>();
-  const isReverse = useMemo(() => !!((urlParams.get('reverse') || '0') as any * 1), [urlParams]);
+  const isReverse = useMemo(() => true, [urlParams]);
   const [apiPromise, setApiPromise] = useState<ApiPromise>();
 
   const toast = useToast();
@@ -265,9 +265,9 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
             <Text fontSize="sm" opacity={.6}>
               {isReverse ? 'Near' : appchain?.appchain_id} to {isReverse ? appchain?.appchain_id : 'Near'}
             </Text>
-            <IconButton aria-label="switch" size="xs" borderWidth={0} variant="outline" onClick={onToggleReverse} isRound>
+            {/* <IconButton aria-label="switch" size="xs" borderWidth={0} variant="outline" onClick={onToggleReverse} isRound>
               <Icon as={AiOutlineSwap} />
-            </IconButton>
+            </IconButton> */}
           </HStack>
         </Flex>
         <Box p={2} mt={6}>
