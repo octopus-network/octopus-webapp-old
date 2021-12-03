@@ -363,37 +363,41 @@ export const Appchains: React.FC = () => {
           </Skeleton>
         </Box>
       </Box>
-      <Box mt={8}>
-        <Flex alignItems="center">
-          <Heading fontSize="xl" color="gray" mr={2} id="staking">{t('Staking')}</Heading>
-          <Tooltip label="Validators and Delegators can deposit OCT for the appchain in this state. (There can be only one appchain in this state)">
-            <QuestionOutlineIcon color="gray" cursor="pointer" />
-          </Tooltip>
-        </Flex>
-        <Box mt={4}>
-          <Skeleton isLoaded={!!stakingAppchains}>
-            {
-              stakingAppchains?.length ?
-              <>
-                <SimpleGrid columns={{ base: 10, md: 14 }} color="gray" pl={4} pr={4} pb={2} fontSize="sm">
-                  <GridItem colSpan={5}>{t('ID')}</GridItem>
-                  <GridItem colSpan={4} display={{ base: 'none', md: 'block' }}>{t('Validators')}</GridItem>
-                  <GridItem colSpan={4}>{t('Staked')}</GridItem>
-                  <GridItem colSpan={1} />
-                </SimpleGrid>
-                <List spacing={3}>
-                {
-                  stakingAppchains.map((appchain, idx) => (
-                    <StagingItem appchain={appchain} key={`appchain-${idx}`} /> 
-                  ))
-                }
-                </List>
-              </> :
-              <NoAppchains />
-            }
-          </Skeleton>
-        </Box>
-      </Box>
+      {
+        isOwner ?
+        <Box mt={8}>
+          <Flex alignItems="center">
+            <Heading fontSize="xl" color="gray" mr={2} id="staking">{t('Staking')}</Heading>
+            <Tooltip label="Validators and Delegators can deposit OCT for the appchain in this state. (There can be only one appchain in this state)">
+              <QuestionOutlineIcon color="gray" cursor="pointer" />
+            </Tooltip>
+          </Flex>
+          <Box mt={4}>
+            <Skeleton isLoaded={!!stakingAppchains}>
+              {
+                stakingAppchains?.length ?
+                <>
+                  <SimpleGrid columns={{ base: 10, md: 14 }} color="gray" pl={4} pr={4} pb={2} fontSize="sm">
+                    <GridItem colSpan={5}>{t('ID')}</GridItem>
+                    <GridItem colSpan={4} display={{ base: 'none', md: 'block' }}>{t('Validators')}</GridItem>
+                    <GridItem colSpan={4}>{t('Staked')}</GridItem>
+                    <GridItem colSpan={1} />
+                  </SimpleGrid>
+                  <List spacing={3}>
+                  {
+                    stakingAppchains.map((appchain, idx) => (
+                      <StagingItem appchain={appchain} key={`appchain-${idx}`} /> 
+                    ))
+                  }
+                  </List>
+                </> :
+                <NoAppchains />
+              }
+            </Skeleton>
+          </Box>
+        </Box> : null
+      }
+      
       <Box mt={8}>
         <Flex justifyContent="space-between" alignItems="start">
           <HStack spacing={2}>
