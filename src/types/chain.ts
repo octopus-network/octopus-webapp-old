@@ -110,14 +110,14 @@ export type IndexRange = {
 
 export type OriginRewardHistory = {
   era_number: string;
-  reward: string;
-  is_withdrawn: boolean;
+  total_reward: string;
+  unwithdrawn_reward: string;
 }
 
 export type RewardHistory = {
   eraNumber: number;
-  reward: Decimal;
-  isWithdrawn: boolean;
+  total_reward: Decimal;
+  unwithdrawn_reward: Decimal;
 }
 
 export type OriginWrappedAppchainToken = {

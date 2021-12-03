@@ -132,9 +132,9 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
         end_era: currentEra.toString(),
         validator_id: validator.validatorId
       }).then(rewards => {
-        setRewards(rewards.map(({ reward, is_withdrawn, era_number }) => ({
-          reward: DecimalUtils.fromString(reward, appchain.appchainMetadata.fungibleTokenMetadata.decimals),
-          isWithdrawn: is_withdrawn,
+        setRewards(rewards.map(({ total_reward, unwithdrawn_reward, era_number }) => ({
+          total_reward: DecimalUtils.fromString(total_reward, appchain.appchainMetadata.fungibleTokenMetadata.decimals),
+          unwithdrawn_reward: DecimalUtils.fromString(unwithdrawn_reward, appchain.appchainMetadata.fungibleTokenMetadata.decimals),
           eraNumber: (era_number as any) * 1
         })));
       });
@@ -153,13 +153,12 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
       return ZERO_DECIMAL;
     }
 
-    return rewards.filter(r => !r.isWithdrawn)
-      .reduce((total, next) => total.plus(next.reward), ZERO_DECIMAL);
+    return rewards.reduce((total, next) => total.plus(next.unwithdrawn_reward), ZERO_DECIMAL);
 
   }, [rewards]);
 
   const totalRewards = useMemo(() => rewards ?
-    rewards.reduce((total, next) => total.plus(next.reward), ZERO_DECIMAL) : ZERO_DECIMAL, 
+    rewards.reduce((total, next) => total.plus(next.total_reward), ZERO_DECIMAL) : ZERO_DECIMAL, 
     [rewards]
   );
 
