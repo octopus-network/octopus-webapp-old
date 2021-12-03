@@ -202,6 +202,7 @@ export const ValidatorPanel: React.FC<ValidatorPanelProps> = ({
         end_era: currentEra.toString(),
         validator_id: globalStore.accountId
       }).then(rewards => {
+    
         setRewards(rewards.map(({ total_reward, unwithdrawn_reward, era_number }) => ({
           total_reward: DecimalUtils.fromString(total_reward, appchain.appchainMetadata.fungibleTokenMetadata.decimals),
           unwithdrawn_reward: DecimalUtils.fromString(unwithdrawn_reward, appchain.appchainMetadata.fungibleTokenMetadata.decimals),

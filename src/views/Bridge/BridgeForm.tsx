@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 
 import {
   Box,
@@ -15,7 +15,8 @@ import {
   Heading,
   useBoolean,
   Skeleton,
-  useToast
+  useToast,
+  useInterval
 } from '@chakra-ui/react';
 
 import { ApiPromise, WsProvider } from '@polkadot/api';
@@ -32,7 +33,7 @@ import { useGlobalStore, useTransactionStore } from 'stores';
 import { Account } from './Account';
 import { AmountInput } from 'components';
 import { tokenAssets } from 'config';
-import { ChevronDownIcon } from '@chakra-ui/icons';
+import { ChevronDownIcon, RepeatIcon } from '@chakra-ui/icons';
 import { ZERO_DECIMAL, DecimalUtils } from 'utils';
 import Decimal from 'decimal.js';
 import { decodeAddress } from '@polkadot/util-crypto';
@@ -64,8 +65,10 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
 
   const [amount, setAmount] = useState('');
   const [balance, setBalance] = useState(ZERO_DECIMAL);
+  const [targetBalance, setTargetBalance] = useState(ZERO_DECIMAL);
   const [isLoadingBalance, setIsLoadingBalance] = useBoolean(true);
-  
+  const [isLoadingTargetBalance, setIsLoadingTargetBalance] = useBoolean(false);
+ 
   const globalStore = useGlobalStore(state => state.globalStore);
   const { appendTxn, updateTxn } = useTransactionStore();
 
@@ -152,6 +155,43 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
       setBridgeToken(tokens[0]);
     }
   }, [tokens]);
+
+
+  const checkTargetBalance = useCallback(() => {
+    if (!targetAddress) {
+      return;
+    }
+    setIsLoadingTargetBalance.on();
+    if (!isReverse && appchainTokenContract) {
+      appchainTokenContract
+        .ft_balance_of({ account_id: targetAddress })
+        .then(balance => {
+          setIsLoadingTargetBalance.off();
+          setTargetBalance(DecimalUtils.fromString(balance, bridgeToken.decimals));
+        });
+    } else if (isReverse && apiPromise) {
+      let validAddress = '';
+      try {
+        decodeAddress(targetAddress);
+        validAddress = targetAddress;
+      } catch(err) {
+        setTargetBalance(ZERO_DECIMAL);
+        setIsLoadingTargetBalance.off();
+        return;
+      }
+      apiPromise.derive.balances.all(validAddress, (balance) => {
+        setIsLoadingTargetBalance.off();
+        setTargetBalance(
+          DecimalUtils.fromString(balance.freeBalance.toString(), bridgeToken.decimals)
+        );
+      });
+    } else {
+      setTargetBalance(ZERO_DECIMAL);
+    }
+    
+  }, [targetAddress, isReverse, appchainTokenContract, apiPromise]);
+  
+  useInterval(checkTargetBalance, 1000);
 
   const onToggleReverse = () => {
     
@@ -315,6 +355,21 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
         <Box p={2} pt={0}>
           <Flex justifyContent="space-between" alignItems="center">
             <Text fontSize="sm" color="gray">Target</Text>
+            {
+              targetAddress ?
+              <HStack>
+                <Text fontSize="xs">
+                  Balance: {
+                    targetBalance.gt(ZERO_DECIMAL) ?
+                    DecimalUtils.beautify(targetBalance) : '-'
+                  }
+                </Text>
+                <IconButton aria-label="refresh" onClick={checkTargetBalance} size="xs" variant="ghost">
+                  <RepeatIcon animation={isLoadingTargetBalance ? 'rotate 1s ease infinite' : ''} />
+                </IconButton>
+              </HStack> : null
+            }
+            
           </Flex>
           <Flex justifyContent="space-between" alignItems="center" mt={3} p={2} borderRadius="lg" bg="gray.100">
             <Box p={2}>

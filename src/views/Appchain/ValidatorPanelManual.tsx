@@ -102,8 +102,7 @@ export const ValidatorPanelManual: React.FC<ValidatorPanelProps> = ({
       return ZERO_DECIMAL;
     }
 
-    return rewards.filter(r => !r.isWithdrawn)
-      .reduce((total, next) => total.plus(next.reward), ZERO_DECIMAL);
+    return rewards.reduce((total, next) => total.plus(next.unwithdrawn_reward), ZERO_DECIMAL);
 
   }, [rewards]);
 
@@ -177,9 +176,9 @@ export const ValidatorPanelManual: React.FC<ValidatorPanelProps> = ({
         end_era: currentEra.toString(),
         validator_id: globalStore.accountId
       }).then(rewards => {
-        setRewards(rewards.map(({ reward, is_withdrawn, era_number }) => ({
-          reward: DecimalUtils.fromString(reward, appchain.appchainMetadata.fungibleTokenMetadata.decimals),
-          isWithdrawn: is_withdrawn,
+        setRewards(rewards.map(({ total_reward, unwithdrawn_reward, era_number }) => ({
+          total_reward: DecimalUtils.fromString(total_reward, appchain.appchainMetadata.fungibleTokenMetadata.decimals),
+          unwithdrawn_reward: DecimalUtils.fromString(unwithdrawn_reward, appchain.appchainMetadata.fungibleTokenMetadata.decimals),
           eraNumber: (era_number as any) * 1
         })));
       });
