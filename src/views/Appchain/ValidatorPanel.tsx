@@ -292,7 +292,8 @@ export const ValidatorPanel: React.FC<ValidatorPanelProps> = ({
         cloud_vendor: cloudVendor,
         access_key: accessKey,
         base_image: image,
-        chain_spec: `${appchain?.appchainId}-${octopusConfig.networkId}`
+        chain_spec: deployConfig.baseImages.find(i => i.image === image)?.chain ||
+          `${appchain?.appchainId}-${octopusConfig.networkId}`
       }, {
         headers: {
           authorization: authKey

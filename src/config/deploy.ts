@@ -14,6 +14,7 @@ export const baseImages: SubstrateImage[] = [
   },
   {
     image: 'us-central1-docker.pkg.dev/octopus-prod/octopus-appchains/debio-node@sha256:df986cca952f2d8edc1bc24b439a06d20eff2bdb92411dc139e4de058cb525e4',
-    label: 'uchain:latest'
+    label: 'uchain:latest',
+    chain: 'octopus-mainnet'
   }
 ]

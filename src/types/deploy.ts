@@ -29,6 +29,7 @@ export type DeployInstance = {
 
 export type SubstrateImage = {
   label: string;
+  chain?: string;
   image: string;
 }
 
