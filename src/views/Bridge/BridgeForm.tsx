@@ -78,6 +78,7 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
   const [targetAddress, setTargetAddress] = useState(isReverse ? appchainAccount : nearAccount);
 
   useEffect(() => {
+    
     if (appchain?.appchain_anchor) {
       const contract = new AnchorContract(
         globalStore.walletConnection.account(),
@@ -96,6 +97,7 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
       setAnchorContract(contract);
 
       contract.get_wrapped_appchain_token().then(token => {
+        console.log(token);
         if (token?.contract_account) {
           const tokenContract = new TokenContract(
             globalStore.walletConnection.account(),

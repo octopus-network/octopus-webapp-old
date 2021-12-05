@@ -26,7 +26,6 @@ export type StorageDeposit = {
 export type TokenAsset = {
   symbol: string;
   logoUri: string;
-  contractId: string;
   assetId?: number;
   decimals: number;
 }

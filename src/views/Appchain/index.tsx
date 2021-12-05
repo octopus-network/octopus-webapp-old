@@ -247,12 +247,11 @@ export const Appchain: React.FC = () => {
             });
       
             const [era, amount]: any = await Promise.all([
-              api.query.octopusLpos.currentEra(),
+              api.query.octopusLpos.activeEra(),
               api.query.balances?.totalIssuance(),
-              
             ]);
-      
-            setCurrentEra(era.value.toNumber());
+           
+            setCurrentEra(era.toJSON()?.index);
          
             setTotalIssuance(
               DecimalUtils.fromString(
