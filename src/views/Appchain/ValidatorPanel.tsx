@@ -75,12 +75,12 @@ type ValidatorPanelProps = {
   onSwitchMode: VoidFunction;
 }
 
-export const ValidatorPanel: React.FC<ValidatorPanelProps> = ({ 
-  appchain, 
-  isOpen, 
-  onClose, 
+export const ValidatorPanel: React.FC<ValidatorPanelProps> = ({
+  appchain,
+  isOpen,
+  onClose,
   anchorContract,
-  currentEra, 
+  currentEra,
   apiPromise,
   onSwitchMode
 }) => {
@@ -202,7 +202,7 @@ export const ValidatorPanel: React.FC<ValidatorPanelProps> = ({
         end_era: currentEra.toString(),
         validator_id: globalStore.accountId
       }).then(rewards => {
-    
+
         setRewards(rewards.map(({ total_reward, unwithdrawn_reward, era_number }) => ({
           total_reward: DecimalUtils.fromString(total_reward, appchain.appchainMetadata.fungibleTokenMetadata.decimals),
           unwithdrawn_reward: DecimalUtils.fromString(unwithdrawn_reward, appchain.appchainMetadata.fungibleTokenMetadata.decimals),
@@ -292,8 +292,10 @@ export const ValidatorPanel: React.FC<ValidatorPanelProps> = ({
         cloud_vendor: cloudVendor,
         access_key: accessKey,
         base_image: image,
-        chain_spec: deployConfig.baseImages.find(i => i.image === image)?.chain ||
-          `${appchain?.appchainId}-${octopusConfig.networkId}`
+        chain_spec:
+          octopusConfig.networkId === 'mainnet' ? 'octopus-mainnet' :
+            deployConfig.baseImages.find(i => i.image === image)?.chain ||
+            `${appchain?.appchainId}-${octopusConfig.networkId}`
       }, {
         headers: {
           authorization: authKey
@@ -597,7 +599,7 @@ export const ValidatorPanel: React.FC<ValidatorPanelProps> = ({
           </ModalBody>
         </ModalContent>
       </Modal>
-      
+
       <AlertDialog
         motionPreset="slideInBottom"
         leastDestructiveRef={cancelRef}
