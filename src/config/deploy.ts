@@ -9,7 +9,7 @@ export const baseImages: SubstrateImage[] = [
     label: 'barnacle:latest'
   },
   {
-    image: 'us-central1-docker.pkg.dev/octopus-prod/octopus-appchains/debio-node:latest',
+    image: 'us-central1-docker.pkg.dev/octopus-prod/octopus-appchains/debio-node@sha256:e2de249c3126bb6930851e6e7fcc6053519d60580c5a9e52a0759cbb6fa1032f',
     label: 'debio-node:latest'
   },
   {
