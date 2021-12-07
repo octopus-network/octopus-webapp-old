@@ -210,7 +210,7 @@ export const Appchains: React.FC = () => {
       registeredCount, auditingCount, deadCount, inQueueCount, 
       stagingCount, bootingCount, activeCount
     ]) => {
-      setNumPreAudit(registeredCount as any * 1 + deadCount as any * 1);
+      setNumPreAudit((registeredCount as any) * 1 + (deadCount as any) * 1);
       setNumAuditing(auditingCount);
       setNumInQueue(inQueueCount);
       setNumStaging(stagingCount);
