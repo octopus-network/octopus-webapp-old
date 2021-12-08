@@ -1,5 +1,5 @@
-const NETWORK = process.env.REACT_APP_OCT_NETWORK || 'mainnet';
-const REGISTRY_CONTRACT = process.env.REACT_APP_OCT_REGISTRY_CONTRACT || 'octopus-registry.near';
+const NETWORK = process.env.REACT_APP_OCT_NETWORK || 'testnet';
+const REGISTRY_CONTRACT = process.env.REACT_APP_OCT_REGISTRY_CONTRACT || 'dev-oct-registry.testnet';
 const TOKEN_CONTRACT = process.env.REACT_APP_OCT_TOKEN_CONTRACT || 'oct.beta_oct_relay.testnet';
 
 export const octopusConfig = {
