@@ -550,7 +550,7 @@ export const Appchains: React.FC = () => {
       </Box>
       <Box mt={8}>
         <Flex alignItems="center">
-          <Heading fontSize="xl" color="gray" mr={2} id="pre_audit">{t('Pre-Audit')}</Heading>
+          <Heading fontSize="xl" color="gray" mr={2} id="pre_audit">{t('Registered')}</Heading>
           <Tooltip label="The appchains have registered, or in auditing/dead state.">
             <QuestionOutlineIcon color="gray" cursor="pointer" />
           </Tooltip>

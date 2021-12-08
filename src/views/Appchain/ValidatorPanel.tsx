@@ -118,7 +118,7 @@ export const ValidatorPanel: React.FC<ValidatorPanelProps> = ({
   const [unbondPopoverOpen, setUnbondPopoverOpen] = useBoolean(false);
 
   const authKey = useMemo(() => {
-    return `appchain-${appchain?.appchainId}-cloud-${cloudVendor}-${accessKey}`;
+    return `appchain-${appchain?.appchainId}-${octopusConfig.networkId}-cloud-${cloudVendor}-${accessKey}`;
   }, [appchain, cloudVendor, accessKey]);
 
   const haveDeployedNode = useMemo(() => !!tasks?.length && tasks[0].state.state === 12, [tasks]);

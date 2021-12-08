@@ -29,6 +29,10 @@ import {
   IconButton,
   useClipboard,
   Spinner,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverBody,
   Stat,
   Icon,
   StatLabel,
@@ -41,7 +45,8 @@ import {
   AlertDialogHeader,
   AlertDialogCloseButton,
   AlertDialogBody,
-  AlertDialogOverlay
+  AlertDialogOverlay,
+  useToast
 } from '@chakra-ui/react';
 
 import { 
@@ -81,7 +86,7 @@ import { DecimalUtils, ZERO_DECIMAL } from 'utils';
 
 import { IoMdTime } from 'react-icons/io';
 import { octopusConfig } from 'config';
-import { OCT_TOKEN_DECIMALS } from 'primitives';
+import { OCT_TOKEN_DECIMALS, Gas } from 'primitives';
 import { useGlobalStore } from 'stores';
 import Decimal from 'decimal.js';
 import dayjs from 'dayjs';
@@ -91,6 +96,7 @@ import { ValidatorPanelManual } from './ValidatorPanelManual';
 
 export const Appchain: React.FC = () => {
   const { id } = useParams();
+  const toast = useToast();
 
   const [appchainInfo, setAppchainInfo] = useState<AppchainInfo>();
   const [anchorContract, setAnchorContract] = useState<AnchorContract>();
@@ -100,20 +106,45 @@ export const Appchain: React.FC = () => {
   const [finalizedBlock, setFinalizedBlock] = useState(0);
   const [totalIssuance, setTotalIssuance] = useState(ZERO_DECIMAL);
   const [validatorMode, setValidatorMode] = useState(window.localStorage.getItem('validatorMode'));
-
+  
+  const [userUpvoteDeposit, setUserUpvoteDeposit] = useState<Decimal>(ZERO_DECIMAL);
+  const [userDownvoteDeposit, setUserDownvoteDeposit] = useState<Decimal>(ZERO_DECIMAL);
   const [appchainSettings, setAppchainSettings] = useState<AppchainSettings>();
   const [currentEra, setCurrentEra] = useState<number>();
 
   const [validatorPanelOpen, setValidatorPanelOpen] = useBoolean(false);
   const [validatorModeAlertOpen, setValidatorModeAlertOpen] = useBoolean(false);
   const [validatorPanelManualOpen, setValidatorPanelManualOpen] = useBoolean(false);
+
+  const [withdrawVotesPopoverOpen, setWithdrawVotesPopoverOpen] = useBoolean(false);
+  const [withdrawingUpvotes, setWithdrawingUpvotes] = useState(false);
+  const [withdrawingDownvotes, setWithdrawingDownvotes] = useState(false);
   
   const globalStore = useGlobalStore(state => state.globalStore);
   const { hasCopied: rpcEndpointCopied, onCopy: onRpcEndpointCopy } = useClipboard(appchainSettings?.rpcEndpoint);
 
   const cancelRef = React.useRef();
+  const initialFocusRef = React.useRef();
 
   useEffect(() => {
+    Promise.all([
+      globalStore
+        .registryContract
+        .get_upvote_deposit_for({
+          appchain_id: id,
+          account_id: globalStore.accountId
+        }),
+
+      globalStore
+        .registryContract
+        .get_downvote_deposit_for({
+          appchain_id: id,
+          account_id: globalStore.accountId
+        })
+    ]).then(([upvoteDeposit, downvoteDeposit]) => {
+      setUserUpvoteDeposit(new Decimal(upvoteDeposit));
+      setUserDownvoteDeposit(new Decimal(downvoteDeposit));
+    });
 
     globalStore
       .registryContract
@@ -312,6 +343,57 @@ export const Appchain: React.FC = () => {
     }
   }
 
+  const withdrawVotes = (type: string, amount: Decimal) => {
+    const method = 
+      type === 'upvote' ? 
+      globalStore.registryContract.withdraw_upvote_deposit_of :
+      globalStore.registryContract.withdraw_downvote_deposit_of;
+
+    return method(
+      {
+        appchain_id: id,
+        amount: DecimalUtils.toU64(amount, OCT_TOKEN_DECIMALS).toString()
+      },
+      Gas.COMPLEX_CALL_GAS
+    ).then(() => {
+      window.location.reload();
+    });
+  }
+
+  const onWithdrawUpvotes = async () => {
+    setWithdrawingUpvotes(true);
+
+    try {
+      await withdrawVotes('upvote', userUpvoteDeposit);
+    } catch(err) {
+      toast({
+        position: 'top-right',
+        title: 'Error',
+        description: err.toString(),
+        status: 'error'
+      });
+    }
+
+    setWithdrawingUpvotes(false);
+  }
+
+  const onWithdrawDownvotes = async () => {
+    setWithdrawingDownvotes(true);
+
+    try {
+      await withdrawVotes('downvote', userDownvoteDeposit);
+    } catch(err) {
+      toast({
+        position: 'top-right',
+        title: 'Error',
+        description: err.toString(),
+        status: 'error'
+      });
+    }
+    
+    setWithdrawingDownvotes(false);
+  }
+
   return (
     <>
       <Container mt={6} mb={6} maxW="container.xl">
@@ -455,10 +537,56 @@ export const Appchain: React.FC = () => {
                 </Stat>
         
               </SimpleGrid>
-              <Button colorScheme="octoColor" isDisabled={!globalStore!.accountId} onClick={onOpenValidatorPanel}>
-                <Icon as={BiUserCircle} mr={1} />
-                Validator Panel
-              </Button>
+              <HStack>
+                
+                <Button colorScheme="octoColor" isDisabled={!globalStore!.accountId} onClick={onOpenValidatorPanel}>
+                  <Icon as={BiUserCircle} mr={1} />
+                  Validator Panel
+                </Button>
+
+                {
+                  userUpvoteDeposit.gt(ZERO_DECIMAL) || userDownvoteDeposit.gt(ZERO_DECIMAL) ?
+                  <Popover
+                    initialFocusRef={initialFocusRef}
+                    placement="bottom"
+                    isOpen={withdrawVotesPopoverOpen}
+                    onClose={setWithdrawVotesPopoverOpen.off}
+                  >
+                    <PopoverTrigger>
+                      <Button onClick={setWithdrawVotesPopoverOpen.on} colorScheme="octoColor" isDisabled={withdrawVotesPopoverOpen}>
+                        Withdraw Votes
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent>
+                      <PopoverBody>
+                        <Box p={2}>
+                          {
+                            userUpvoteDeposit.gt(ZERO_DECIMAL) ?
+                              <Flex>
+                                <Text>
+                                  Your Upvotes: {DecimalUtils.beautify(userUpvoteDeposit)}
+                                </Text> d
+                                <Button size="xs" colorScheme="octoColor" ml={2} variant="outline" isLoading={withdrawingUpvotes}
+                                  isDisabled={withdrawingUpvotes || withdrawingDownvotes} onClick={onWithdrawUpvotes}>Withdraw</Button>
+                              </Flex> : null
+                          }
+                          {
+                            userDownvoteDeposit.gt(ZERO_DECIMAL) ?
+                              <Flex mt={3}>
+                                <Text>
+                                  Your Downvotes: {DecimalUtils.beautify(userDownvoteDeposit)}
+                                </Text>
+                                <Button size="xs" colorScheme="octoColor" ml={2} variant="outline" isLoading={withdrawingDownvotes}
+                                  isDisabled={withdrawingUpvotes || withdrawingDownvotes} onClick={onWithdrawDownvotes}>Withdraw</Button>
+                              </Flex> : null
+                          }
+      
+                        </Box>
+                      </PopoverBody>
+                    </PopoverContent>
+                  </Popover> : null
+                }
+              </HStack>
             
             </Flex>
             <Divider mt={4} mb={4} />
