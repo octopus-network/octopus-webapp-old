@@ -295,7 +295,7 @@ export const Appchains: React.FC = () => {
             <StatBox title={t('Registered')} value={numPreAudit} icon={FiEdit} href="#registered" />
             <StatBox title={t('Auditing')} value={numAuditing} icon={AiOutlineAudit} href="#auditing" />
             <StatBox title={t('Voting')} value={numInQueue} icon={FiCheckCircle} href="#voting" />
-            <StatBox title={t('Staking')} value={numStaging} icon={AiOutlineInbox} href="#staking" />
+            {/* <StatBox title={t('Staking')} value={numStaging} icon={AiOutlineInbox} href="#staking" /> */}
             <StatBox title={t('Booting')} value={numBooting} icon={VscServerProcess} href="#booting" />
             <StatBox title={t('Running')} value={numActive} icon={AiOutlineDashboard} href="#active" />
           </SimpleGrid>
