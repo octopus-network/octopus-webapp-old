@@ -292,7 +292,7 @@ export const Appchains: React.FC = () => {
         <Box boxShadow="lg" p={6} borderRadius={10} flex={1}
           position="relative" overflow="hidden" bgGradient="linear(to-r, #51b1c8, #a5e7f2)">
           <SimpleGrid columns={6}>
-            <StatBox title={t('Pre-Audit')} value={numPreAudit} icon={FiEdit} href="#pre_audit" />
+            <StatBox title={t('Registered')} value={numPreAudit} icon={FiEdit} href="#registered" />
             <StatBox title={t('Auditing')} value={numAuditing} icon={AiOutlineAudit} href="#auditing" />
             <StatBox title={t('Voting')} value={numInQueue} icon={FiCheckCircle} href="#voting" />
             <StatBox title={t('Staking')} value={numStaging} icon={AiOutlineInbox} href="#staking" />
@@ -550,7 +550,7 @@ export const Appchains: React.FC = () => {
       </Box>
       <Box mt={8}>
         <Flex alignItems="center">
-          <Heading fontSize="xl" color="gray" mr={2} id="pre_audit">{t('Registered')}</Heading>
+          <Heading fontSize="xl" color="gray" mr={2} id="registered">{t('Registered')}</Heading>
           <Tooltip label="The appchains have registered, or in auditing/dead state.">
             <QuestionOutlineIcon color="gray" cursor="pointer" />
           </Tooltip>

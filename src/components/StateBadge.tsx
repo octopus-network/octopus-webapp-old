@@ -14,8 +14,8 @@ const state2color = {
 }
 
 const state2label = {
-  'Registered': 'Pre-Audit',
-  'Dead': 'Pre-Audit',
+  'Registered': 'Registered',
+  'Dead': 'Registered',
   'Auditing': 'Auditing',
   'InQueue': 'Voting',
   'Staging': 'Staking',
