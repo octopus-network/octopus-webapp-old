@@ -15,3 +15,11 @@ export function beautify(str = ''): string {
   str = str.replace(reg, '$1,');
   return str.replace(/(\.[0-9]+[1-9]+)(0)*/, '$1');
 }
+
+export function sleep(ts = 1000) {
+  return new Promise((resolve) => setTimeout(() => resolve(0), ts));
+}
+
+export function getAuthKey(appchainId: string, networkId: string, cloudVendor: string, accessKey: string) {
+  return `appchain-${appchainId}-network-${networkId}-cloud-${cloudVendor}-${accessKey}`;
+}

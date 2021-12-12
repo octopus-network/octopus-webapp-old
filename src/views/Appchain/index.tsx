@@ -29,24 +29,8 @@ import {
   IconButton,
   useClipboard,
   Spinner,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-  PopoverBody,
-  Stat,
   Icon,
-  StatLabel,
-  StatNumber,
-  StatHelpText,
-  Center,
-  useBoolean,
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogCloseButton,
-  AlertDialogBody,
-  AlertDialogOverlay,
-  useToast
+  Center
 } from '@chakra-ui/react';
 
 import { 
@@ -54,12 +38,8 @@ import {
   AiOutlineGlobal, 
   AiFillGithub,
   AiOutlineSearch,
-  AiOutlineSwap,
-  AiTwotoneThunderbolt, 
-  AiTwotoneTool
+  AiOutlineSwap
 } from 'react-icons/ai';
-
-import { BiUserCircle } from 'react-icons/bi';
 
 import { 
   AppchainInfo, 
@@ -91,61 +71,29 @@ import { useGlobalStore } from 'stores';
 import Decimal from 'decimal.js';
 import dayjs from 'dayjs';
 import { BlocksTable } from './BlocksTable';
-import { ValidatorPanel } from './ValidatorPanel';
-import { ValidatorPanelManual } from './ValidatorPanelManual';
+
+import { NodePanel } from './NodePanel';
+import { StakingPanel } from './StakingPanel';
 
 export const Appchain: React.FC = () => {
   const { id } = useParams();
-  const toast = useToast();
 
   const [appchainInfo, setAppchainInfo] = useState<AppchainInfo>();
   const [anchorContract, setAnchorContract] = useState<AnchorContract>();
 
   const [apiPromise, setApiPromise] = useState<ApiPromise>();
   const [bestBlock, setBestBlock] = useState(0);
-  const [finalizedBlock, setFinalizedBlock] = useState(0);
   const [totalIssuance, setTotalIssuance] = useState(ZERO_DECIMAL);
-  const [validatorMode, setValidatorMode] = useState(window.localStorage.getItem('validatorMode'));
-  
-  const [userUpvoteDeposit, setUserUpvoteDeposit] = useState<Decimal>(ZERO_DECIMAL);
-  const [userDownvoteDeposit, setUserDownvoteDeposit] = useState<Decimal>(ZERO_DECIMAL);
+
   const [appchainSettings, setAppchainSettings] = useState<AppchainSettings>();
   const [currentEra, setCurrentEra] = useState<number>();
-
-  const [validatorPanelOpen, setValidatorPanelOpen] = useBoolean(false);
-  const [validatorModeAlertOpen, setValidatorModeAlertOpen] = useBoolean(false);
-  const [validatorPanelManualOpen, setValidatorPanelManualOpen] = useBoolean(false);
-
-  const [withdrawVotesPopoverOpen, setWithdrawVotesPopoverOpen] = useBoolean(false);
-  const [withdrawingUpvotes, setWithdrawingUpvotes] = useState(false);
-  const [withdrawingDownvotes, setWithdrawingDownvotes] = useState(false);
   
   const globalStore = useGlobalStore(state => state.globalStore);
   const { hasCopied: rpcEndpointCopied, onCopy: onRpcEndpointCopy } = useClipboard(appchainSettings?.rpcEndpoint);
 
-  const cancelRef = React.useRef();
-  const initialFocusRef = React.useRef();
 
   useEffect(() => {
-    Promise.all([
-      globalStore
-        .registryContract
-        .get_upvote_deposit_for({
-          appchain_id: id,
-          account_id: globalStore.accountId
-        }),
-
-      globalStore
-        .registryContract
-        .get_downvote_deposit_for({
-          appchain_id: id,
-          account_id: globalStore.accountId
-        })
-    ]).then(([upvoteDeposit, downvoteDeposit]) => {
-      setUserUpvoteDeposit(new Decimal(upvoteDeposit));
-      setUserDownvoteDeposit(new Decimal(downvoteDeposit));
-    });
-
+   
     globalStore
       .registryContract
       .get_appchain_status_of({
@@ -271,12 +219,6 @@ export const Appchain: React.FC = () => {
               unsubNewHeads = unsub;
             });
       
-            api.rpc.chain.subscribeFinalizedHeads((finalizedHeader) => {
-              setFinalizedBlock(finalizedHeader.number.toNumber());
-            }).then(unsub => {
-              unsubNewFinalizedHeads = unsub;
-            });
-      
             const [era, amount]: any = await Promise.all([
               api.query.octopusLpos.activeEra(),
               api.query.balances?.totalIssuance(),
@@ -307,92 +249,6 @@ export const Appchain: React.FC = () => {
       unsubNewFinalizedHeads();
     }
   }, [anchorContract, appchainInfo]);
-
-  const onOpenValidatorPanel = () => {
-    if (validatorMode === 'autoDeploy') {
-      setValidatorPanelOpen.on();
-    } else if (validatorMode === 'manualDeploy') {
-      setValidatorPanelManualOpen.on();
-    } else {
-      setValidatorModeAlertOpen.on();
-    }
-  }
-
-  const onSetValidatorMode = (mode: 'autoDeploy' | 'manualDeploy') => {
-    window.localStorage.setItem('validatorMode', mode);
-    setValidatorMode(mode);
-    setValidatorModeAlertOpen.off();
-    if (mode === 'autoDeploy') {
-      setValidatorPanelOpen.on();
-    } else {
-      setValidatorPanelManualOpen.on();
-    }
-  }
-
-  const onSwitchMode = () => {
-    if (validatorMode === 'autoDeploy') {
-      setValidatorPanelOpen.off();
-      setValidatorPanelManualOpen.on();
-      setValidatorMode('manualDeploy');
-      window.localStorage.setItem('validatorMode', 'manualDeploy');
-    } else if (validatorMode === 'manualDeploy') {
-      setValidatorPanelManualOpen.off();
-      setValidatorPanelOpen.on();
-      setValidatorMode('autoDeploy');
-      window.localStorage.setItem('validatorMode', 'autoDeploy');
-    }
-  }
-
-  const withdrawVotes = (type: string, amount: Decimal) => {
-    const method = 
-      type === 'upvote' ? 
-      globalStore.registryContract.withdraw_upvote_deposit_of :
-      globalStore.registryContract.withdraw_downvote_deposit_of;
-
-    return method(
-      {
-        appchain_id: id,
-        amount: DecimalUtils.toU64(amount, OCT_TOKEN_DECIMALS).toString()
-      },
-      Gas.COMPLEX_CALL_GAS
-    ).then(() => {
-      window.location.reload();
-    });
-  }
-
-  const onWithdrawUpvotes = async () => {
-    setWithdrawingUpvotes(true);
-
-    try {
-      await withdrawVotes('upvote', userUpvoteDeposit);
-    } catch(err) {
-      toast({
-        position: 'top-right',
-        title: 'Error',
-        description: err.toString(),
-        status: 'error'
-      });
-    }
-
-    setWithdrawingUpvotes(false);
-  }
-
-  const onWithdrawDownvotes = async () => {
-    setWithdrawingDownvotes(true);
-
-    try {
-      await withdrawVotes('downvote', userDownvoteDeposit);
-    } catch(err) {
-      toast({
-        position: 'top-right',
-        title: 'Error',
-        description: err.toString(),
-        status: 'error'
-      });
-    }
-    
-    setWithdrawingDownvotes(false);
-  }
 
   return (
     <>
@@ -446,7 +302,7 @@ export const Appchain: React.FC = () => {
                 </HStack>
               </Skeleton>
             </HStack>
-            <Wrap mt={8}>
+            <Wrap mt={6}>
               <WrapItem>
                 <Button size="sm" as={Link} isExternal href={appchainInfo?.appchainMetadata.websiteUrl}>
                   <HStack>
@@ -498,100 +354,9 @@ export const Appchain: React.FC = () => {
             </Wrap>
           </GridItem>
           <GridItem colSpan={6} display={{ base: 'none', lg: 'block' }}>
-            <Flex justifyContent="space-between" alignItems="flex-start">
-
-              <SimpleGrid columns={2} w="50%">
-                
-                <Stat>
-                  <StatLabel color="gray" fontSize="xs">Current Era</StatLabel>
-                  <StatNumber fontSize="3xl">
-                    {
-                      currentEra !== undefined ?
-                      DecimalUtils.beautify(
-                        new Decimal(currentEra),
-                        0
-                      ) : <Spinner size="sm" />
-                    }
-                  </StatNumber>
-                </Stat>
-
-                <Stat>
-                  <StatLabel color="gray" fontSize="xs">Block Height</StatLabel>
-                  {
-                    bestBlock > 0 ?
-                    <StatNumber fontSize="3xl">
-                      { DecimalUtils.beautify(new Decimal(bestBlock), 0) }
-                    </StatNumber> :
-                    <Flex minH="45px" alignItems="center">
-                      <Spinner size="sm" />
-                    </Flex>
-                  }
-                  
-                  <StatHelpText color="gray" fontSize="xs">
-                    Finalized {
-                      DecimalUtils.beautify(
-                        new Decimal(finalizedBlock), 0
-                      )
-                    }
-                  </StatHelpText>
-                </Stat>
-        
-              </SimpleGrid>
-              <HStack>
-                
-                <Button colorScheme="octoColor" isDisabled={!globalStore!.accountId} onClick={onOpenValidatorPanel}>
-                  <Icon as={BiUserCircle} mr={1} />
-                  Validator Panel
-                </Button>
-
-                {
-                  userUpvoteDeposit.gt(ZERO_DECIMAL) || userDownvoteDeposit.gt(ZERO_DECIMAL) ?
-                  <Popover
-                    initialFocusRef={initialFocusRef}
-                    placement="bottom"
-                    isOpen={withdrawVotesPopoverOpen}
-                    onClose={setWithdrawVotesPopoverOpen.off}
-                  >
-                    <PopoverTrigger>
-                      <Button onClick={setWithdrawVotesPopoverOpen.on} colorScheme="octoColor" isDisabled={withdrawVotesPopoverOpen}>
-                        Withdraw Votes
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent>
-                      <PopoverBody>
-                        <Box p={2}>
-                          {
-                            userUpvoteDeposit.gt(ZERO_DECIMAL) ?
-                              <Flex>
-                                <Text>
-                                  Your Upvotes: {DecimalUtils.beautify(userUpvoteDeposit)}
-                                </Text> d
-                                <Button size="xs" colorScheme="octoColor" ml={2} variant="outline" isLoading={withdrawingUpvotes}
-                                  isDisabled={withdrawingUpvotes || withdrawingDownvotes} onClick={onWithdrawUpvotes}>Withdraw</Button>
-                              </Flex> : null
-                          }
-                          {
-                            userDownvoteDeposit.gt(ZERO_DECIMAL) ?
-                              <Flex mt={3}>
-                                <Text>
-                                  Your Downvotes: {DecimalUtils.beautify(userDownvoteDeposit)}
-                                </Text>
-                                <Button size="xs" colorScheme="octoColor" ml={2} variant="outline" isLoading={withdrawingDownvotes}
-                                  isDisabled={withdrawingUpvotes || withdrawingDownvotes} onClick={onWithdrawDownvotes}>Withdraw</Button>
-                              </Flex> : null
-                          }
-      
-                        </Box>
-                      </PopoverBody>
-                    </PopoverContent>
-                  </Popover> : null
-                }
-              </HStack>
             
-            </Flex>
-            <Divider mt={4} mb={4} />
             <SimpleGrid columns={17}>
-              <GridItem colSpan={5}>
+              <GridItem colSpan={6}>
                 <Skeleton isLoaded={!!appchainSettings}>
                 <VStack alignItems="flex-start" spacing={1}>
                   <Text fontSize="xs" color="gray">Rpc Endpoint</Text>
@@ -606,13 +371,35 @@ export const Appchain: React.FC = () => {
                   </HStack>
                 </VStack>
                 </Skeleton>
+                
+                <Flex mt={3} justifyContent="space-between">
+                  <VStack alignItems="flex-start" spacing={1}>
+                    <Text fontSize="xs" color="gray">Current Era</Text>
+                    {
+                      currentEra !== undefined ?
+                      <Heading fontSize="sm">
+                        { DecimalUtils.beautify(new Decimal(currentEra), 0) }
+                      </Heading> : <Spinner size="sm" />
+                    }
+                  </VStack>
+                  <VStack alignItems="flex-start" spacing={1}>
+                    <Text fontSize="xs" color="gray">Block Height</Text>
+                    {
+                      bestBlock > 0 ?
+                      <Heading fontSize="sm">
+                        { DecimalUtils.beautify(new Decimal(bestBlock), 0) }
+                      </Heading> : <Spinner size="sm" />
+                    }
+                  </VStack>
+                </Flex>
+
               </GridItem>
               <GridItem colSpan={1}>
                 <Center h="100%">
                   <Divider orientation="vertical" />
                 </Center>
               </GridItem>
-              <GridItem colSpan={5}>
+              <GridItem colSpan={4}>
                 <Skeleton isLoaded={!!appchainInfo}>
                 <VStack alignItems="flex-start" spacing={1}>
                   <Text fontSize="xs" color="gray">Token</Text>
@@ -713,6 +500,20 @@ export const Appchain: React.FC = () => {
             </SimpleGrid>
           </GridItem>
         </SimpleGrid>
+
+        <SimpleGrid columns={9} mt={6} gap={6}>
+          <GridItem colSpan={6}>
+            <Box p={6} bg="white" boxShadow="rgb(0 0 0 / 20%) 0px 0px 2px" borderRadius="xl">
+              <NodePanel appchain={appchainInfo} apiPromise={apiPromise} />
+            </Box>
+          </GridItem>
+          <GridItem colSpan={3}>
+            <Box p={6} bg="white" boxShadow="rgb(0 0 0 / 20%) 0px 0px 2px" borderRadius="xl">
+              <StakingPanel anchorContract={anchorContract} appchain={appchainInfo} currentEra={currentEra} />
+            </Box>
+          </GridItem>
+        </SimpleGrid>
+
         <Box mt={6} p={6} bg="white" boxShadow="rgb(0 0 0 / 20%) 0px 0px 2px" borderRadius="xl">
           <Tabs>
             <TabList>
@@ -732,40 +533,6 @@ export const Appchain: React.FC = () => {
         </Box>
       </Container>
 
-      <AlertDialog
-        motionPreset="slideInBottom"
-        leastDestructiveRef={cancelRef}
-        onClose={setValidatorModeAlertOpen.off}
-        isOpen={validatorModeAlertOpen}
-        isCentered
-      >
-        <AlertDialogOverlay />
-        <AlertDialogContent>
-          <AlertDialogHeader>Choose Mode</AlertDialogHeader>
-          <AlertDialogCloseButton />
-          <AlertDialogBody>
-            <SimpleGrid columns={2} gap={6}>
-              <Flex p={6} alignItems="center" flexDirection="column" cursor="pointer" onClick={() => onSetValidatorMode('autoDeploy')}
-                borderWidth={1} borderRadius="lg" _hover={{ color: '#0845A5', borderColor: '#0845A5' }}>
-                <Icon as={AiTwotoneThunderbolt} boxSize={10} />
-                <Text fontSize="sm" mt={1}>Auto Deploy</Text>
-              </Flex>
-              <Flex p={6} alignItems="center" flexDirection="column" cursor="pointer" onClick={() => onSetValidatorMode('manualDeploy')}
-                borderWidth={1} borderRadius="lg" _hover={{ color: '#0845A5', borderColor: '#0845A5' }}>
-                <Icon as={AiTwotoneTool} boxSize={10} />
-                <Text fontSize="sm" mt={1}>Manual Deploy</Text>
-              </Flex>
-            </SimpleGrid>
-            <Box mb={4} />
-          </AlertDialogBody>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <ValidatorPanel appchain={appchainInfo} anchorContract={anchorContract} currentEra={currentEra}
-        isOpen={validatorPanelOpen} onClose={setValidatorPanelOpen.off} apiPromise={apiPromise} onSwitchMode={onSwitchMode} />
-
-      <ValidatorPanelManual appchain={appchainInfo} anchorContract={anchorContract} currentEra={currentEra}
-        isOpen={validatorPanelManualOpen} onClose={setValidatorPanelManualOpen.off} apiPromise={apiPromise} onSwitchMode={onSwitchMode} />
     </>
   );
 }

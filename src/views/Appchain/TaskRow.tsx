@@ -1,52 +1,38 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 
 import {
-  Table,
-  TableProps,
-  Thead,
-  Tr,
-  Th,
-  Tbody,
-  Flex,
-  Skeleton,
+  Button,
+  SimpleGrid,
+  GridItem,
+  useClipboard,
+  useToast,
   HStack,
   Text,
   IconButton,
-  Tag,
-  Td,
-  Icon,
-  Heading,
   Badge,
-  useClipboard,
-  Button,
-  useToast,
-  Link,
-  VStack
+  Tag,
+  Link
 } from '@chakra-ui/react';
 
-import { Pagination } from 'components';
+import { 
+  CopyIcon, 
+  CheckIcon, 
+  DownloadIcon,
+  RepeatIcon
+} from '@chakra-ui/icons';
+
 import { deployConfig } from 'config';
-import { CopyIcon, CheckIcon, DownloadIcon, RepeatIcon } from '@chakra-ui/icons';
-import { BsFillInfoCircleFill } from 'react-icons/bs';
-import axios from 'axios';
-
+import { sleep } from 'utils';
 import { Task } from 'types';
-
-type TasksTableProps = TableProps & {
-  authKey: string;
-  tasks: Task[];
-  onRefresh: VoidFunction;
-  isRefreshing: boolean;
-  onGoDeploy: VoidFunction;
-}
 
 type TaskRowProps = {
   task: Task;
   authKey: string;
-  onUpdate: (refreshFactor: number) => void;
+  onUpdate: () => void;
 }
 
-const TaskRow: React.FC<TaskRowProps> = ({ task, authKey, onUpdate }) => {
+export const TaskRow: React.FC<TaskRowProps> = ({ task, authKey, onUpdate }) => {
   const { hasCopied: hasUuidCopied, onCopy: onCopyUuid } = useClipboard(task.uuid);
   const { hasCopied: hasInstanceCopied, onCopy: onCopyInstance } = useClipboard(
     task.instance ? `${task.instance.user}@${task.instance.ip}` : ''
@@ -70,9 +56,10 @@ const TaskRow: React.FC<TaskRowProps> = ({ task, authKey, onUpdate }) => {
         { action: 'apply', secret_key: secretKey },
         { headers: { authorization: authKey } }
       )
-      .then(res => {
+      .then(() => sleep())
+      .then(_ => {
         setLoadingType(null);
-        onUpdate(new Date().getTime());
+        onUpdate();
       })
       .catch(err => {
         toast({
@@ -100,9 +87,10 @@ const TaskRow: React.FC<TaskRowProps> = ({ task, authKey, onUpdate }) => {
         { action: 'destroy', secret_key: secretKey },
         { headers: { authorization: authKey } }
       )
-      .then(res => {
+      .then(() => sleep())
+      .then(_ => {
         setLoadingType(null);
-        onUpdate(new Date().getTime());
+        onUpdate();
       })
       .catch(err => {
         toast({
@@ -118,15 +106,16 @@ const TaskRow: React.FC<TaskRowProps> = ({ task, authKey, onUpdate }) => {
   const onDelete = () => {
 
     setLoadingType('delete');
+
     axios
       .delete(
         `${deployConfig.apiHost}/api/tasks/${task.uuid}`,
         { headers: { authorization: authKey } }
       )
-      .then(res => {
-        console.log(res);
+      .then(() => sleep())
+      .then(_ => {
+        onUpdate();
         setLoadingType(null);
-        onUpdate(new Date().getTime());
       })
       .catch(err => {
         toast({
@@ -140,8 +129,8 @@ const TaskRow: React.FC<TaskRowProps> = ({ task, authKey, onUpdate }) => {
   }
 
   return (
-    <Tr>
-      <Td>
+    <SimpleGrid columns={18} alignItems="center" gap={3}>
+      <GridItem colSpan={5}>
         <HStack>
           <Text fontSize="sm" whiteSpace="nowrap" w="calc(140px - 30px)"
             overflow="hidden" textOverflow="ellipsis">
@@ -151,11 +140,11 @@ const TaskRow: React.FC<TaskRowProps> = ({ task, authKey, onUpdate }) => {
             { hasUuidCopied ? <CheckIcon /> : <CopyIcon /> }
           </IconButton>
         </HStack>
-      </Td>
-      <Td>
+      </GridItem>
+      <GridItem colSpan={3}>
         <Badge size="sm" colorScheme={task.state.color}>{task.state.label}</Badge>
-      </Td>
-      <Td>
+      </GridItem>
+      <GridItem colSpan={5}>
         {
           task.instance ?
           <HStack>
@@ -168,11 +157,8 @@ const TaskRow: React.FC<TaskRowProps> = ({ task, authKey, onUpdate }) => {
             </IconButton>
           </HStack> : '-'
         }
-      </Td>
-      <Td>
-        <Tag size="sm" whiteSpace="nowrap">{task.image?.label}</Tag>
-      </Td>
-      <Td>
+      </GridItem>
+      <GridItem colSpan={5}>
         <HStack>
         {
           task.state.state === 0 ?
@@ -180,6 +166,13 @@ const TaskRow: React.FC<TaskRowProps> = ({ task, authKey, onUpdate }) => {
             isLoading={loadingType === 'apply'} 
             isDisabled={loadingType === 'apply'}
             variant="outline">Apply</Button> : null
+        }
+        {
+          task.state.state === 10 ||
+          task.state.state === 20 ?
+          <Button size="sm" variant="ghost" onClick={onUpdate}>
+            <RepeatIcon mr={1} /> Refresh
+          </Button> : null
         }
         {
           task.state.state === 12 ?
@@ -210,65 +203,7 @@ const TaskRow: React.FC<TaskRowProps> = ({ task, authKey, onUpdate }) => {
             variant="outline">Delete</Button> : null
         }
         </HStack>
-      </Td>
-    </Tr>
-  );
-}
-
-export const TasksTable: React.FC<TasksTableProps> = ({ authKey, tasks, onGoDeploy, onRefresh, isRefreshing, ...props }) => {
-
-  const [page, setPage] = useState(1);
-  const [total] = useState(0);
-  const [pageSize] = useState(10);
-  
-  return (
-    <Skeleton isLoaded={!isRefreshing}>
-    {
-      tasks?.length ?
-      <Table variant="simple" {...props}>
-        <Thead>
-          <Tr>
-            <Th>Node ID</Th>
-            <Th>State</Th>
-            <Th>Instance</Th>
-            <Th>Image</Th>
-            <Th>Operation</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          {
-            tasks?.map((task, idx) => {
-              return (
-                <TaskRow key={`task-${idx}`} task={task} authKey={authKey} onUpdate={onRefresh} />
-              );
-            })
-          }
-        </Tbody>
-      </Table> :
-      <Flex minH="180px" flexDirection="column" alignItems="center" justifyContent="center">
-        <VStack>
-          <Icon color="gray" as={BsFillInfoCircleFill} boxSize={10} />
-          <HStack>
-            <Heading  color="gray" fontSize="md">No Found Node</Heading>
-            <IconButton aria-label="refresh" onClick={onRefresh} size="sm" variant="ghost">
-              <RepeatIcon />
-            </IconButton>
-          </HStack>
-        </VStack>
-        <Button size="sm" colorScheme="octoColor" mt={4} onClick={onGoDeploy}>Deploy Node</Button>
-      </Flex>
-    }
-   
-    {
-      total > pageSize ?
-        <Flex justifyContent="flex-end" mt={4}>
-          <Pagination
-            page={page}
-            total={total}
-            pageSize={pageSize}
-            onChange={(p: number) => setPage(p)} />
-        </Flex> : null
-    }
-    </Skeleton>
+      </GridItem>
+    </SimpleGrid>
   );
 }
