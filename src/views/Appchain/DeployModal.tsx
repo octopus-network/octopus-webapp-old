@@ -69,7 +69,7 @@ export const DeployModal: React.FC<DeployModalProps> = ({
         chain_spec:
           octopusConfig.networkId === 'mainnet' ? 'octopus-mainnet' :
             image.chain ||
-            `${appchain?.appchainId}-${octopusConfig.networkId}`
+            `octopus-${octopusConfig.networkId}`
       }, {
         headers: {
           authorization: authKey
