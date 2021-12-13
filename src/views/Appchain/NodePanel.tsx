@@ -53,7 +53,7 @@ export const NodePanel: React.FC<NodePanelProps> = ({ appchain, apiPromise }) =>
   const [cloudVendor] = useState('AWS');
   const [isRefreshing, setIsRefreshing] = useBoolean(true);
   const [deployModalOpen, setDeployModalOpen] = useBoolean(false);
-  const [isApiReady, setIsApiReady] = useBoolean(false);
+  
   const [setSessionKeyModalOpen, setSetSessionKeyModalOpen] = useBoolean(false);
   const [myTask, setMyTask] = useState<Task>();
   
@@ -64,6 +64,9 @@ export const NodePanel: React.FC<NodePanelProps> = ({ appchain, apiPromise }) =>
 
   const refresh = useCallback(() => {
     if (!authKey) {
+      if (!accessKey) {
+        setIsRefreshing.off();
+      }
       return;
     }
     setIsRefreshing.on();
