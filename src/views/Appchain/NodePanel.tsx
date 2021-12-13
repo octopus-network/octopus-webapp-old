@@ -53,6 +53,7 @@ export const NodePanel: React.FC<NodePanelProps> = ({ appchain, apiPromise }) =>
   const [cloudVendor] = useState('AWS');
   const [isRefreshing, setIsRefreshing] = useBoolean(true);
   const [deployModalOpen, setDeployModalOpen] = useBoolean(false);
+  const [isApiReady, setIsApiReady] = useBoolean(false);
   const [setSessionKeyModalOpen, setSetSessionKeyModalOpen] = useBoolean(false);
   const [myTask, setMyTask] = useState<Task>();
   
@@ -109,7 +110,7 @@ export const NodePanel: React.FC<NodePanelProps> = ({ appchain, apiPromise }) =>
           <Icon as={AiOutlineCloudServer} boxSize={6} />
           <Heading fontSize="lg">My Node</Heading>
         </HStack>
-        <Button size="sm" colorScheme="octoColor" onClick={setSetSessionKeyModalOpen.on}>
+        <Button size="sm" colorScheme="octoColor" onClick={setSetSessionKeyModalOpen.on} isDisabled={!apiPromise}>
           <Icon as={RiKey2Fill} mr={2} />
           Set Session Key
         </Button>

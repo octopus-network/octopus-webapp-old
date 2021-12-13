@@ -89,8 +89,13 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
 
   useEffect(() => {
     if (!anchorContract || !globalStore.accountId) {
+      if (!globalStore.accountId) {
+        setIsLoading(false);
+      }
       return;
     }
+
+    setIsLoading(true);
 
     Promise.all([
       globalStore
