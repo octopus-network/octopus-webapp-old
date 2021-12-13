@@ -120,6 +120,18 @@ export type RewardHistory = {
   unwithdrawn_reward: Decimal;
 }
 
+export type OriginUnbondedHistory = {
+  era_number: string;
+  amount: string;
+  unlock_time: string;
+}
+
+export type UnbondedHistory = {
+  eraNumber: number;
+  amount: Decimal;
+  unlockTime: number;
+}
+
 export type OriginWrappedAppchainToken = {
   metadata: OriginFungibleTokenMetadata;
   contract_account: AccountId;

@@ -13,6 +13,7 @@ import {
   OriginRewardHistory,
   OriginWrappedAppchainToken,
   StorageDeposit,
+  OriginUnbondedHistory,
   OriginAppchainValidator
 } from 'types';
 
@@ -116,6 +117,10 @@ type WtidrawValidatorRewardsArgs = {
 type BurnWrappedAppchainTokenArgs = {
   receiver_id: String;
   amount: string;
+}
+
+type WithdrawStakeArgs = {
+  account_id: String;
 }
 
 export class TokenContract extends Contract {
@@ -222,7 +227,7 @@ export class AnchorContract extends Contract {
     return this.get_validator_deposit_of(args);
   } 
 
-  get_unbonded_stakes_of(args: GetUnBondedStakesOfArgs): Promise<string> {
+  get_unbonded_stakes_of(args: GetUnBondedStakesOfArgs): Promise<OriginUnbondedHistory[]> {
     return this.get_unbonded_stakes_of(args);
   }
 
@@ -264,6 +269,10 @@ export class AnchorContract extends Contract {
 
   withdraw_validator_rewards(args: WtidrawValidatorRewardsArgs, gas: string) {
     return this.withdraw_validator_rewards(args, gas);
+  }
+
+  withdraw_stake(args: WithdrawStakeArgs, gas: string) {
+    return this.withdraw_stake(args, gas);
   }
 
   get_wrapped_appchain_token(): Promise<OriginWrappedAppchainToken> {

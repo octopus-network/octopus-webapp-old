@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
 import {
@@ -42,19 +42,23 @@ export const DeployModal: React.FC<DeployModalProps> = ({
 }) => {
 
   const toast = useToast();
-  const [image] = useState(deployConfig.baseImages[appchain?.appchainId] || deployConfig.baseImages.default);
+
   const [step, setStep] = useState(1);
   const [inputAccessKey, setInputAccessKey] = useState('');
   const [cloudVendor] = useState('AWS');
   const [region, setRegion] = useState('');
   const [isDeploying, setIsDeploying] = useBoolean(false);
+  const [isLoading, setIsLoading] = useBoolean(false);
 
   useEffect(() => {
     setInputAccessKey(window.localStorage.getItem('accessKey') || '');
     setStep(1);
   }, [isOpen]);
 
+  const image = useMemo(() => deployConfig.baseImages[appchain?.appchainId] || deployConfig.baseImages.default, [appchain]);
+
   const authKey = useMemo(() => {
+    if (!appchain || !inputAccessKey) return '';
     return getAuthKey(appchain?.appchainId, octopusConfig.networkId, cloudVendor, inputAccessKey);
   }, [appchain, cloudVendor, inputAccessKey]);
 
@@ -92,10 +96,25 @@ export const DeployModal: React.FC<DeployModalProps> = ({
       });
   }
 
-  const onNextStep = () => {
+  const onNextStep = useCallback(() => {
     window.localStorage.setItem('accessKey', inputAccessKey);
-    setStep(2);
-  }
+    setIsLoading.on();
+    axios
+      .get(`${deployConfig.apiHost}/api/tasks`, {
+        headers: {
+          authorization: authKey
+        }
+      })
+      .then(res => res.data)
+      .then(data => {
+        setIsLoading.off();
+        if (data.length) {
+          window.location.reload();
+        } else {
+          setStep(2);
+        }
+      });
+  }, [authKey, inputAccessKey]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} isCentered motionPreset="slideInBottom">
@@ -119,8 +138,9 @@ export const DeployModal: React.FC<DeployModalProps> = ({
                     isFullWidth
                     borderRadius="full"
                     colorScheme="octoColor"
+                    isLoading={isLoading}
                     onClick={onNextStep}
-                    isDisabled={!inputAccessKey}>
+                    isDisabled={!inputAccessKey || isLoading}>
                     Enter <Icon as={HiOutlineArrowNarrowRight} ml={2} />
                   </Button>
                 </Box>

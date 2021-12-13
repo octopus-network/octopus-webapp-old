@@ -51,16 +51,20 @@ const statesRecord: Record<string, TaskState> = {
 export const NodePanel: React.FC<NodePanelProps> = ({ appchain, apiPromise }) => {
   const [accessKey, setAccessKey] = useState(window.localStorage.getItem('accessKey') || '');
   const [cloudVendor] = useState('AWS');
-  const [isRefreshing, setIsRefreshing] = useBoolean(false);
+  const [isRefreshing, setIsRefreshing] = useBoolean(true);
   const [deployModalOpen, setDeployModalOpen] = useBoolean(false);
   const [setSessionKeyModalOpen, setSetSessionKeyModalOpen] = useBoolean(false);
   const [myTask, setMyTask] = useState<Task>();
   
   const authKey = useMemo(() => {
+    if (!appchain || !accessKey) return '';
     return getAuthKey(appchain?.appchainId, octopusConfig.networkId, cloudVendor, accessKey);
   }, [appchain, cloudVendor, accessKey]);
 
   const refresh = useCallback(() => {
+    if (!authKey) {
+      return;
+    }
     setIsRefreshing.on();
     axios
       .get(`${deployConfig.apiHost}/api/tasks`, {
