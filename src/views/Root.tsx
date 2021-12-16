@@ -6,7 +6,8 @@ import {
   useColorModeValue,
   Box,
   Container,
-  Center
+  Center,
+  useInterval
 } from '@chakra-ui/react';
 
 import { 
@@ -24,7 +25,8 @@ import {
 import { octopusConfig } from 'config';
 import { Footer, Header } from 'components';
 import { useLocation, useNavigate, Outlet } from 'react-router-dom';
-import { useGlobalStore } from 'stores';
+import { useGlobalStore, useRefDataStore } from 'stores';
+import axios from 'axios';
 
 const Loading = () => {
   return (
@@ -56,6 +58,7 @@ export const Root: React.FC = () => {
   const toastIdRef = useRef<any>();
 
   const { globalStore, updateGlobalStore } = useGlobalStore();
+  const { updateRefData } = useRefDataStore();
 
   const checkRedirect = useCallback(() => {
     if (/appchains\/join/.test(location.pathname)) {
@@ -184,6 +187,24 @@ export const Root: React.FC = () => {
     });
    
   }, [updateGlobalStore]);
+
+  const fetchRefData = React.useRef<any>();
+  fetchRefData.current = () => {
+    axios
+      .get('https://sodaki.com/api/last-tvl')
+      .then(res => res.data)
+      .then(data => {
+        updateRefData(data);
+      });
+  }
+
+  useEffect(() => {
+    fetchRefData.current();
+  }, []);
+
+  useInterval(() => {
+    fetchRefData.current();
+  }, 30 * 1000);
 
   return (
     <Container minH="100vh" maxW="full" 

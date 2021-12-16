@@ -27,7 +27,7 @@ export const baseImages: Record<string, SubstrateImage> = {
     label: 'barnacle:latest'
   },
   'debionetwork': {
-    image: 'us-central1-docker.pkg.dev/octopus-prod/octopus-appchains/debio-node@sha256:680d8d2c2cae49c0853aa401571b18e70eda6378d6702b21b83647cca8d93294',
+    image: 'us-central1-docker.pkg.dev/octopus-prod/octopus-appchains/debio-node@sha256:ff504f63391720cf932640c608fdcc825fc31ad30e1cf2aaca884971f95bc377',
     label: 'debio-node:latest'
   },
   'uchain': {

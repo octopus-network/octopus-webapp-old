@@ -517,13 +517,13 @@ export const Appchain: React.FC = () => {
         <Box mt={6} p={6} bg="white" boxShadow="rgb(0 0 0 / 20%) 0px 0px 2px" borderRadius="xl">
           <Tabs>
             <TabList>
-              <Tab>Blocks</Tab>
+              {/* <Tab>Blocks</Tab> */}
               <Tab>Validators</Tab>
             </TabList>
             <TabPanels>
-              <TabPanel pl={0} pr={0}>
+              {/* <TabPanel pl={0} pr={0}>
                 <BlocksTable apiPromise={apiPromise} bestNumber={bestBlock} />
-              </TabPanel>
+              </TabPanel> */}
               <TabPanel pl={0} pr={0}>
                 <ValidatorsTable anchorContract={anchorContract} appchainId={id} size="md" 
                   currentEra={currentEra} appchain={appchainInfo} apiPromise={apiPromise} />

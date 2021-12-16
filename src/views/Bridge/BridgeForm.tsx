@@ -32,7 +32,7 @@ import {
 import { useGlobalStore, useTransactionStore } from 'stores';
 import { Account } from './Account';
 import { AmountInput } from 'components';
-import { tokenAssets } from 'config';
+import { tokenAssets, octopusConfig } from 'config';
 import { ChevronDownIcon, RepeatIcon } from '@chakra-ui/icons';
 import { ZERO_DECIMAL, DecimalUtils } from 'utils';
 import Decimal from 'decimal.js';
@@ -55,7 +55,7 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
 
   const [appchainTokenContract, setAppchainTokenContract] = useState<TokenContract>();
   const [anchorContract, setAnchorContract] = useState<AnchorContract>();
-  const isReverse = useMemo(() => true, [urlParams]);
+  const isReverse = useMemo(() => !!!((urlParams.get('reverse') || '0') as any * 1), [urlParams]);
   const [apiPromise, setApiPromise] = useState<ApiPromise>();
 
   const toast = useToast();
@@ -97,7 +97,6 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
       setAnchorContract(contract);
 
       contract.get_wrapped_appchain_token().then(token => {
-        console.log(token);
         if (token?.contract_account) {
           const tokenContract = new TokenContract(
             globalStore.walletConnection.account(),
@@ -197,7 +196,7 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
 
   const onToggleReverse = () => {
     
-    if (!isReverse) {
+    if (isReverse) {
       urlParams.set('reverse', '1');
     } else {
       urlParams.delete('reverse');
@@ -307,9 +306,12 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
             <Text fontSize="sm" opacity={.6}>
               {isReverse ? 'Near' : appchain?.appchain_id} to {isReverse ? appchain?.appchain_id : 'Near'}
             </Text>
-            {/* <IconButton aria-label="switch" size="xs" borderWidth={0} variant="outline" onClick={onToggleReverse} isRound>
-              <Icon as={AiOutlineSwap} />
-            </IconButton> */}
+            {
+              octopusConfig.networkId === 'mainnet' ? null :
+              <IconButton aria-label="switch" size="xs" borderWidth={0} variant="outline" onClick={onToggleReverse} isRound>
+                <Icon as={AiOutlineSwap} />
+              </IconButton>
+            }
           </HStack>
         </Flex>
         <Box p={2} mt={6}>

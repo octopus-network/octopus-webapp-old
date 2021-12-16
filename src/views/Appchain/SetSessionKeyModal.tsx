@@ -84,6 +84,7 @@ export const SetSessionKeyModal: React.FC<SetSessionKeyModalProps> = ({ apiPromi
           status: 'success',
           position: 'top-right'
         });
+        onClose();
       }).catch(err => {
         setIsSubmiting.off();
         throw new Error(err.toString());

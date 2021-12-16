@@ -39,7 +39,7 @@ export class DecimalUtils {
         2;
     }
 
-    const str = input.toNumber().toFixed(fixed);
+    const str = input.toFixed(fixed, 1);
     
     const reg = str.indexOf('.') > -1 ? /(\d)(?=(\d{3})+\.)/g : /(\d)(?=(?:\d{3})+$)/g;
    

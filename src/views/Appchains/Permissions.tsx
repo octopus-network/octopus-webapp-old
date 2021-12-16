@@ -462,9 +462,20 @@ const Permissions: React.FC<PermissionsProps> = ({
 
                     (
                       isAdmin ?
-                        <Button onClick={setBootingModalOpen.on} isDisabled={!anchorContract} colorScheme="octoColor">
-                          Go Booting
-                        </Button> :
+                        <HStack>
+                          <Button onClick={setBootingModalOpen.on} isDisabled={!anchorContract} colorScheme="octoColor">
+                            Go Booting
+                          </Button>
+                          {
+                            !!appchain?.appchain_anchor ?
+                              <Button colorScheme="octoColor"
+                                onClick={onGoStake} variant="ghost">
+                                Staking <ChevronRightIcon ml={1} />
+                              </Button> :
+                              anchorContract === undefined ?
+                                <Spinner size="sm" /> : null
+                          }
+                        </HStack> :
                         <HStack>
                           {
                             upvoteDeposit.gt(ZERO_DECIMAL) || downvoteDeposit.gt(ZERO_DECIMAL) ?
@@ -508,22 +519,21 @@ const Permissions: React.FC<PermissionsProps> = ({
                                 </PopoverContent>
                               </Popover> : null
                           }
-                          {
-                            !!appchain?.appchain_anchor ?
-                              <Button colorScheme="octoColor"
-                                onClick={onGoStake} variant="ghost">
-                                Staking <ChevronRightIcon ml={1} />
-                              </Button> :
-                              anchorContract === undefined ?
-                                <Spinner size="sm" /> : null
-                          }
+                          
                         </HStack>
                     ) :
-
-                    appchain?.appchain_state === AppchainState.Booting ?
+                    (
+                      appchain?.appchain_state === AppchainState.Booting ||
+                      appchain?.appchain_state === AppchainState.Dead
+                    ) ?
                       (
                         isAdmin ?
                           (
+                            appchain?.appchain_state === AppchainState.Dead ?
+                            <Button isLoading={loadingType === 'remove'}
+                              isDisabled={!!loadingType} onClick={onRemove}>
+                              Remove <Icon as={RiDeleteBin6Line} ml="1" />
+                            </Button> :
                             !!anchorContract ?
                             <Button onClick={setGoLiveModalOpen.on} colorScheme="octoColor">
                               Go Live
@@ -624,15 +634,6 @@ const Permissions: React.FC<PermissionsProps> = ({
                               }
                             </HStack>
                         ) :
-
-                        appchain?.appchain_state === AppchainState.Dead ?
-                          (
-                            isAdmin ?
-                              <Button isLoading={loadingType === 'remove'}
-                                isDisabled={!!loadingType} onClick={onRemove}>
-                                Remove <Icon as={RiDeleteBin6Line} ml="1" />
-                              </Button> : null
-                          ) :
 
                           appchain?.appchain_state === AppchainState.InQueue ?
                             (

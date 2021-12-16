@@ -148,8 +148,10 @@ export const Appchains: React.FC = () => {
       ],
       [AppchainState.Auditing],
       [AppchainState.InQueue],
-      [AppchainState.Staging],
-      [AppchainState.Booting],
+      [
+        AppchainState.Staging,
+        AppchainState.Booting
+      ],
       [AppchainState.Active]
     ].map((states, idx) => 
     globalStore
@@ -162,11 +164,11 @@ export const Appchains: React.FC = () => {
           AppchainSortingField.VotingScore : 
           AppchainSortingField.RegisteredTime,
         sorting_order: AppchainSortingOrder.Descending
-    }))).then(([preAudit, auditing, voting, staking, booting, active]) => {
+    }))).then(([preAudit, auditing, voting, booting, active]) => {
       setPreAuditAppchains(preAudit);
       setAuditingAppchains(auditing);
       setVotingAppchains(voting);
-      setStakingAppchains(staking);
+
       setBootingAppchains(booting);
       setActiveAppchains(active);
       setIsLoadingList(false);
@@ -313,10 +315,11 @@ export const Appchains: React.FC = () => {
             {
               activeAppchains?.length ?
               <>
-                <SimpleGrid columns={{ base: 13, md: 17 }} color="gray" pl={4} pr={4} pb={2} fontSize="sm">
+                <SimpleGrid columns={{ base: 15, md: 19 }} color="gray" pl={4} pr={4} pb={2} fontSize="sm">
                   <GridItem colSpan={5}>{t('ID')}</GridItem>
                   <GridItem colSpan={4}>{t('Validators')}</GridItem>
                   <GridItem colSpan={4}>{t('Staked')}</GridItem>
+                  <GridItem colSpan={4}>{t('APY')}</GridItem>
                   <GridItem colSpan={4} display={{ base: 'none', md: 'block' }} />
                 </SimpleGrid>
                 <List spacing={3}>
@@ -363,7 +366,7 @@ export const Appchains: React.FC = () => {
           </Skeleton>
         </Box>
       </Box>
-      {
+      {/* {
         isOwner ?
         <Box mt={8}>
           <Flex alignItems="center">
@@ -397,7 +400,7 @@ export const Appchains: React.FC = () => {
           </Box>
         </Box> : null
       }
-      
+       */}
       <Box mt={8}>
         <Flex justifyContent="space-between" alignItems="start">
           <HStack spacing={2}>

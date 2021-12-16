@@ -43,7 +43,8 @@ import { InfoOutlineIcon } from '@chakra-ui/icons';
 import { RegisterDelegatorModal } from 'components';
 import { FAILED_TO_REDIRECT_MESSAGE, Gas, OCT_TOKEN_DECIMALS } from 'primitives';
 import Decimal from 'decimal.js';
-import { DecimalUtils, ZERO_DECIMAL } from 'utils';
+import { DecimalUtils, ZERO_DECIMAL, toShortAddress } from 'utils';
+import { octopusConfig } from 'config';
 import { encodeAddress } from '@polkadot/util-crypto';
 import { useGlobalStore } from 'stores';
 
@@ -85,6 +86,7 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
   const [delegateAmount, setDelegateAmount] = useState<Decimal>(ZERO_DECIMAL);
   const [delegateMorePopoverOpen, setDelegateMorePopoverOpen] = useBoolean(false);
   const [isDelegating, setIsDelegating] = useState(false);
+  const [isLoadingRewards, setIsLoadingRewards] = useBoolean(true);
 
   const toast = useToast();
   const globalStore = useGlobalStore(state => state.globalStore);
@@ -126,6 +128,7 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
       return;
     }
 
+    setIsLoadingRewards.on();
     anchorContract
       .get_validator_rewards_of({
         start_era: '0',
@@ -137,16 +140,10 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
           unwithdrawn_reward: DecimalUtils.fromString(unwithdrawn_reward, appchain.appchainMetadata.fungibleTokenMetadata.decimals),
           eraNumber: (era_number as any) * 1
         })));
+        setIsLoadingRewards.off();
       });
 
   }, [anchorContract, currentEra, appchain, validator]);
-
-  // useEffect(() => {
-  //   console.log(apiPromise?.query?.octopusLpos);
-  //   apiPromise?.query?.octopusLpos?.erasStakers(3, '5FRzbdg5WEQQPu34pdowRehCfA4rgZuDQE4bQEbcWGnthegY').then(res => {
-  //     console.log(res.toJSON());
-  //   });
-  // }, [apiPromise]);
 
   const unwithdraedAmount = useMemo(() => {
     if (!rewards?.length) {
@@ -209,7 +206,7 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
             </Box>
             <Link as={RouterLink} to={`/profile/${validator.validatorId}@${appchainId}`}
               _hover={{ textDecoration: 'underline' }} title={isYou ? 'Is you:)' : ''}>
-              <Text>{validator.validatorId}</Text>
+              <Text>{toShortAddress(validator.validatorId)}</Text>
             </Link>
             {
               isInAppchain ?
@@ -225,14 +222,15 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
               </Box>
             }
           </HStack>
-          
-          <Text fontSize="xs" color="gray">
-            Rewards: {DecimalUtils.beautify(totalRewards)} {appchain?.appchainMetadata.fungibleTokenMetadata.symbol}
-            {
-              unwithdraedAmount.gt(ZERO_DECIMAL) ? 
-              `, unclaimed: ${DecimalUtils.beautify(unwithdraedAmount)} ${appchain?.appchainMetadata.fungibleTokenMetadata.symbol}` : ''
-            }
-          </Text>
+          <Skeleton isLoaded={!isLoadingRewards}>
+            <Text fontSize="xs" color="gray">
+              Rewards: {DecimalUtils.beautify(totalRewards)} {appchain?.appchainMetadata.fungibleTokenMetadata.symbol}
+              {
+                unwithdraedAmount.gt(ZERO_DECIMAL) ? 
+                `, unclaimed: ${DecimalUtils.beautify(unwithdraedAmount)} ${appchain?.appchainMetadata.fungibleTokenMetadata.symbol}` : ''
+              }
+            </Text>
+          </Skeleton>
         </VStack>
       </Td>
       
@@ -275,7 +273,7 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
                     </PopoverContent>
                   </Popover> :
                   <Button size="xs" colorScheme="octoColor" variant="outline" onClick={() => onRegisterDelegator(validator.validatorId)}
-                    isDisabled={true}>Delegate</Button>
+                    isDisabled={octopusConfig.networkId === 'mainnet'}>Delegate</Button>
             }
           </Td> : false
       }
