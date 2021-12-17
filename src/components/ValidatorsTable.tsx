@@ -124,7 +124,7 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
 
   useEffect(() => {
    
-    if (!anchorContract || !currentEra || currentEra <= 0 || !appchain) {
+    if (!anchorContract || !appchain) {
       return;
     }
 
@@ -132,7 +132,7 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
     anchorContract
       .get_validator_rewards_of({
         start_era: '0',
-        end_era: currentEra.toString(),
+        end_era: currentEra?.toString() || '0',
         validator_id: validator.validatorId
       }).then(rewards => {
         setRewards(rewards.map(({ total_reward, unwithdrawn_reward, era_number }) => ({
