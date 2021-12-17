@@ -45,7 +45,7 @@ export const DeployModal: React.FC<DeployModalProps> = ({
 
   const [step, setStep] = useState(1);
   const [inputAccessKey, setInputAccessKey] = useState('');
-  const [cloudVendor] = useState('AWS');
+  const [cloudVendor, setCloudVendor] = useState('AWS');
   const [region, setRegion] = useState('');
   const [isDeploying, setIsDeploying] = useBoolean(false);
   const [isLoading, setIsLoading] = useBoolean(false);
@@ -116,6 +116,11 @@ export const DeployModal: React.FC<DeployModalProps> = ({
       });
   }, [authKey, inputAccessKey]);
 
+  const onChangeCloudVendor = (e) => {
+    setCloudVendor(e.target.value);
+    setInputAccessKey('');
+  }
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} isCentered motionPreset="slideInBottom">
       <ModalOverlay />
@@ -127,8 +132,10 @@ export const DeployModal: React.FC<DeployModalProps> = ({
             step === 1 ?
               <>
                 <Flex borderWidth={1} borderRadius="full" mt={4}>
-                  <Select maxW="120px" borderWidth={0} borderRadius="full">
-                    <option value="AWS">AWS</option>
+                  <Select maxW="150px" borderWidth={0} borderRadius="full" value={cloudVendor} 
+                    onChange={onChangeCloudVendor}>
+                    <option value="AWS">AWS (Amazon Web Services)</option>
+                    <option value="GCP" disabled>GCP (Google Cloud Platform)</option>
                   </Select>
                   <Input type="text" placeholder="Access Key" value={inputAccessKey} borderRadius="full" borderWidth={0} autoFocus
                     onChange={e => setInputAccessKey(e.target.value)} />
@@ -148,11 +155,11 @@ export const DeployModal: React.FC<DeployModalProps> = ({
               <List spacing={4}>
                 <FormControl>
                   <FormLabel>Cloud Vendor</FormLabel>
-                  <Input type="text" defaultValue={cloudVendor} isDisabled />
+                  <Input type="text" value={cloudVendor} isDisabled />
                 </FormControl>
                 <FormControl>
                   <FormLabel>Access Key</FormLabel>
-                  <Input type="text" defaultValue={inputAccessKey} isDisabled />
+                  <Input type="text" value={inputAccessKey} isDisabled />
                 </FormControl>
                 <FormControl>
                 <FormLabel>Region</FormLabel>

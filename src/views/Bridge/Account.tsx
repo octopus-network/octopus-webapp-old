@@ -79,7 +79,7 @@ export const Account: React.FC<AccountProps> = ({ appchainId, isReverse, nearAcc
           <Text ml={1}>
             { 
               !!appchainAccount ? 
-              toShortAddress(appchainAccount) : 
+              toShortAddress(appchainAccount, 12) : 
               isWeb3Injected ? 
               'Choose Account' :
               'No Wallet' 

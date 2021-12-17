@@ -25,7 +25,7 @@ import { useParams } from 'react-router-dom';
 import { CgProfile } from 'react-icons/cg';
 import { CheckIcon, CopyIcon, EditIcon, ExternalLinkIcon } from '@chakra-ui/icons';
 import { utils } from 'near-api-js';
-import { DecimalUtils, ZERO_DECIMAL } from 'utils';
+import { DecimalUtils, ZERO_DECIMAL, toShortAddress } from 'utils';
 import { ValidatorProfile } from 'types';
 import { octopusConfig } from 'config';
 import { FAILED_TO_REDIRECT_MESSAGE, OCT_TOKEN_DECIMALS } from 'primitives';
@@ -196,7 +196,7 @@ export const Profile: React.FC = () => {
         <Flex alignItems="center" justifyContent="space-between">
           <Heading fontSize="md">Account ID</Heading>
           <HStack>
-            <Text>{account}</Text>
+            <Text>{toShortAddress(account)}</Text>
             <IconButton aria-label="copy" onClick={onCopyId} size="sm">
               { hasCopiedId ? <CheckIcon /> : <CopyIcon /> }
             </IconButton>
@@ -221,8 +221,8 @@ export const Profile: React.FC = () => {
             validatorProfile === undefined ?
             <Spinner size="xs" /> :
             <HStack>
-              <Text maxW="200px" overflow="hidden" textOverflow="ellipsis" whiteSpace="nowrap">
-                {encodeAddress(validatorProfile.validatorId)}
+              <Text>
+                {toShortAddress(encodeAddress(validatorProfile.validatorId))}
               </Text>
               <IconButton aria-label="copy" onClick={onCopyValidatorId} size="sm">
                 { hasCopiedValidatorId ? <CheckIcon /> : <CopyIcon /> }

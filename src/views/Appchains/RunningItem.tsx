@@ -14,7 +14,7 @@ import {
 import { OriginAppchainInfo } from 'types';
 import { HiOutlineArrowNarrowRight } from 'react-icons/hi';
 import { useNavigate } from 'react-router-dom';
-import { DecimalUtils, ZERO_DECIMAL } from 'utils';
+import { DecimalUtils } from 'utils';
 import { OCT_TOKEN_DECIMALS } from 'primitives';
 import Decimal from 'decimal.js';
 import { AppchainListItem } from 'components';
@@ -62,7 +62,7 @@ const RunningItem: React.FC<RunningItemProps> = ({ appchain }) => {
     from: { animatedAPY: 0 },
     animatedAPY: apy,
     config: SpringConfig.slow
-  })
+  });
 
   return (
    
@@ -87,7 +87,7 @@ const RunningItem: React.FC<RunningItemProps> = ({ appchain }) => {
       <GridItem colSpan={2}>
         {
           apy > 0 ?
-          <Heading fontSize="lg" bg="linear-gradient(to right, #4ebae9, #fcc00a)" 
+          <Heading fontSize="lg" bg="linear-gradient(to right, #fcc00a, #4ebae9)" 
             bgClip="text" color="transparent" animation="hue 10s linear infinite;">
             <animated.span>{animatedAPY.to(n => DecimalUtils.beautify(new Decimal(n)))}</animated.span>%
           </Heading> : '-'

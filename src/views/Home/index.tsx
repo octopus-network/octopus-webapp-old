@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useSpring, animated, config as SpringConfig } from 'react-spring';
 
 import {
   Box,
@@ -43,6 +44,8 @@ import Decimal from 'decimal.js';
 import { useGlobalStore } from 'stores';
 import { octopusConfig } from 'config';
 import { useNavigate } from 'react-router-dom';
+import { useRefDataStore } from 'stores';
+import { tokenAssets } from 'config';
 
 const JoinButton = styled(Button)`
   svg {
@@ -60,12 +63,41 @@ type AppchainItemProps = {
   appchain: OriginAppchainInfo;
 }
 
-const AppchainItem: React.FC<AppchainItemProps> = ({ appchain }) => {
+const AppchainItem: React.FC<AppchainItemProps> = React.memo(({ appchain }) => {
 
   const navigate = useNavigate();
+
+  const { refData } = useRefDataStore();
+
+  const apy = useMemo(() => {
+    if (!appchain || !refData) return 0;
+    const tokenAsset = tokenAssets[appchain.appchain_id]?.[0];
+    if (!tokenAsset) {
+      return 0;
+    }
+    const appchainTokenData = refData.find(data => data.ftInfo?.symbol === tokenAsset.symbol);
+    const octTokenData = refData.find(data => data.ftInfo?.symbol === 'OCT');
+    
+    if (!appchainTokenData || !octTokenData) {
+      return 0;
+    }
+
+    return DecimalUtils.fromNumber(5_000_000 * appchainTokenData.price * 100).div(
+      DecimalUtils.fromString(appchain.total_stake, OCT_TOKEN_DECIMALS).mul(
+        octTokenData.price
+      )
+    ).toNumber();
+  }, [refData, appchain]);
+
+  const { animatedAPY } = useSpring({
+    reset: true,
+    from: { animatedAPY: 0 },
+    animatedAPY: apy,
+    config: SpringConfig.slow
+  });
   
   return (
-    <AppchainListItem columns={{ base: 13, md: 17 }}
+    <AppchainListItem columns={{ base: 15, md: 19 }}
       onClick={() => navigate(`/appchains/${appchain.appchain_id}`)}>
       <GridItem colSpan={5}>
         <HStack>
@@ -90,7 +122,15 @@ const AppchainItem: React.FC<AppchainItemProps> = ({ appchain }) => {
           } OCT
         </Text>
       </GridItem>
-
+      <GridItem colSpan={2}>
+        {
+          apy > 0 ?
+          <Heading fontSize="lg" bg="linear-gradient(to right, #fcc00a, #4ebae9)" 
+            bgClip="text" color="transparent" animation="hue 10s linear infinite;">
+            <animated.span>{animatedAPY.to(n => DecimalUtils.beautify(new Decimal(n)))}</animated.span>%
+          </Heading> : '-'
+        }
+      </GridItem>
       <GridItem colSpan={4} textAlign="right" display={['none', 'block']}>
         <Button size="sm">
           <Text>Enter</Text>
@@ -99,7 +139,7 @@ const AppchainItem: React.FC<AppchainItemProps> = ({ appchain }) => {
       </GridItem>
     </AppchainListItem>
   );
-}
+});
 
 export const Home: React.FC = () => {
   
@@ -207,11 +247,11 @@ export const Home: React.FC = () => {
           <Heading fontSize={{ base: 'lg', md: 'xl', lg: '2xl' }}>{t('Running Appchains')}</Heading>
         </Flex>
         <Box mt="8" pb="4">
-          <SimpleGrid columns={{ base: 13, md: 17 }} color="gray" pl="6" pr="6" fontSize="sm">
+          <SimpleGrid columns={{ base: 15, md: 19 }} color="gray" pl="6" pr="6" fontSize="sm">
             <GridItem colSpan={5}>{t('ID')}</GridItem>
             <GridItem colSpan={4}>{t('Validators')}</GridItem>
             <GridItem colSpan={4}>{t('Staked')}</GridItem>
-           
+            <GridItem colSpan={2}>{t('APY')}</GridItem>
           </SimpleGrid>
         </Box>
         <List spacing={6}>

@@ -34,5 +34,9 @@ export const baseImages: Record<string, SubstrateImage> = {
     image: 'us-central1-docker.pkg.dev/octopus-prod/octopus-appchains/debio-node@sha256:df986cca952f2d8edc1bc24b439a06d20eff2bdb92411dc139e4de058cb525e4',
     label: 'uchain:latest',
     chain: 'octopus-mainnet'
+  },
+  'myriad': {
+    image: 'us-central1-docker.pkg.dev/octopus-prod/octopus-appchains/myriad-node@sha256:4211027d0320514362e588b52ee3ef94b04a8eada1f5265c684fb9a994766f0c',
+    label: 'uchain:latest'
   }
 }
