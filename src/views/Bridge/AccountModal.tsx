@@ -104,7 +104,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ appchainId, isOpen, 
             </Flex>
             <Flex mt={3}>
               <HStack as={Link} fontSize="xs" color="gray" ml={2}
-                href={`${explorerUrl}/account/${account}`} isExternal>
+                href={`${explorerUrl}/accounts/${account}`} isExternal>
                 <Text>View on Explorer</Text>
                 <ExternalLinkIcon />
               </HStack>
@@ -112,7 +112,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ appchainId, isOpen, 
           </Box>
           <Flex alignItems="center" justifyContent="space-between" mt={4}>
             <Heading color="gray" fontSize="xs">
-              Your Transactions {sortedTxns.length > 0 ? '' : ' will apear here'}
+              Your Transactions {sortedTxns.length > 0 ? '' : ' will appear here'}
             </Heading>
             {
               sortedTxns.length > 0 ?
