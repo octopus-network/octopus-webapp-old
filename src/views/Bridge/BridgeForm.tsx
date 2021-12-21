@@ -228,12 +228,12 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
     const amount_U64 = DecimalUtils.toU64(new Decimal(amount), bridgeToken.decimals);
 
     if (!bridgeToken.assetId) {
-      await anchorContract
+      const tx = anchorContract
         .burn_wrapped_appchain_token(
           { receiver_id: hexAddress, amount: amount_U64.toString() },
           Gas.COMPLEX_CALL_GAS
         );
-    
+      window.localStorage.setItem('BurnTx', JSON.stringify(tx));
     }
   }
 

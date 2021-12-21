@@ -123,6 +123,10 @@ type WithdrawStakeArgs = {
   account_id: String;
 }
 
+type DecreaseStakeArgs = {
+  amount: String;
+}
+
 export class TokenContract extends Contract {
  
   ft_balance_of(args: FtBalanceOfArgs): Promise<string> {
@@ -273,6 +277,10 @@ export class AnchorContract extends Contract {
 
   withdraw_stake(args: WithdrawStakeArgs, gas: string) {
     return this.withdraw_stake(args, gas);
+  }
+
+  decrease_stake(args: DecreaseStakeArgs, gas: string) {
+    return this.decrease_stake(args, gas);
   }
 
   get_wrapped_appchain_token(): Promise<OriginWrappedAppchainToken> {

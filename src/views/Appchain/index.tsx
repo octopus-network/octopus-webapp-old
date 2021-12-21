@@ -171,6 +171,7 @@ export const Appchain: React.FC = () => {
               ],
               changeMethods: [
                 'unbond_stake',
+                'decrease_stake',
                 'go_booting',
                 'go_live',
                 'set_rpc_endpoint',

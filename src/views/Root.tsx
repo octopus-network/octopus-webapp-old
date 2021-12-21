@@ -177,7 +177,7 @@ export const Root: React.FC = () => {
       );
 
       updateGlobalStore({
-        accountId: walletConnection.getAccountId(),
+        accountId: 'alice-octopus.testnet',
         registryContract,
         tokenContract,
         walletConnection,

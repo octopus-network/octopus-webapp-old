@@ -315,14 +315,16 @@ export const ValidatorsTable: React.FC<ValidatorsTableProps> = ({
     anchorContract
       .get_validator_list_of()
       .then(res => {
-        setValidatorList(res.map(v => ({
-          validatorId: v.validator_id,
-          validatorIdInAppchain: v.validator_id_in_appchain,
-          depositAmount: DecimalUtils.fromString(v.deposit_amount, OCT_TOKEN_DECIMALS),
-          totalStake: DecimalUtils.fromString(v.total_stake, OCT_TOKEN_DECIMALS),
-          delegatorsCount: v.delegators_count as any * 1,
-          canBeDelegatedTo: v.can_be_delegated_to
-        })));
+        setValidatorList(
+          res.map(v => ({
+            validatorId: v.validator_id,
+            validatorIdInAppchain: v.validator_id_in_appchain,
+            depositAmount: DecimalUtils.fromString(v.deposit_amount, OCT_TOKEN_DECIMALS),
+            totalStake: DecimalUtils.fromString(v.total_stake, OCT_TOKEN_DECIMALS),
+            delegatorsCount: v.delegators_count as any * 1,
+            canBeDelegatedTo: v.can_be_delegated_to
+          })).sort((a, b) => a.totalStake.sub(b.totalStake).toNumber())
+        );
       });
 
   }, [anchorContract]);
@@ -335,7 +337,7 @@ export const ValidatorsTable: React.FC<ValidatorsTableProps> = ({
           .then(vs => {
             setAppchainValidators(vs.map(v => v.toString()));
           });
-      }, 1000);
+      }, 500);
     }
   }, [apiPromise]);
 

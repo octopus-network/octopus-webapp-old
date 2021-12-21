@@ -22,12 +22,14 @@ import {
   AlertDialogFooter,
   Popover,
   Icon,
+  IconButton,
   PopoverTrigger,
   PopoverContent,
   PopoverBody,
   PopoverFooter
 } from '@chakra-ui/react';
 
+import { MinusIcon } from '@chakra-ui/icons';
 import { RiMoneyDollarCircleLine } from 'react-icons/ri';
 import BN from 'bn.js';
 import dayjs from 'dayjs';
@@ -59,6 +61,7 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
   const [isClaiming, setIsClaiming] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [decreaseStakePopoverOpen, setDecreaseStakePopoverOpen] = useBoolean(false);
   const [stakeMorePopoverOpen, setStakeMorePopoverOpen] = useBoolean(false);
   const [wrappedAppchainTokenContractId, setWrappedAppchainTokenContractId] = useState<AccountId>();
   const [wrappedAppchainTokenStorageBalance, setWrappedAppchainTokenStorageBalance] = useState(ZERO_DECIMAL);
@@ -67,6 +70,7 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
   const [unbondedStakes, setUnbondedStakes] = useState<UnbondedHistory[]>();
   const [depositAmount, setDepositAmount] = useState(ZERO_DECIMAL);
   const [inputAmount, setInputAmount] = useState(ZERO_DECIMAL);
+  const [decreaseAmount, setDecreaseAmount] = useState(ZERO_DECIMAL);
 
   const [userUpvoteDeposit, setUserUpvoteDeposit] = useState(ZERO_DECIMAL);
   const [userDownvoteDeposit, setUserDownvoteDeposit] = useState(ZERO_DECIMAL);
@@ -81,6 +85,7 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
 
   const initialFocusRef = React.useRef();
   const stakeAmountInputRef = React.useRef();
+  const decreaseStakeAmountInputRef = React.useRef();
   const cancelRef = React.useRef();
   const [isStaking, setIsStaking] = useState(false);
   const [isUnbonding, setIsUnbonding] = useState(false);
@@ -210,6 +215,10 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
     setInputAmount(DecimalUtils.fromString(value));
   }
 
+  const onDecreaseAmountChange = ({ target: { value } }) => {
+    setDecreaseAmount(DecimalUtils.fromString(value));
+  }
+
   const onClaimRewards = async () => {
     setIsClaiming(true);
 
@@ -252,6 +261,30 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
         Gas.COMPLEX_CALL_GAS,
         1,
       ).catch(err => {
+        if (err.message === FAILED_TO_REDIRECT_MESSAGE) {
+          return;
+        }
+        toast({
+          position: 'top-right',
+          title: 'Error',
+          description: err.toString(),
+          status: 'error'
+        });
+        setIsStaking(false);
+        console.log(err);
+      });
+  }
+
+  const onDecreaseStake = () => {
+    setIsStaking(true);
+    anchorContract
+      .decrease_stake(
+        {
+          amount: DecimalUtils.toU64(decreaseAmount, OCT_TOKEN_DECIMALS).toString()
+        },
+        Gas.COMPLEX_CALL_GAS
+      )
+      .catch(err => {
         if (err.message === FAILED_TO_REDIRECT_MESSAGE) {
           return;
         }
@@ -352,7 +385,6 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
 
   const onWithdrawStakes = async () => {
     setIsWithdrawing(true);
-
   }
 
   return (
@@ -417,9 +449,42 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
           {
             isInValidatorList ?
               <VStack>
-                <HStack fontSize="sm">
-                  <Text>Staked:</Text>
-                  <Heading fontSize="sm">{DecimalUtils.beautify(depositAmount)} OCT</Heading>
+                <HStack>
+                  <HStack fontSize="sm">
+                    <Text>Staked:</Text>
+                    <Heading fontSize="sm">{DecimalUtils.beautify(depositAmount)} OCT</Heading>
+                  </HStack>
+                  <Popover
+                    initialFocusRef={initialFocusRef}
+                    placement="bottom"
+                    isOpen={decreaseStakePopoverOpen}
+                    onClose={setDecreaseStakePopoverOpen.off}
+                  >
+                    <PopoverTrigger>
+                      <IconButton aria-label="minus" size="sm"
+                        onClick={() => {
+                          setDecreaseStakePopoverOpen.toggle();
+                          setTimeout(() => (decreaseStakeAmountInputRef?.current as any)?.focus(), 100);
+                        }}>
+                        <MinusIcon />
+                      </IconButton>
+                    </PopoverTrigger>
+                    <PopoverContent>
+                      <PopoverBody>
+                        <Box p={2}>
+                          <Flex>
+                            <Input placeholder="amount of OCT" ref={decreaseStakeAmountInputRef}
+                              onChange={onDecreaseAmountChange} type="number" />
+                          </Flex>
+                          <Flex mt={2}>
+                            <Button onClick={onDecreaseStake} colorScheme="octoColor" isFullWidth
+                              isLoading={isStaking} isDisabled={isStaking || decreaseAmount.lte(ZERO_DECIMAL)}>Decrease Stake</Button>
+                          </Flex>
+                        </Box>
+                      </PopoverBody>
+                      
+                    </PopoverContent>
+                  </Popover>
                 </HStack>
                 <HStack mt={1}>
                   <Popover
@@ -450,10 +515,11 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
                           } OCT
                         </Text>
                         <Button size="sm" onClick={onIncreaseStake} colorScheme="octoColor"
-                          isLoading={isStaking} isDisabled={isStaking}>Stake More</Button>
+                          isLoading={isStaking} isDisabled={isStaking || inputAmount.lte(ZERO_DECIMAL)}>Stake More</Button>
                       </PopoverFooter>
                     </PopoverContent>
                   </Popover>
+                  
                   <Popover
                     initialFocusRef={initialFocusRef}
                     placement="bottom"
