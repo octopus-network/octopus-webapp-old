@@ -91,7 +91,6 @@ export const Appchain: React.FC = () => {
   const globalStore = useGlobalStore(state => state.globalStore);
   const { hasCopied: rpcEndpointCopied, onCopy: onRpcEndpointCopy } = useClipboard(appchainSettings?.rpcEndpoint);
 
-
   useEffect(() => {
    
     globalStore

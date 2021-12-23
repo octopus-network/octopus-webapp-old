@@ -18,6 +18,7 @@ export type Transaction = {
   message: string;
   summary: string;
   addedTime: number;
+  notificationIndex?: number;
   from: string;
   appchainId: string;
 }

@@ -43,6 +43,7 @@ export class DecimalUtils {
     
     const reg = str.indexOf('.') > -1 ? /(\d)(?=(\d{3})+\.)/g : /(\d)(?=(?:\d{3})+$)/g;
    
-    return str.replace(reg, '$1,');
+    const tmpStr = str.replace(reg, '$1,');
+    return tmpStr.replace(/(\.[0-9]+[1-9]+)(0)*/, '$1');
   }
 }

@@ -24,9 +24,16 @@ import {
 
 import { octopusConfig } from 'config';
 import { Footer, Header } from 'components';
-import { useLocation, useNavigate, Outlet } from 'react-router-dom';
-import { useGlobalStore, useRefDataStore } from 'stores';
 import axios from 'axios';
+import { encodeAddress } from '@polkadot/util-crypto';
+import { useLocation, useNavigate, Outlet } from 'react-router-dom';
+import { DecimalUtils, toShortAddress } from 'utils';
+
+import { 
+  useGlobalStore, 
+  useRefDataStore, 
+  useTransactionStore 
+} from 'stores';
 
 const Loading = () => {
   return (
@@ -58,6 +65,7 @@ export const Root: React.FC = () => {
   const toastIdRef = useRef<any>();
 
   const { globalStore, updateGlobalStore } = useGlobalStore();
+  const { appendTxn, transactions } = useTransactionStore();
   const { updateRefData } = useRefDataStore();
 
   const checkRedirect = useCallback(() => {
@@ -66,23 +74,60 @@ export const Root: React.FC = () => {
     }
   }, [location.pathname, navigate]);
 
+  const onAppchainTokenBurnt = async ({
+    hash, appchainId, nearAccount, appchainAccount, 
+    amount, notificationIndex
+  }) => {
+    if (!transactions[hash]) {
+      const base58Address = encodeAddress(appchainAccount);
+      const appchainStatus = await 
+        globalStore
+          .registryContract
+          .get_appchain_status_of({
+            appchain_id: appchainId
+          });
+      
+      const decimalAmount = DecimalUtils.fromString(amount, appchainStatus?.appchain_metadata?.fungible_token_metadata?.decimals || 1);
+      const tokenSymbol = appchainStatus?.appchain_metadata?.fungible_token_metadata?.symbol || `${appchainId} token`;
+
+      appendTxn({
+        from: nearAccount,
+        message: 'Transfer Asset',
+        summary: `Transfer ${DecimalUtils.beautify(decimalAmount)} ${tokenSymbol} to ${toShortAddress(base58Address)}`,
+        addedTime: new Date().getTime(),
+        status: 'loading',
+        hash,
+        notificationIndex,
+        appchainId
+      });
+
+    }
+  }
+
   useEffect(() => {
     if (!globalStore.accountId) {
       return;
     }
-    
+
+    const isBridgeTx = /bridge/.test(location.pathname);
+
     if (transactionHashes) {
-      toastIdRef.current = toast({
-        position: 'top-right',
-        render: () => <Loading />,
-        status: 'info',
-        duration: null
-      });
+      if (!isBridgeTx) {
+        toastIdRef.current = toast({
+          position: 'top-right',
+          render: () => <Loading />,
+          status: 'info',
+          duration: null
+        });
+      }
+      
       const provider = new providers.JsonRpcProvider(octopusConfig.archivalUrl);
+
       provider
         .txStatus(transactionHashes, globalStore.accountId)
         .then(status => {
           const { receipts_outcome } = status;
+     
           let message = '';
           for (let i = 0; i < receipts_outcome.length; i++) {
             const { outcome } = receipts_outcome[i];
@@ -90,16 +135,36 @@ export const Root: React.FC = () => {
               message = JSON.stringify((outcome.status as any).Failure);
               break;
             }
+            if (outcome.logs?.length) {
+              const log = outcome.logs[0];
+            
+              const res = /Wrapped appchain token burnt by '(.+)' for '(.+)' of appchain. Amount: '(.+)', Crosschain notification index: '(.+)'/.exec(log);
+              if (res?.length) {
+                const nearAccount = res[1],
+                  appchainAccount = res[2],
+                  amount = res[3],
+                  notificationIndex = res[4];
+
+                const appchainId = status.transaction.receiver_id.split('.')?.[0];
+                
+                onAppchainTokenBurnt({
+                  hash: status.transaction.hash, appchainId, nearAccount, 
+                  appchainAccount, amount, notificationIndex
+                });
+              }
+            }
           }
           if (message) {
             throw new Error(message);
           } else {
-            toast.update(toastIdRef.current, {
-              description: 'Success',
-              duration: 2500,
-              variant: 'left-accent',
-              status: 'success'
-            });
+            if (!isBridgeTx) {
+              toast.update(toastIdRef.current, {
+                description: 'Success',
+                duration: 2500,
+                variant: 'left-accent',
+                status: 'success'
+              });
+            }
             checkRedirect();
           }
         }).catch(err => {
@@ -127,7 +192,7 @@ export const Root: React.FC = () => {
     const newUrl = `${protocol}//${host}${pathname}${params ? '?' + params : ''}${hash}`;
     window.history.pushState({ path: newUrl }, '', newUrl);
 
-  }, [errorMessage, transactionHashes, checkRedirect, toast, urlParams, globalStore]);
+  }, [errorMessage, transactionHashes, location.pathname, checkRedirect, toast, urlParams, globalStore]);
 
   // init near
   useEffect(() => {

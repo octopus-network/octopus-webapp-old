@@ -16,17 +16,23 @@ import {
   useBoolean,
   Skeleton,
   useToast,
-  useInterval
+  useInterval,
+  Link
 } from '@chakra-ui/react';
 
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { AiOutlineSwap, AiOutlineArrowDown } from 'react-icons/ai';
+import { DotLoader } from 'react-spinners';
+import { ExternalLinkIcon, CloseIcon } from '@chakra-ui/icons';
+import { FiCheckCircle } from 'react-icons/fi';
+import { AiOutlineCloseCircle } from 'react-icons/ai';
 
 import { 
   OriginAppchainInfo, 
   TokenAsset, 
   AnchorContract, 
-  TokenContract
+  TokenContract,
+  Transaction
 } from 'types';
 
 import { useGlobalStore, useTransactionStore } from 'stores';
@@ -43,6 +49,42 @@ import { Gas } from 'primitives';
 
 type BridgeFormProps = {
   appchain: OriginAppchainInfo;
+}
+
+const ToastRender = (txn: Transaction, onClose) => {
+  return (
+    <Box p={3} boxShadow="md" bg="white" borderRadius="lg">
+      <Flex>
+        {
+          txn.status === 'loading' ?
+          <DotLoader size={24} color="#868099" /> :
+          txn.status === 'success' ?
+          <Icon as={FiCheckCircle} boxSize={6} color="#fcc00a" /> :
+          <Icon as={AiOutlineCloseCircle} boxSize={6} />
+        }
+        <Box ml={3}>
+          <Flex alignItems="center" justifyContent="space-between">
+            {
+              txn.status === 'success' ?
+              <Heading fontSize="md" bg="linear-gradient(to right, #fcc00a, #4ebae9)" 
+              bgClip="text" color="transparent">Transaction Succeed</Heading> :
+              <Heading fontSize="md">{txn.message}</Heading>
+            }
+            <IconButton aria-label="close" onClick={onClose} size="xs" isRound>
+              <CloseIcon boxSize={2} />
+            </IconButton>
+          </Flex>
+          <Text fontSize="sm" mt={1}>{txn.summary}</Text>
+          <Link href={`https://explorer.${octopusConfig.networkId}.oct.network/${txn.appchainId}/tx/${txn.hash}`} isExternal>
+            <HStack fontSize="xs" color="gray" mt={1}>
+              <Text>View on Explorer</Text>
+              <ExternalLinkIcon />
+            </HStack>
+          </Link>
+        </Box>
+      </Flex>
+    </Box>
+  );
 }
 
 const storageAccounts = window.localStorage.getItem('appchainAccounts') || '{}';
@@ -68,14 +110,27 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
   const [targetBalance, setTargetBalance] = useState(ZERO_DECIMAL);
   const [isLoadingBalance, setIsLoadingBalance] = useBoolean(true);
   const [isLoadingTargetBalance, setIsLoadingTargetBalance] = useBoolean(false);
- 
+  
   const globalStore = useGlobalStore(state => state.globalStore);
-  const { appendTxn, updateTxn } = useTransactionStore();
+  const { appendTxn, updateTxn, transactions } = useTransactionStore();
 
   const nearAccount = useMemo(() => globalStore.accountId || '', [globalStore]);
   const [appchainAccount, setAppchainAccount] = useState(JSON.parse(storageAccounts)[appchain?.appchain_id] || '');
   
   const [targetAddress, setTargetAddress] = useState(isReverse ? appchainAccount : nearAccount);
+
+  const account = useMemo(() => isReverse ? nearAccount : appchainAccount, [isReverse, nearAccount, appchainAccount]);
+
+  const sortedTxns = useMemo(() => {
+    let tmpArr = [];
+    Object.keys(transactions).forEach(hash => {
+      let txn = transactions[hash];
+      if (txn.from === account) {
+        tmpArr.push(txn);
+      }
+    });
+    return Object.values(tmpArr).sort((a: any, b: any) => b.addedTime - a.addedTime);
+  }, [transactions, account]);
 
   useEffect(() => {
     
@@ -157,6 +212,77 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
     }
   }, [tokens]);
 
+  useEffect(() => {
+    
+    if (!sortedTxns?.length) {
+      toast.closeAll();
+      return;
+    }
+
+    sortedTxns.forEach(txn => {
+    
+      if (txn.status === 'loading') {
+    
+        if (!toast.isActive(txn.hash)) {
+          toast({
+            id: txn.hash,
+            position: 'top-right',
+            title: txn.message,
+            description: txn.summary,
+            status: 'info',
+            duration: null,
+            isClosable: true,
+            render: (e) => ToastRender(txn, e.onClose)
+          });
+        }
+
+        if (txn.notificationIndex) {
+          globalStore
+            .registryContract
+            .get_appchain_status_of({
+              appchain_id: txn.appchainId
+            })
+            .then(({ appchain_anchor }) => {
+              const anchorContract = new AnchorContract(
+                globalStore.walletConnection.account(),
+                appchain_anchor,
+                {
+                  viewMethods: ['get_appchain_settings'],
+                  changeMethods: []
+                }
+              );
+
+              anchorContract.get_appchain_settings().then(({ rpc_endpoint }) => {
+                const provider = new WsProvider(rpc_endpoint);
+                new ApiPromise({ provider }).isReady.then(api => {
+                  api.query.octopusAppchain.notificationHistory(txn.notificationIndex, res => {
+                    updateTxn(txn.hash, {
+                      status: 'success'
+                    });
+                  });
+                });
+              });
+            });
+        }
+       
+      } else if (txn.status === 'error') {
+        if (toast.isActive(txn.hash)) {
+          toast.update(txn.hash, {
+            title: 'Error',
+            description: txn.message,
+            status: 'error',
+            duration: 3500
+          });
+        }
+      } else if (txn.status === 'success') {
+        if (toast.isActive(txn.hash)) {
+          toast.update(txn.hash, {
+            render: (e) => ToastRender(txn, e.onClose)
+          });
+        }
+      }
+    });
+  }, [sortedTxns, toast, globalStore]);
 
   const checkTargetBalance = useCallback(() => {
     if (!targetAddress) {
@@ -267,7 +393,7 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
         setIsTransfering.off();
       }
     }).catch(err => {
-     
+      
       updateTxn(tx.hash.toString(), {
         status: 'error',
         message: err.toString()

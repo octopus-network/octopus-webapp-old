@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { DotLoader } from 'react-spinners';
 
 import {
   Container,
@@ -15,9 +14,7 @@ import {
   HStack,
   Spinner,
   Avatar,
-  useToast,
-  Link,
-  IconButton
+  useToast
 } from '@chakra-ui/react';
 
 import { 
@@ -25,50 +22,17 @@ import {
   AppchainState, 
   AppchainSortingField,
   AppchainSortingOrder,
-  AppchainId,
-  Transaction
+  AppchainId
 } from 'types';
 
-import { HiOutlineArrowNarrowRight, HiOutlineArrowNarrowLeft } from 'react-icons/hi';
+import { 
+  HiOutlineArrowNarrowRight, 
+  HiOutlineArrowNarrowLeft 
+} from 'react-icons/hi';
 
-import { ExternalLinkIcon, CloseIcon } from '@chakra-ui/icons';
-import { FiCheckCircle } from 'react-icons/fi';
-import { AiOutlineCloseCircle } from 'react-icons/ai';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useGlobalStore, useTransactionStore } from 'stores';
-import { octopusConfig } from 'config';
+import { useGlobalStore } from 'stores';
 import { BridgeForm } from './BridgeForm';
-
-const ToastRender = (txn: Transaction, onClose) => {
-  return (
-    <Box p={3} boxShadow="md" bg="white" borderRadius="lg">
-      <Flex>
-        {
-          txn.status === 'loading' ?
-          <DotLoader size={24} color="#868099" /> :
-          txn.status === 'success' ?
-          <Icon as={FiCheckCircle} boxSize={6} /> :
-          <Icon as={AiOutlineCloseCircle} boxSize={6} />
-        }
-        <Box ml={3}>
-          <Flex alignItems="center" justifyContent="space-between">
-            <Heading fontSize="md">{txn.message}</Heading>
-            <IconButton aria-label="close" onClick={onClose} size="xs" isRound>
-              <CloseIcon boxSize={2} />
-            </IconButton>
-          </Flex>
-          <Text fontSize="sm" mt={1}>{txn.summary}</Text>
-          <Link href={`https://explorer.${octopusConfig.networkId}.oct.network/${txn.appchainId}/tx/${txn.hash}`} isExternal>
-            <HStack fontSize="xs" color="gray" mt={1}>
-              <Text>View on Explorer</Text>
-              <ExternalLinkIcon />
-            </HStack>
-          </Link>
-        </Box>
-      </Flex>
-    </Box>
-  );
-}
 
 export const Bridge: React.FC = () => {
   
@@ -79,7 +43,6 @@ export const Bridge: React.FC = () => {
   const [activeAppchains, setActiveAppchains] = useState<OriginAppchainInfo[]>();
 
   const globalStore = useGlobalStore(state => state.globalStore);
-  const transactions = useTransactionStore(state => state.transactions);
 
   useEffect(() => {
 
@@ -101,42 +64,6 @@ export const Bridge: React.FC = () => {
       });
 
   }, [globalStore]);
-
-  useEffect(() => {
-    const txns = Object.values(transactions);
-    if (!txns.length) {
-      toast.closeAll();
-      return;
-    }
-
-    // txns.forEach(txn => {
-    
-    //   if (txn.status === 'loading') {
-    
-    //     if (!toast.isActive(txn.hash)) {
-    //       toast({
-    //         id: txn.hash,
-    //         position: 'top-right',
-    //         title: txn.message,
-    //         description: txn.summary,
-    //         status: 'info',
-    //         duration: null,
-    //         isClosable: true,
-    //         render: (e) => ToastRender(txn, e.onClose)
-    //       });
-    //     }
-    //   } else if (txn.status === 'error') {
-    //     if (toast.isActive(txn.hash)) {
-    //       toast.update(txn.hash, {
-    //         title: 'Error',
-    //         description: txn.message,
-    //         status: 'error',
-    //         duration: 3500
-    //       });
-    //     }
-    //   }
-    // });
-  }, [transactions, toast]);
 
   useEffect(() => {
     return () => {
