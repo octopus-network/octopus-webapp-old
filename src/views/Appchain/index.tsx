@@ -70,7 +70,6 @@ import { OCT_TOKEN_DECIMALS, Gas } from 'primitives';
 import { useGlobalStore } from 'stores';
 import Decimal from 'decimal.js';
 import dayjs from 'dayjs';
-import { BlocksTable } from './BlocksTable';
 
 import { NodePanel } from './NodePanel';
 import { StakingPanel } from './StakingPanel';
@@ -170,13 +169,16 @@ export const Appchain: React.FC = () => {
               ],
               changeMethods: [
                 'unbond_stake',
+                'withdraw_stake',
+                'unbond_delegation',
                 'decrease_stake',
                 'go_booting',
                 'go_live',
                 'set_rpc_endpoint',
                 'set_subql_endpoint',
                 'set_era_reward',
-                'withdraw_validator_rewards'
+                'withdraw_validator_rewards',
+                'withdraw_delegator_rewards'
               ]
             }
           );
@@ -502,12 +504,12 @@ export const Appchain: React.FC = () => {
         </SimpleGrid>
 
         <SimpleGrid columns={9} mt={6} gap={6}>
-          <GridItem colSpan={6}>
+          <GridItem colSpan={5}>
             <Box p={6} bg="white" boxShadow="rgb(0 0 0 / 20%) 0px 0px 2px" borderRadius="xl">
               <NodePanel appchain={appchainInfo} apiPromise={apiPromise} />
             </Box>
           </GridItem>
-          <GridItem colSpan={3}>
+          <GridItem colSpan={4}>
             <Box p={6} bg="white" boxShadow="rgb(0 0 0 / 20%) 0px 0px 2px" borderRadius="xl">
               <StakingPanel anchorContract={anchorContract} appchain={appchainInfo} currentEra={currentEra} />
             </Box>
