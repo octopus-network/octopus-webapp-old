@@ -238,8 +238,8 @@ export class AnchorContract extends Contract {
     return this.get_validator_rewards_of(args);
   }
 
-  get_delegadator_rewards_of(args: GetDelegatorRewardsOfArgs): Promise<OriginRewardHistory[]> {
-    return this.get_validator_rewards_of(args);
+  get_delegator_rewards_of(args: GetDelegatorRewardsOfArgs): Promise<OriginRewardHistory[]> {
+    return this.get_delegator_rewards_of(args);
   }
 
   get_validator_deposit_of(args: GetValidatorDepositOfArgs): Promise<string> {

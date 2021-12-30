@@ -182,12 +182,13 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
       });
       
     anchorContract
-      .get_delegadator_rewards_of({
+      .get_delegator_rewards_of({
         start_era: '0',
         end_era: currentEra?.toString() || '0',
         delegator_id: globalStore.accountId,
         validator_id: validator.validatorId
       }).then(rewards => {
+        console.log(rewards);
         setDelegatorRewards(
           rewards.map(({ total_reward, unwithdrawn_reward, era_number }) => ({
             total_reward: DecimalUtils.fromString(total_reward, appchain.appchainMetadata.fungibleTokenMetadata.decimals),

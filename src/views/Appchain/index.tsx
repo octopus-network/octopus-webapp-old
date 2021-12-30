@@ -165,6 +165,7 @@ export const Appchain: React.FC = () => {
                 'get_delegator_deposit_of',
                 'get_index_range_of_staking_history',
                 'get_validator_rewards_of',
+                'get_delegator_rewards_of',
                 'get_wrapped_appchain_token'
               ],
               changeMethods: [

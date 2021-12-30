@@ -125,12 +125,12 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
     let tmpArr = [];
     Object.keys(transactions).forEach(hash => {
       let txn = transactions[hash];
-      if (txn.from === account) {
+      if (txn.from === account && txn.appchainId === appchain.appchain_id) {
         tmpArr.push(txn);
       }
     });
     return Object.values(tmpArr).sort((a: any, b: any) => b.addedTime - a.addedTime);
-  }, [transactions, account]);
+  }, [transactions, account, appchain]);
 
   useEffect(() => {
     
@@ -388,7 +388,6 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
       appchainId: appchain.appchain_id
     });
 
-    
     await tx.signAndSend(appchainAccount, ({ events = [], status }) => {
       if (status.isFinalized) {
         setIsTransfering.off();
@@ -404,7 +403,6 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
       });
       setIsTransfering.off();
     });
-
     
   }
 
