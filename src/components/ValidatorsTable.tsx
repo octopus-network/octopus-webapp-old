@@ -474,29 +474,6 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
         </Portal>
       </Popover>
 
-      {/* <Popover
-        isOpen={claimRewardsPopoverOpen}
-        onClose={setClaimRewardsPopoverOpen.off}
-      >
-        <Portal containerRef={actionsRef}>
-          <PopoverContent>
-            <PopoverBody>
-              <Flex alignItems="flex-start" p={2}>
-                <Heading fontSize="md" color="black">
-                  Claimable Rewards: {DecimalUtils.beautify(unwithdrawedDelegatorRewards)} {appchain?.appchainMetadata.fungibleTokenMetadata.symbol}
-                </Heading>
-              </Flex>
-              <Flex p={2}>
-                <HStack>
-                  <Button size="sm" colorScheme="blue" onClick={() => onClaimDelegatorRewards(validator.validatorId)} 
-                    isDisabled={isUnbonding} isLoading={isUnbonding}>Claim</Button>
-                  <Button size="sm" onClick={setClaimRewardsPopoverOpen.off}>Cancel</Button>
-                </HStack>
-              </Flex>
-            </PopoverBody>
-          </PopoverContent>
-        </Portal>
-      </Popover> */}
     </>
   );
 }
@@ -643,7 +620,7 @@ export const ValidatorsTable: React.FC<ValidatorsTableProps> = ({
                   <Th textAlign="center" display={{ base: 'none', lg: 'table-cell' }}>Delegators</Th>
                   {
                     noAction !== true ?
-                      <Th>Action</Th> : null
+                      <Th></Th> : null
                   }
                 </Tr>
               </Thead>
