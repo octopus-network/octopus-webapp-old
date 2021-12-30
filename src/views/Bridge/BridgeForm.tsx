@@ -388,10 +388,14 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
       appchainId: appchain.appchain_id
     });
 
-    await tx.signAndSend(appchainAccount, (res) => {
-      if (res.isFinalized) {
+    
+    await tx.signAndSend(appchainAccount, ({ events = [], status }) => {
+      if (status.isFinalized) {
         setIsTransfering.off();
       }
+      events.forEach(({ phase, event: { data, method, section } }) => {
+        console.log(phase.toString() + ' : ' + section + '.' + method + ' ' + data.toString());
+      });
     }).catch(err => {
       
       updateTxn(tx.hash.toString(), {
@@ -400,6 +404,8 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
       });
       setIsTransfering.off();
     });
+
+    
   }
 
   const onTransfer = () => {

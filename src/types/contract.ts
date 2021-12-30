@@ -114,6 +114,11 @@ type WtidrawValidatorRewardsArgs = {
   validator_id: AccountId;
 }
 
+type WtidrawDelegatorRewardsArgs = {
+  delegator_id: AccountId;
+  validator_id: AccountId;
+}
+
 type BurnWrappedAppchainTokenArgs = {
   receiver_id: String;
   amount: string;
@@ -125,6 +130,13 @@ type WithdrawStakeArgs = {
 
 type DecreaseStakeArgs = {
   amount: String;
+}
+
+type GetDelegatorRewardsOfArgs = {
+  start_era: string;
+  end_era: string;
+  delegator_id: AccountId;
+  validator_id: AccountId;
 }
 
 export class TokenContract extends Contract {
@@ -209,7 +221,6 @@ export class RegistryContract extends Contract {
   }
 
   withdraw_downvote_deposit_of(args: WithdrawDepositOfArgs, gas: string) {
-    console.log(args, gas);
     return this.withdraw_downvote_deposit_of(args, gas);
   }
 }
@@ -227,6 +238,10 @@ export class AnchorContract extends Contract {
     return this.get_validator_rewards_of(args);
   }
 
+  get_delegadator_rewards_of(args: GetDelegatorRewardsOfArgs): Promise<OriginRewardHistory[]> {
+    return this.get_validator_rewards_of(args);
+  }
+
   get_validator_deposit_of(args: GetValidatorDepositOfArgs): Promise<string> {
     return this.get_validator_deposit_of(args);
   } 
@@ -237,6 +252,10 @@ export class AnchorContract extends Contract {
 
   unbond_stake(args: {}, gas: string) {
     return this.unbond_stake(args, gas);
+  }
+
+  unbond_delegation(args: {}, gas: string) {
+    return this.unbond_delegation(args, gas);
   }
 
   get_protocol_settings(): Promise<any> {
@@ -273,6 +292,10 @@ export class AnchorContract extends Contract {
 
   withdraw_validator_rewards(args: WtidrawValidatorRewardsArgs, gas: string) {
     return this.withdraw_validator_rewards(args, gas);
+  }
+
+  withdraw_delegator_rewards(args: WtidrawDelegatorRewardsArgs, gas: string) {
+    return this.withdraw_delegator_rewards(args, gas);
   }
 
   withdraw_stake(args: WithdrawStakeArgs, gas: string) {

@@ -29,7 +29,7 @@ import {
   PopoverFooter
 } from '@chakra-ui/react';
 
-import { MinusIcon } from '@chakra-ui/icons';
+import { MinusIcon, InfoIcon, AddIcon, CloseIcon } from '@chakra-ui/icons';
 import { RiMoneyDollarCircleLine } from 'react-icons/ri';
 import BN from 'bn.js';
 import dayjs from 'dayjs';
@@ -75,6 +75,7 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
   const [userUpvoteDeposit, setUserUpvoteDeposit] = useState(ZERO_DECIMAL);
   const [userDownvoteDeposit, setUserDownvoteDeposit] = useState(ZERO_DECIMAL);
   const [withdrawVotesPopoverOpen, setWithdrawVotesPopoverOpen] = useBoolean(false);
+  const [withdrawStakesPopoverOpen, setWithdrawStakesPopoverOpen] = useBoolean(false);
   const [withdrawingUpvotes, setWithdrawingUpvotes] = useState(false);
   const [withdrawingDownvotes, setWithdrawingDownvotes] = useState(false);
 
@@ -205,6 +206,11 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
     return !rewards?.length ? ZERO_DECIMAL :
       rewards.reduce((total, next) => total.plus(next.unwithdrawn_reward), ZERO_DECIMAL);
   }, [rewards]);
+
+  const totalUnbondedStakes = useMemo(() => {
+    return !unbondedStakes?.length ? ZERO_DECIMAL :
+      unbondedStakes.reduce((total, next) => total.plus(next.amount), ZERO_DECIMAL);
+  }, [unbondedStakes])
 
   const claimableUnbondedStakes = useMemo(() => {
     return !unbondedStakes?.length ? ZERO_DECIMAL :
@@ -385,6 +391,22 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
 
   const onWithdrawStakes = async () => {
     setIsWithdrawing(true);
+    anchorContract
+      .withdraw_stake(
+        {
+          account_id: globalStore.accountId
+        },
+        Gas.COMPLEX_CALL_GAS
+      )
+      .catch(err => {
+        toast({
+          position: 'top-right',
+          title: 'Error',
+          description: err.toString(),
+          status: 'error'
+        });
+        setIsUnbonding(false);
+      });
   }
 
   return (
@@ -436,10 +458,50 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
                 </PopoverBody>
               </PopoverContent>
             </Popover> :
-            unwithdrawedAmount.gt(ZERO_DECIMAL) ?
-              <Button colorScheme="octoColor" size="sm" variant="ghost" onClick={onClaimRewards} isLoading={isClaiming} isDisabled={isClaiming}>
-                Claim {DecimalUtils.beautify(unwithdrawedAmount)} {appchain?.appchainMetadata.fungibleTokenMetadata.symbol}
-              </Button> : null
+            <HStack>
+              {
+                unwithdrawedAmount.gt(ZERO_DECIMAL) ?
+                <Button colorScheme="octoColor" size="sm" variant="ghost" onClick={onClaimRewards} isLoading={isClaiming} isDisabled={isClaiming}>
+                  Claim {DecimalUtils.beautify(unwithdrawedAmount)} {appchain?.appchainMetadata.fungibleTokenMetadata.symbol}
+                </Button> : null
+              }
+              {
+                unbondedStakes?.length > 0 ?
+                <Popover
+                    initialFocusRef={initialFocusRef}
+                    placement="bottom"
+                    isOpen={withdrawStakesPopoverOpen}
+                    onClose={setWithdrawStakesPopoverOpen.off}
+                  >
+                    <PopoverTrigger>
+                      <Button colorScheme="octoColor" size="sm"
+                        onClick={setWithdrawStakesPopoverOpen.toggle}
+                        isDisabled={withdrawStakesPopoverOpen}>Withdraw Stakes</Button>
+                    </PopoverTrigger>
+                    <PopoverContent>
+                      <PopoverBody>
+                        <Box p={2}>
+                          <Flex alignItems="center">
+                            <Text>Total unbonded:</Text>
+                            <Heading fontSize="md" ml={1}>{DecimalUtils.beautify(totalUnbondedStakes)} OCT</Heading>
+                          </Flex>
+                          <Flex alignItems="center" mt={1}>
+                            <Text>Claimable:</Text>
+                            <Heading fontSize="md" ml={1}>{DecimalUtils.beautify(claimableUnbondedStakes)} OCT</Heading>
+                            {
+                              <Button colorScheme="octoColor" size="xs" variant="outline" ml={2} 
+                                onClick={onWithdrawStakes} isLoading={isWithdrawing} disabled={isWithdrawing || claimableUnbondedStakes.lte(ZERO_DECIMAL)}>Claim</Button>
+                            }
+                          </Flex>
+                          <Flex alignItems="center" mt={1} fontSize="xs" color="gray">
+                            <Text>Last claimable: {dayjs(unbondedStakes[0].unlockTime).format('YYYY-MM-DD HH:mm:ss')} ({DecimalUtils.beautify(unbondedStakes[0].amount)} OCT)</Text>
+                          </Flex>
+                        </Box>
+                      </PopoverBody>
+                    </PopoverContent>
+                  </Popover> : null
+              }
+            </HStack>
         }
       </Flex>
       <Divider mt={3} mb={3} />
@@ -448,12 +510,45 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
         <Flex minH="90px" alignItems="center" justifyContent="center">
           {
             isInValidatorList ?
-              <VStack>
+              <VStack spacing={4}>
+                <HStack fontSize="md">
+                  <Text>You Staked:</Text>
+                  <Heading fontSize="md">{DecimalUtils.beautify(depositAmount)} OCT</Heading>
+                </HStack>
                 <HStack>
-                  <HStack fontSize="sm">
-                    <Text>Staked:</Text>
-                    <Heading fontSize="sm">{DecimalUtils.beautify(depositAmount)} OCT</Heading>
-                  </HStack>
+                  <Popover
+                    initialFocusRef={initialFocusRef}
+                    placement="bottom"
+                    isOpen={stakeMorePopoverOpen}
+                    onClose={setStakeMorePopoverOpen.off}
+                  >
+                    <PopoverTrigger>
+                      <Button colorScheme="octoColor" size="xs" variant="outline"
+                        onClick={() => {
+                          setStakeMorePopoverOpen.toggle();
+                          setTimeout(() => (stakeAmountInputRef?.current as any)?.focus(), 100);
+                        }}
+                        isDisabled={stakeMorePopoverOpen}><AddIcon mr={1} boxSize={2} /> Increase</Button>
+                    </PopoverTrigger>
+                    
+                    <PopoverContent>
+                      <PopoverBody>
+                        <Flex p={2}>
+                          <Input placeholder="amount of OCT" ref={stakeAmountInputRef}
+                            onChange={onAmountChange} type="number" />
+                        </Flex>
+                      </PopoverBody>
+                      <PopoverFooter d="flex" justifyContent="space-between" alignItems="center">
+                        <Text fontSize="sm" color="gray">
+                          Staked: {
+                            DecimalUtils.beautify(depositAmount)
+                          } OCT
+                        </Text>
+                        <Button size="sm" onClick={onIncreaseStake} colorScheme="octoColor"
+                          isLoading={isStaking} isDisabled={isStaking || inputAmount.lte(ZERO_DECIMAL)}>Increase Stake</Button>
+                      </PopoverFooter>
+                    </PopoverContent>
+                  </Popover>
                   <Popover
                     initialFocusRef={initialFocusRef}
                     placement="bottom"
@@ -461,13 +556,12 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
                     onClose={setDecreaseStakePopoverOpen.off}
                   >
                     <PopoverTrigger>
-                      <IconButton aria-label="minus" size="sm"
+                      <Button colorScheme="octoColor" size="xs" variant="outline"
                         onClick={() => {
                           setDecreaseStakePopoverOpen.toggle();
                           setTimeout(() => (decreaseStakeAmountInputRef?.current as any)?.focus(), 100);
-                        }}>
-                        <MinusIcon />
-                      </IconButton>
+                        }}
+                        isDisabled={decreaseStakePopoverOpen}><MinusIcon mr={1} boxSize={2} /> Decrease</Button>
                     </PopoverTrigger>
                     <PopoverContent>
                       <PopoverBody>
@@ -485,41 +579,6 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
                       
                     </PopoverContent>
                   </Popover>
-                </HStack>
-                <HStack mt={1}>
-                  <Popover
-                    initialFocusRef={initialFocusRef}
-                    placement="bottom"
-                    isOpen={stakeMorePopoverOpen}
-                    onClose={setStakeMorePopoverOpen.off}
-                  >
-                    <PopoverTrigger>
-                      <Button colorScheme="octoColor" size="sm" variant="outline"
-                        onClick={() => {
-                          setStakeMorePopoverOpen.toggle();
-                          setTimeout(() => (stakeAmountInputRef?.current as any)?.focus(), 100);
-                        }}
-                        isDisabled={stakeMorePopoverOpen}>Stake more</Button>
-                    </PopoverTrigger>
-                    <PopoverContent>
-                      <PopoverBody>
-                        <Flex p={2}>
-                          <Input placeholder="amount of OCT" ref={stakeAmountInputRef}
-                            onChange={onAmountChange} type="number" />
-                        </Flex>
-                      </PopoverBody>
-                      <PopoverFooter d="flex" justifyContent="space-between" alignItems="center">
-                        <Text fontSize="sm" color="gray">
-                          Staked: {
-                            DecimalUtils.beautify(depositAmount)
-                          } OCT
-                        </Text>
-                        <Button size="sm" onClick={onIncreaseStake} colorScheme="octoColor"
-                          isLoading={isStaking} isDisabled={isStaking || inputAmount.lte(ZERO_DECIMAL)}>Stake More</Button>
-                      </PopoverFooter>
-                    </PopoverContent>
-                  </Popover>
-                  
                   <Popover
                     initialFocusRef={initialFocusRef}
                     placement="bottom"
@@ -527,9 +586,9 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
                     onClose={setUnbondPopoverOpen.off}
                   >
                     <PopoverTrigger>
-                      <Button colorScheme="red" size="sm" variant="outline"
+                      <Button colorScheme="red" size="xs" variant="outline"
                         onClick={setUnbondPopoverOpen.toggle}
-                        isDisabled={unbondPopoverOpen}>Unbond</Button>
+                        isDisabled={unbondPopoverOpen}><CloseIcon mr={1} boxSize={2} /> Unbond</Button>
                     </PopoverTrigger>
                     <PopoverContent>
                       <PopoverBody>
@@ -550,18 +609,13 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
                   </Popover>
                 </HStack>
               </VStack> :
-              <HStack>
+              <HStack w="80%" justifyContent="center">
                 {
                   unbondedStakes?.length > 0 ?
-                    <VStack>
-                      <Button size="sm" colorScheme="octoColor" onClick={onWithdrawStakes}
-                        isDisabled={claimableUnbondedStakes.lte(ZERO_DECIMAL) || isWithdrawing}>
-                        Withdraw Stakes
-                      </Button>
-                      <Text fontSize="xs" color="gray">
-                        Until {dayjs(unbondedStakes[unbondedStakes.length - 1].unlockTime).format('YYYY-MM-DD HH:mm:ss')}
-                      </Text>
-                    </VStack> :
+                    <Text fontSize="sm" color="gray" textAlign="center">
+                      <InfoIcon /> You have unbonded stakes util {dayjs(unbondedStakes[unbondedStakes.length - 1].unlockTime).format('YYYY-MM-DD HH:mm:ss')},
+                      you will not be able to register validator before this time.
+                    </Text> :
                     <Button size="sm" colorScheme="octoColor" onClick={setRegisterModalOpen.on} isDisabled={!globalStore.accountId}>
                       Register Validator
                     </Button>

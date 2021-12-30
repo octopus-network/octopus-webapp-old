@@ -148,7 +148,7 @@ export const NodePanel: React.FC<NodePanelProps> = ({ appchain, apiPromise }) =>
           <Flex minH="80px" flexDirection="column" alignItems="center" justifyContent="center">
             <HStack>
               <Button size="sm" colorScheme="octoColor" variant="outline" onClick={setDeployModalOpen.on}>
-                Deploy Node (Auto Deploy)
+                Auto Deploy Node
               </Button>
               <IconButton aria-label="refresh" onClick={refresh} size="sm">
                 <RepeatIcon />

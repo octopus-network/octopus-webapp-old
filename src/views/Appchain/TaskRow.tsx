@@ -132,7 +132,7 @@ export const TaskRow: React.FC<TaskRowProps> = ({ task, authKey, onUpdate }) => 
     <SimpleGrid columns={18} alignItems="center" gap={3}>
       <GridItem colSpan={5}>
         <HStack>
-          <Text fontSize="sm" whiteSpace="nowrap" w="calc(140px - 30px)"
+          <Text fontSize="sm" whiteSpace="nowrap" w="calc(120px - 30px)"
             overflow="hidden" textOverflow="ellipsis">
             {task.uuid}
           </Text>
