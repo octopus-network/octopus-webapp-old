@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 
 import {
@@ -19,6 +19,7 @@ import {
   Avatar,
   Button,
   Divider,
+  Tooltip,
   Link,
   Skeleton,
   Tabs,
@@ -27,38 +28,40 @@ import {
   TabPanels,
   TabPanel,
   IconButton,
+  CircularProgress,
   useClipboard,
   Spinner,
   Icon,
-  Center
+  Center,
+  useInterval
 } from '@chakra-ui/react';
 
-import { 
-  AiOutlineUser, 
-  AiOutlineGlobal, 
+import {
+  AiOutlineUser,
+  AiOutlineGlobal,
   AiFillGithub,
   AiOutlineSearch,
   AiOutlineSwap
 } from 'react-icons/ai';
 
-import { 
-  AppchainInfo, 
+import {
+  AppchainInfo,
   AnchorContract,
   AppchainSettings,
   AppchainState
 } from 'types';
 
-import { 
-  ExternalLinkIcon, 
-  AttachmentIcon, 
-  CheckIcon, 
-  CopyIcon, 
-  QuestionOutlineIcon 
+import {
+  ExternalLinkIcon,
+  AttachmentIcon,
+  CheckIcon,
+  CopyIcon,
+  QuestionOutlineIcon
 } from '@chakra-ui/icons';
 
 import {
   ValidatorsTable,
-  StateBadge 
+  StateBadge
 } from 'components';
 
 import { useParams, Link as RouterLink } from 'react-router-dom';
@@ -69,10 +72,15 @@ import { octopusConfig } from 'config';
 import { OCT_TOKEN_DECIMALS, Gas } from 'primitives';
 import { useGlobalStore } from 'stores';
 import Decimal from 'decimal.js';
+import duration from 'dayjs/plugin/duration';
 import dayjs from 'dayjs';
 
 import { NodePanel } from './NodePanel';
 import { StakingPanel } from './StakingPanel';
+
+dayjs.extend(duration);
+
+const epochDurationMs = 24 * 3600 * 1000;
 
 export const Appchain: React.FC = () => {
   const { id } = useParams();
@@ -86,12 +94,14 @@ export const Appchain: React.FC = () => {
 
   const [appchainSettings, setAppchainSettings] = useState<AppchainSettings>();
   const [currentEra, setCurrentEra] = useState<number>();
-  
+  const [nextEraTime, setNextEraTime] = useState(0);
+  const [nextEraTimeLeft, setNextEraTimeLeft] = useState(0);
+
   const globalStore = useGlobalStore(state => state.globalStore);
   const { hasCopied: rpcEndpointCopied, onCopy: onRpcEndpointCopy } = useClipboard(appchainSettings?.rpcEndpoint);
 
   useEffect(() => {
-   
+
     globalStore
       .registryContract
       .get_appchain_status_of({
@@ -110,7 +120,7 @@ export const Appchain: React.FC = () => {
         total_stake,
         upvote_deposit,
         voting_score,
-        appchain_metadata 
+        appchain_metadata
       }) => {
 
         setAppchainInfo({
@@ -195,8 +205,8 @@ export const Appchain: React.FC = () => {
       return;
     }
 
-    let unsubNewHeads = () => {};
-    let unsubNewFinalizedHeads = () => {};
+    let unsubNewHeads = () => { };
+    let unsubNewFinalizedHeads = () => { };
 
     anchorContract
       .get_appchain_settings()
@@ -204,7 +214,7 @@ export const Appchain: React.FC = () => {
         setAppchainSettings({
           rpcEndpoint: rpc_endpoint,
           eraReward: DecimalUtils.fromString(
-            era_reward, 
+            era_reward,
             appchainInfo.appchainMetadata.fungibleTokenMetadata.decimals
           ),
           subqlEndpoint: subql_endpoint
@@ -213,22 +223,26 @@ export const Appchain: React.FC = () => {
         try {
           const provider = new WsProvider(rpc_endpoint);
           const api = new ApiPromise({ provider });
-          
+
           api.on('ready', async () => {
-     
+
             api.rpc.chain.subscribeNewHeads((lastHeader) => {
               setBestBlock(lastHeader.number.toNumber());
             }).then(unsub => {
               unsubNewHeads = unsub;
             });
-      
+
             const [era, amount]: any = await Promise.all([
               api.query.octopusLpos.activeEra(),
-              api.query.balances?.totalIssuance(),
+              api.query.balances?.totalIssuance()
             ]);
-           
-            setCurrentEra(era.toJSON()?.index);
-         
+
+            const eraJSON = era.toJSON();
+
+            setCurrentEra(eraJSON?.index);
+            setNextEraTime(eraJSON ? epochDurationMs + eraJSON.start : 0);
+            setNextEraTimeLeft(eraJSON ? (eraJSON.start + epochDurationMs) - new Date().getTime() : 0);
+
             setTotalIssuance(
               DecimalUtils.fromString(
                 amount.toString(),
@@ -240,11 +254,11 @@ export const Appchain: React.FC = () => {
           api.isReady.then(api => {
             setApiPromise(api);
           });
-          
-        } catch(err) {
+
+        } catch (err) {
           console.log(err);
         }
-        
+
       });
 
     return () => {
@@ -252,6 +266,14 @@ export const Appchain: React.FC = () => {
       unsubNewFinalizedHeads();
     }
   }, [anchorContract, appchainInfo]);
+
+  const updateNextEraTimeLeft = useCallback(() => {
+    setNextEraTimeLeft(nextEraTimeLeft - 1000);
+  }, [nextEraTimeLeft]);
+
+  useInterval(updateNextEraTimeLeft, 1000);
+
+  console.log(nextEraTime);
 
   return (
     <>
@@ -272,9 +294,9 @@ export const Appchain: React.FC = () => {
         <SimpleGrid columns={{ base: 3, lg: 9 }} mt={6} gap={12} p={6} bg="white" boxShadow="rgb(0 0 0 / 20%) 0px 0px 2px" borderRadius="xl">
           <GridItem colSpan={3}>
             <HStack spacing={3}>
-              <Avatar 
+              <Avatar
                 size="sm"
-                src={appchainInfo?.appchainMetadata.fungibleTokenMetadata?.icon} 
+                src={appchainInfo?.appchainMetadata.fungibleTokenMetadata?.icon}
                 name={appchainInfo?.appchainId}
                 bg={appchainInfo?.appchainMetadata.fungibleTokenMetadata?.icon ? 'transparent' : 'blue.100'} />
               <Heading fontSize="3xl">{id}</Heading>
@@ -295,10 +317,10 @@ export const Appchain: React.FC = () => {
                     <Text fontSize="xs">
                       {
                         appchainInfo ?
-                        dayjs(
-                          appchainInfo.registeredTime.substr(0, 13) as any * 1
-                        ).format('YYYY-MM-DD HH:mm') :
-                        'loading'
+                          dayjs(
+                            appchainInfo.registeredTime.substr(0, 13) as any * 1
+                          ).format('YYYY-MM-DD HH:mm') :
+                          'loading'
                       }
                     </Text>
                   </HStack>
@@ -326,15 +348,15 @@ export const Appchain: React.FC = () => {
               </WrapItem>
               {
                 appchainInfo?.appchainState === AppchainState.Active ?
-                <WrapItem>
-                  <Button size="sm" as={RouterLink} to={`/bridge/${appchainInfo?.appchainId}`}>
-                    <HStack>
-                      <Icon as={AiOutlineSwap} />
-                      <Text fontSize="xs">Bridge</Text>
-                    
-                    </HStack>
-                  </Button>
-                </WrapItem> : null
+                  <WrapItem>
+                    <Button size="sm" as={RouterLink} to={`/bridge/${appchainInfo?.appchainId}`}>
+                      <HStack>
+                        <Icon as={AiOutlineSwap} />
+                        <Text fontSize="xs">Bridge</Text>
+
+                      </HStack>
+                    </Button>
+                  </WrapItem> : null
               }
               <WrapItem>
                 <Button size="sm" as={Link} isExternal href={appchainInfo?.appchainMetadata.functionSpecUrl}>
@@ -357,41 +379,61 @@ export const Appchain: React.FC = () => {
             </Wrap>
           </GridItem>
           <GridItem colSpan={6} display={{ base: 'none', lg: 'block' }}>
-            
+
             <SimpleGrid columns={17}>
               <GridItem colSpan={6}>
                 <Skeleton isLoaded={!!appchainSettings}>
-                <VStack alignItems="flex-start" spacing={1}>
-                  <Text fontSize="xs" color="gray">Rpc Endpoint</Text>
-                  <HStack w="100%">
-                    <Heading fontSize="sm" whiteSpace="nowrap"
-                      overflow="hidden" textOverflow="ellipsis" w="calc(100% - 40px)">
-                      {appchainSettings?.rpcEndpoint || 'loading'}
-                    </Heading>
-                    <IconButton aria-label="copy" size="xs" onClick={onRpcEndpointCopy}>
-                      { rpcEndpointCopied ? <CheckIcon /> : <CopyIcon /> }
-                    </IconButton>
-                  </HStack>
-                </VStack>
+                  <VStack alignItems="flex-start" spacing={1}>
+                    <Text fontSize="xs" color="gray">Rpc Endpoint</Text>
+                    <HStack w="100%">
+                      <Heading fontSize="sm" whiteSpace="nowrap"
+                        overflow="hidden" textOverflow="ellipsis" w="calc(100% - 40px)">
+                        {appchainSettings?.rpcEndpoint || 'loading'}
+                      </Heading>
+                      <IconButton aria-label="copy" size="xs" onClick={onRpcEndpointCopy}>
+                        {rpcEndpointCopied ? <CheckIcon /> : <CopyIcon />}
+                      </IconButton>
+                    </HStack>
+                  </VStack>
                 </Skeleton>
-                
-                <Flex mt={3} justifyContent="space-between">
+
+                <Flex mt={3}>
                   <VStack alignItems="flex-start" spacing={1}>
                     <Text fontSize="xs" color="gray">Current Era</Text>
                     {
                       currentEra !== undefined ?
-                      <Heading fontSize="sm">
-                        { DecimalUtils.beautify(new Decimal(currentEra), 0) }
-                      </Heading> : <Spinner size="sm" />
+                        <Heading fontSize="sm">
+                          {DecimalUtils.beautify(new Decimal(currentEra), 0)}
+                        </Heading> : <Spinner size="sm" />
                     }
                   </VStack>
+
+                  <VStack alignItems="flex-start" spacing={1} ml={12}>
+                    <Text fontSize="xs" color="gray">Next Era</Text>
+                    {
+                      nextEraTimeLeft > 0 ?
+                        <Tooltip label={dayjs(nextEraTime).format('YYYY-MM-DD HH:mm:ss')}>
+                          <HStack>
+                            <Heading fontSize="sm">
+                              {dayjs.duration(Math.floor(nextEraTimeLeft / 1000), 'seconds').humanize(true)}
+                            </Heading>
+                            <CircularProgress value={(epochDurationMs - nextEraTimeLeft) / (epochDurationMs/100)} size={4} thickness={18} />
+                          </HStack>
+                        </Tooltip> :
+                        <Spinner size="sm" />
+                    }
+                  </VStack>
+
+                </Flex>
+
+                <Flex mt={3} justifyContent="space-between">
                   <VStack alignItems="flex-start" spacing={1}>
                     <Text fontSize="xs" color="gray">Block Height</Text>
                     {
                       bestBlock > 0 ?
-                      <Heading fontSize="sm">
-                        { DecimalUtils.beautify(new Decimal(bestBlock), 0) }
-                      </Heading> : <Spinner size="sm" />
+                        <Heading fontSize="sm">
+                          {DecimalUtils.beautify(new Decimal(bestBlock), 0)}
+                        </Heading> : <Spinner size="sm" />
                     }
                   </VStack>
                 </Flex>
@@ -404,32 +446,32 @@ export const Appchain: React.FC = () => {
               </GridItem>
               <GridItem colSpan={4}>
                 <Skeleton isLoaded={!!appchainInfo}>
-                <VStack alignItems="flex-start" spacing={1}>
-                  <Text fontSize="xs" color="gray">Token</Text>
-                  <HStack w="100%">
-                    <Heading fontSize="sm" whiteSpace="nowrap"
-                      overflow="hidden" textOverflow="ellipsis">
-                      {appchainInfo?.appchainMetadata.fungibleTokenMetadata.name || 'loading'}
-                      ({appchainInfo?.appchainMetadata.fungibleTokenMetadata.symbol})
-                    </Heading>
-                  </HStack>
-                </VStack>
+                  <VStack alignItems="flex-start" spacing={1}>
+                    <Text fontSize="xs" color="gray">Token</Text>
+                    <HStack w="100%">
+                      <Heading fontSize="sm" whiteSpace="nowrap"
+                        overflow="hidden" textOverflow="ellipsis">
+                        {appchainInfo?.appchainMetadata.fungibleTokenMetadata.name || 'loading'}
+                        ({appchainInfo?.appchainMetadata.fungibleTokenMetadata.symbol})
+                      </Heading>
+                    </HStack>
+                  </VStack>
                 </Skeleton>
-              
+
                 <VStack alignItems="flex-start" spacing={1} mt={3}>
                   <Text fontSize="xs" color="gray">Total Issuance</Text>
                   <HStack w="100%">
                     {
                       totalIssuance.gt(ZERO_DECIMAL) ?
-                      <Heading fontSize="sm" whiteSpace="nowrap"
-                        overflow="hidden" textOverflow="ellipsis">
-                        { DecimalUtils.beautify(totalIssuance) }
-                      </Heading> :
-                      <Spinner size="sm" />
+                        <Heading fontSize="sm" whiteSpace="nowrap"
+                          overflow="hidden" textOverflow="ellipsis">
+                          {DecimalUtils.beautify(totalIssuance)}
+                        </Heading> :
+                        <Spinner size="sm" />
                     }
                   </HStack>
                 </VStack>
-              
+
               </GridItem>
               <GridItem colSpan={1}>
                 <Center h="100%">
@@ -438,66 +480,66 @@ export const Appchain: React.FC = () => {
               </GridItem>
               <GridItem colSpan={5}>
                 <Skeleton isLoaded={!!appchainInfo}>
-                <VStack alignItems="flex-start" spacing={1}>
-                  <HStack color="gray">
-                    <Text fontSize="xs">IDO Amount</Text>
-                    <QuestionOutlineIcon boxSize={3} />
-                  </HStack>
-                  <HStack w="100%">
-                    <Heading fontSize="sm" whiteSpace="nowrap"
-                      overflow="hidden" textOverflow="ellipsis">
-                      {
-                        appchainInfo ? 
-                        DecimalUtils.beautify(
-                          appchainInfo.appchainMetadata.idoAmountOfWrappedAppchainToken
-                        ) :
-                        'loading'
-                      }
-                    </Heading>
-                  </HStack>
-                </VStack>
+                  <VStack alignItems="flex-start" spacing={1}>
+                    <HStack color="gray">
+                      <Text fontSize="xs">IDO Amount</Text>
+                      <QuestionOutlineIcon boxSize={3} />
+                    </HStack>
+                    <HStack w="100%">
+                      <Heading fontSize="sm" whiteSpace="nowrap"
+                        overflow="hidden" textOverflow="ellipsis">
+                        {
+                          appchainInfo ?
+                            DecimalUtils.beautify(
+                              appchainInfo.appchainMetadata.idoAmountOfWrappedAppchainToken
+                            ) :
+                            'loading'
+                        }
+                      </Heading>
+                    </HStack>
+                  </VStack>
                 </Skeleton>
 
                 <Skeleton isLoaded={!!appchainInfo}>
-                <VStack alignItems="flex-start" spacing={1} mt={3}>
-                  <HStack color="gray">
-                    <Text fontSize="xs">Premined Amount</Text>
-                    <QuestionOutlineIcon boxSize={3} />
-                  </HStack>
-                  <HStack w="100%">
-                    <Heading fontSize="sm" whiteSpace="nowrap"
-                      overflow="hidden" textOverflow="ellipsis">
-                      {
-                        appchainInfo ? 
-                        DecimalUtils.beautify(
-                          appchainInfo.appchainMetadata.preminedWrappedAppchainToken
-                        ) :
-                        'loading'
-                      }
-                    </Heading>
-                  </HStack>
-                </VStack>
+                  <VStack alignItems="flex-start" spacing={1} mt={3}>
+                    <HStack color="gray">
+                      <Text fontSize="xs">Premined Amount</Text>
+                      <QuestionOutlineIcon boxSize={3} />
+                    </HStack>
+                    <HStack w="100%">
+                      <Heading fontSize="sm" whiteSpace="nowrap"
+                        overflow="hidden" textOverflow="ellipsis">
+                        {
+                          appchainInfo ?
+                            DecimalUtils.beautify(
+                              appchainInfo.appchainMetadata.preminedWrappedAppchainToken
+                            ) :
+                            'loading'
+                        }
+                      </Heading>
+                    </HStack>
+                  </VStack>
                 </Skeleton>
 
                 <Skeleton isLoaded={!!appchainSettings}>
-                <VStack alignItems="flex-start" spacing={1} mt={3}>
-                  <HStack color="gray">
-                    <Text fontSize="xs">Era Reward</Text>
-                    <QuestionOutlineIcon boxSize={3} />
-                  </HStack>
-                  <HStack w="100%">
-                    <Heading fontSize="sm" whiteSpace="nowrap"
-                      overflow="hidden" textOverflow="ellipsis">
-                      {
-                        appchainSettings ? 
-                        DecimalUtils.beautify(
-                          appchainSettings.eraReward
-                        ) :
-                        'loading'
-                      }
-                    </Heading>
-                  </HStack>
-                </VStack>
+                  <VStack alignItems="flex-start" spacing={1} mt={3}>
+                    <HStack color="gray">
+                      <Text fontSize="xs">Era Reward</Text>
+                      <QuestionOutlineIcon boxSize={3} />
+                    </HStack>
+                    <HStack w="100%">
+                      <Heading fontSize="sm" whiteSpace="nowrap"
+                        overflow="hidden" textOverflow="ellipsis">
+                        {
+                          appchainSettings ?
+                            DecimalUtils.beautify(
+                              appchainSettings.eraReward
+                            ) :
+                            'loading'
+                        }
+                      </Heading>
+                    </HStack>
+                  </VStack>
                 </Skeleton>
               </GridItem>
             </SimpleGrid>
@@ -528,7 +570,7 @@ export const Appchain: React.FC = () => {
                 <BlocksTable apiPromise={apiPromise} bestNumber={bestBlock} />
               </TabPanel> */}
               <TabPanel pl={0} pr={0}>
-                <ValidatorsTable anchorContract={anchorContract} appchainId={id} size="md" 
+                <ValidatorsTable anchorContract={anchorContract} appchainId={id} size="md"
                   currentEra={currentEra} appchain={appchainInfo} apiPromise={apiPromise} />
               </TabPanel>
             </TabPanels>
