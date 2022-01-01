@@ -405,10 +405,7 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
                         <Switch id="can-be-delegate" isChecked={validator.canBeDelegatedTo} onChange={toggleDelegation} />
                       </FormControl> :
                       <Button size="xs" colorScheme="octoColor" variant="outline" onClick={() => onRegisterDelegator(validator.validatorId)}
-                        isDisabled={
-                          octopusConfig.networkId === 'mainnet' || 
-                          !validator.canBeDelegatedTo
-                        }>Delegate</Button>
+                        isDisabled={!validator.canBeDelegatedTo}>Delegate</Button>
                     )
               }
             </Td> : false
