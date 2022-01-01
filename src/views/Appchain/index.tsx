@@ -69,7 +69,7 @@ import { DecimalUtils, ZERO_DECIMAL } from 'utils';
 
 import { IoMdTime } from 'react-icons/io';
 import { octopusConfig } from 'config';
-import { OCT_TOKEN_DECIMALS, Gas } from 'primitives';
+import { OCT_TOKEN_DECIMALS, EPOCH_DURATION_MS } from 'primitives';
 import { useGlobalStore } from 'stores';
 import Decimal from 'decimal.js';
 import duration from 'dayjs/plugin/duration';
@@ -79,8 +79,6 @@ import { NodePanel } from './NodePanel';
 import { StakingPanel } from './StakingPanel';
 
 dayjs.extend(duration);
-
-const epochDurationMs = 24 * 3600 * 1000;
 
 export const Appchain: React.FC = () => {
   const { id } = useParams();
@@ -176,12 +174,16 @@ export const Appchain: React.FC = () => {
                 'get_index_range_of_staking_history',
                 'get_validator_rewards_of',
                 'get_delegator_rewards_of',
-                'get_wrapped_appchain_token'
+                'get_wrapped_appchain_token',
+                'get_user_staking_histories_of'
               ],
               changeMethods: [
                 'unbond_stake',
                 'withdraw_stake',
                 'unbond_delegation',
+                'enable_delegation',
+                'disable_delegation',
+                'decrease_delegation',
                 'decrease_stake',
                 'go_booting',
                 'go_live',
@@ -240,8 +242,8 @@ export const Appchain: React.FC = () => {
             const eraJSON = era.toJSON();
 
             setCurrentEra(eraJSON?.index);
-            setNextEraTime(eraJSON ? epochDurationMs + eraJSON.start : 0);
-            setNextEraTimeLeft(eraJSON ? (eraJSON.start + epochDurationMs) - new Date().getTime() : 0);
+            setNextEraTime(eraJSON ? EPOCH_DURATION_MS + eraJSON.start : 0);
+            setNextEraTimeLeft(eraJSON ? (eraJSON.start + EPOCH_DURATION_MS) - new Date().getTime() : 0);
 
             setTotalIssuance(
               DecimalUtils.fromString(
@@ -272,8 +274,6 @@ export const Appchain: React.FC = () => {
   }, [nextEraTimeLeft]);
 
   useInterval(updateNextEraTimeLeft, 1000);
-
-  console.log(nextEraTime);
 
   return (
     <>
@@ -417,7 +417,7 @@ export const Appchain: React.FC = () => {
                             <Heading fontSize="sm">
                               {dayjs.duration(Math.floor(nextEraTimeLeft / 1000), 'seconds').humanize(true)}
                             </Heading>
-                            <CircularProgress value={(epochDurationMs - nextEraTimeLeft) / (epochDurationMs/100)} size={4} thickness={18} />
+                            <CircularProgress value={(EPOCH_DURATION_MS - nextEraTimeLeft) / (EPOCH_DURATION_MS/100)} size={4} thickness={18} />
                           </HStack>
                         </Tooltip> :
                         <Spinner size="sm" />
@@ -554,7 +554,8 @@ export const Appchain: React.FC = () => {
           </GridItem>
           <GridItem colSpan={4}>
             <Box p={6} bg="white" boxShadow="rgb(0 0 0 / 20%) 0px 0px 2px" borderRadius="xl">
-              <StakingPanel anchorContract={anchorContract} appchain={appchainInfo} currentEra={currentEra} />
+              <StakingPanel anchorContract={anchorContract} appchain={appchainInfo} currentEra={currentEra} 
+                nextEraTimeLeft={nextEraTimeLeft} />
             </Box>
           </GridItem>
         </SimpleGrid>

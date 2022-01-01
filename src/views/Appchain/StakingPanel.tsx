@@ -22,7 +22,7 @@ import {
   AlertDialogFooter,
   Popover,
   Icon,
-  IconButton,
+  Progress,
   PopoverTrigger,
   PopoverContent,
   PopoverBody,
@@ -37,7 +37,13 @@ import Decimal from 'decimal.js';
 import { useGlobalStore } from 'stores';
 import { ZERO_DECIMAL, DecimalUtils } from 'utils';
 import { RegisterValidatorModal } from 'components';
-import { OCT_TOKEN_DECIMALS, Gas, FAILED_TO_REDIRECT_MESSAGE } from 'primitives';
+
+import { 
+  OCT_TOKEN_DECIMALS, 
+  Gas, 
+  FAILED_TO_REDIRECT_MESSAGE, 
+  EPOCH_DURATION_MS 
+} from 'primitives';
 
 import {
   AnchorContract,
@@ -45,16 +51,18 @@ import {
   RewardHistory,
   UnbondedHistory,
   TokenContract,
-  AccountId
+  AccountId,
+  OriginStakingHistory
 } from 'types';
 
 type StakingPanelProps = {
   appchain: AppchainInfo;
   currentEra: number;
   anchorContract: AnchorContract;
+  nextEraTimeLeft: number;
 }
 
-export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appchain, currentEra }) => {
+export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appchain, currentEra, nextEraTimeLeft }) => {
   const [isInValidatorList, setIsInValidatorList] = useState(false);
   const globalStore = useGlobalStore(state => state.globalStore);
 
@@ -78,6 +86,7 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
   const [withdrawStakesPopoverOpen, setWithdrawStakesPopoverOpen] = useBoolean(false);
   const [withdrawingUpvotes, setWithdrawingUpvotes] = useState(false);
   const [withdrawingDownvotes, setWithdrawingDownvotes] = useState(false);
+  const [stakingHistories, setStakingHistories] = useState<OriginStakingHistory[]>();
 
   const [registerModalOpen, setRegisterModalOpen] = useBoolean(false);
   const [depositAlertOpen, setDepositAlertOpen] = useBoolean(false);
@@ -134,11 +143,14 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
         }),
 
       anchorContract.get_wrapped_appchain_token(),
-
+      
       anchorContract.get_unbonded_stakes_of({ account_id: globalStore.accountId }),
 
-      anchorContract.get_validator_list_of()
-    ]).then(([deposit, wrappedToken, unbondStakes, validatorList]) => {
+      anchorContract.get_validator_list_of(),
+      anchorContract.get_user_staking_histories_of({ account_id: globalStore.accountId })
+    ]).then(([deposit, wrappedToken, unbondStakes, validatorList, histories]) => {
+
+      setStakingHistories(histories);
 
       setUnbondedStakes(unbondStakes.map(s => ({
         amount: DecimalUtils.fromString(s.amount, OCT_TOKEN_DECIMALS),
@@ -216,6 +228,11 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
     return !unbondedStakes?.length ? ZERO_DECIMAL :
       unbondedStakes.reduce((total, next) => next.unlockTime < new Date().getTime() ? total.plus(next.amount) : total, ZERO_DECIMAL);
   }, [unbondedStakes]);
+
+  const noEffectHistories = useMemo(() => stakingHistories?.filter(h => !h.has_taken_effect && (
+    h.staking_fact.DelegationDecreased || 
+    h.staking_fact.StakeDecreased
+  )), [stakingHistories]);
 
   const onAmountChange = ({ target: { value } }) => {
     setInputAmount(DecimalUtils.fromString(value));
@@ -499,7 +516,15 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
                         </Box>
                       </PopoverBody>
                     </PopoverContent>
-                  </Popover> : null
+                  </Popover> : 
+                  noEffectHistories?.length > 0 ?
+                  <Text fontSize="sm" color="gray">
+                    {noEffectHistories.length} action{noEffectHistories.length > 1 ? 's' : ''} will be effect {dayjs.duration(Math.floor(nextEraTimeLeft / 1000), 'seconds').humanize(true)}
+                  </Text> : null
+                  // <CircularProgress value={(EPOCH_DURATION_MS - nextEraTimeLeft) / (EPOCH_DURATION_MS/100)} size={6}>
+                  //   <CircularProgressLabel>{noEffectHistories.length}</CircularProgressLabel>
+                  // </CircularProgress> : null
+                  
               }
             </HStack>
         }

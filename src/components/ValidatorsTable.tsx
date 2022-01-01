@@ -110,10 +110,8 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
   const [delegateMorePopoverOpen, setDelegateMorePopoverOpen] = useBoolean(false);
   const [decreaseDelegationPopoverOpen, setDecreaseDelegationPopoverOpen] = useBoolean(false);
   const [unbondDelegationPopoverOpen, setUnbondDelegationPopoverOpen] = useBoolean(false);
-  const [claimRewardsPopoverOpen, setClaimRewardsPopoverOpen] = useBoolean(false);
   const [isDelegating, setIsDelegating] = useState(false);
   const [isUnbonding, setIsUnbonding] = useState(false);
-  const [isClaimingRewards, setIsClaimingRewards] = useState(false);
   const [isLoadingRewards, setIsLoadingRewards] = useBoolean(true);
 
   const toast = useToast();
@@ -160,7 +158,7 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
 
   useEffect(() => {
 
-    if (!anchorContract || !appchain) {
+    if (!anchorContract || !appchain || !currentEra || !globalStore.accountId) {
       return;
     }
 
@@ -188,7 +186,6 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
         delegator_id: globalStore.accountId,
         validator_id: validator.validatorId
       }).then(rewards => {
-        console.log(rewards);
         setDelegatorRewards(
           rewards.map(({ total_reward, unwithdrawn_reward, era_number }) => ({
             total_reward: DecimalUtils.fromString(total_reward, appchain.appchainMetadata.fungibleTokenMetadata.decimals),
@@ -225,7 +222,7 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
       .ft_transfer_call(
         {
           receiver_id: anchorContract.contractId,
-          amount: delegateAmount.toString(),
+          amount: DecimalUtils.toU64(delegateAmount, OCT_TOKEN_DECIMALS).toString(),
           msg: JSON.stringify({
             IncreaseDelegation: {
               validator_id: id
@@ -250,20 +247,13 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
 
   const onDecreaseDelegation = (id) => {
     setIsDelegating(true);
-    globalStore
-      .tokenContract
-      .ft_transfer_call(
+    anchorContract
+      .decrease_delegation(
         {
-          receiver_id: anchorContract.contractId,
-          amount: delegateAmount.toString(),
-          msg: JSON.stringify({
-            DecreaseDelegation: {
-              validator_id: id
-            }
-          })
+          validator_id: id,
+          amount: DecimalUtils.toU64(delegateAmount, OCT_TOKEN_DECIMALS).toString()
         },
-        Gas.COMPLEX_CALL_GAS,
-        1,
+        Gas.COMPLEX_CALL_GAS
       ).catch(err => {
         if (err.message === FAILED_TO_REDIRECT_MESSAGE) {
           return;
@@ -306,7 +296,21 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
   }
 
   const toggleDelegation = () => {
+    const method = validator.canBeDelegatedTo ? anchorContract.disable_delegation :
+      anchorContract.enable_delegation;
     
+    method({}, Gas.COMPLEX_CALL_GAS).catch(err => {
+      if (err.message === FAILED_TO_REDIRECT_MESSAGE) {
+        return;
+      }
+      toast({
+        position: 'top-right',
+        title: 'Error',
+        description: err.toString(),
+        status: 'error'
+      });
+      
+    });
   }
 
   const isYou = useMemo(() => globalStore && validator &&
