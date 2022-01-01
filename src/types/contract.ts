@@ -14,6 +14,7 @@ import {
   OriginWrappedAppchainToken,
   StorageDeposit,
   OriginUnbondedHistory,
+  OriginStakingHistory,
   OriginAppchainValidator
 } from 'types';
 
@@ -120,16 +121,16 @@ type WtidrawDelegatorRewardsArgs = {
 }
 
 type BurnWrappedAppchainTokenArgs = {
-  receiver_id: String;
+  receiver_id: string;
   amount: string;
 }
 
 type WithdrawStakeArgs = {
-  account_id: String;
+  account_id: string;
 }
 
 type DecreaseStakeArgs = {
-  amount: String;
+  amount: string;
 }
 
 type GetDelegatorRewardsOfArgs = {
@@ -137,6 +138,15 @@ type GetDelegatorRewardsOfArgs = {
   end_era: string;
   delegator_id: AccountId;
   validator_id: AccountId;
+}
+
+type DecreaseDelegationArgs = {
+  validator_id: string;
+  amount: string;
+}
+
+type GetUserStakingHistoriesOfArgs = {
+  account_id: string; 
 }
 
 export class TokenContract extends Contract {
@@ -242,6 +252,14 @@ export class AnchorContract extends Contract {
     return this.get_delegator_rewards_of(args);
   }
 
+  enable_delegation(args: {}, gas: string) {
+    return this.enable_delegation(args, gas);
+  }
+
+  disable_delegation(args: {}, gas: string) {
+    return this.disable_delegation(args, gas);
+  }
+
   get_validator_deposit_of(args: GetValidatorDepositOfArgs): Promise<string> {
     return this.get_validator_deposit_of(args);
   } 
@@ -304,6 +322,14 @@ export class AnchorContract extends Contract {
 
   decrease_stake(args: DecreaseStakeArgs, gas: string) {
     return this.decrease_stake(args, gas);
+  }
+
+  get_user_staking_histories_of(args: GetUserStakingHistoriesOfArgs): Promise<OriginStakingHistory[]> {
+    return this.get_user_staking_histories_of(args);
+  }
+
+  decrease_delegation(args: DecreaseDelegationArgs, gas: string) {
+    return this.decrease_delegation(args, gas);
   }
 
   get_wrapped_appchain_token(): Promise<OriginWrappedAppchainToken> {

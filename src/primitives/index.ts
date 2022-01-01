@@ -10,3 +10,5 @@ export const Gas = {
 }
 
 export const OCT_TOKEN_DECIMALS = 18;
+
+export const EPOCH_DURATION_MS = 24 * 3600 * 1000;
