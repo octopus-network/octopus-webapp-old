@@ -147,10 +147,10 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
       anchorContract.get_unbonded_stakes_of({ account_id: globalStore.accountId }),
 
       anchorContract.get_validator_list_of(),
-      anchorContract.get_user_staking_histories_of({ account_id: globalStore.accountId })
-    ]).then(([deposit, wrappedToken, unbondStakes, validatorList, histories]) => {
+      // anchorContract.get_user_staking_histories_of({ account_id: globalStore.accountId })
+    ]).then(([deposit, wrappedToken, unbondStakes, validatorList]) => {
 
-      setStakingHistories(histories);
+      // setStakingHistories(histories);
 
       setUnbondedStakes(unbondStakes.map(s => ({
         amount: DecimalUtils.fromString(s.amount, OCT_TOKEN_DECIMALS),
