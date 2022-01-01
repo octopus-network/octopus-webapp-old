@@ -380,19 +380,20 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
                           <MenuItem onClick={setDecreaseDelegationPopoverOpen.on}>
                             <HStack fontSize="sm"><MinusIcon boxSize={3} /> <Text>Decrease Delegation</Text></HStack>
                           </MenuItem>
-                          {
-                            unwithdrawedDelegatorRewards.gt(ZERO_DECIMAL) ?
-                            <MenuItem onClick={() => onClaimDelegatorRewards(validator.validatorId)}>
-                              <HStack fontSize="sm" color="blue"><Icon as={BiCoinStack} boxSize={3} />
-                              <Text>Claim {DecimalUtils.beautify(unwithdrawedDelegatorRewards)} {appchain?.appchainMetadata.fungibleTokenMetadata.symbol}</Text>
-                            </HStack>
-                            </MenuItem> : null
-                          }
+                          
                         </MenuGroup>
                         <MenuDivider />
-                        <MenuItem onClick={setUnbondDelegationPopoverOpen.on}>
-                          <HStack fontSize="sm" color="red"><CloseIcon boxSize={3} /> <Text>Unbond Delegation</Text></HStack>
-                        </MenuItem>
+                        {
+                          unwithdrawedDelegatorRewards.gt(ZERO_DECIMAL) ?
+                          <MenuItem onClick={() => onClaimDelegatorRewards(validator.validatorId)}>
+                            <HStack fontSize="sm" color="blue"><Icon as={BiCoinStack} boxSize={3} />
+                            <Text>Claim {DecimalUtils.beautify(unwithdrawedDelegatorRewards)} {appchain?.appchainMetadata.fungibleTokenMetadata.symbol}</Text>
+                          </HStack>
+                          </MenuItem> : 
+                          <MenuItem onClick={setUnbondDelegationPopoverOpen.on}>
+                            <HStack fontSize="sm" color="red"><CloseIcon boxSize={3} /> <Text>Unbond Delegation</Text></HStack>
+                          </MenuItem>
+                        }
                       </MenuList>
                     </Menu> :
                     (
