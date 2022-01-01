@@ -21,8 +21,8 @@ const TokenItem = ({ token, ...rest }) => {
           <Avatar name={metadata.symbol} src={metadata.icon} bg={'gray.100'} p="1" size="sm" /> 
           <VStack alignItems="flex-start" spacing="0" ml="4">
             <Heading fontSize="lg" fontWeight="600">{metadata.symbol}</Heading>
-            <Text color="gray" fontSize="sm" maxW="100px" overflow="hidden"
-              textOverflow="ellipsis" whiteSpace="nowrap">{contractId}</Text>
+            {/* <Text color="gray" fontSize="sm" maxW="100px" overflow="hidden"
+              textOverflow="ellipsis" whiteSpace="nowrap">{contractId}</Text> */}
           </VStack>
         </Flex>
         <VStack alignItems="flex-end" spacing="0">

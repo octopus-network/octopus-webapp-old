@@ -519,7 +519,7 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
                   </Popover> : 
                   noEffectHistories?.length > 0 ?
                   <Text fontSize="sm" color="gray">
-                    {noEffectHistories.length} action{noEffectHistories.length > 1 ? 's' : ''} will be effect {dayjs.duration(Math.floor(nextEraTimeLeft / 1000), 'seconds').humanize(true)}
+                    {noEffectHistories.length} {noEffectHistories.length > 1 ? 'hisotries' : 'hisotry'} will be effected {dayjs.duration(Math.floor(nextEraTimeLeft / 1000), 'seconds').humanize(true)}
                   </Text> : null
                   // <CircularProgress value={(EPOCH_DURATION_MS - nextEraTimeLeft) / (EPOCH_DURATION_MS/100)} size={6}>
                   //   <CircularProgressLabel>{noEffectHistories.length}</CircularProgressLabel>
