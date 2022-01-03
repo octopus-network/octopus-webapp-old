@@ -211,7 +211,7 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
   const unwithdrawedDelegatorRewards = useMemo(() => {
     return !delegatorRewards?.length ? ZERO_DECIMAL :
     delegatorRewards.reduce((total, next) => total.plus(next.unwithdrawn_reward), ZERO_DECIMAL);
-  }, [rewards]);
+  }, [delegatorRewards]);
 
   const totalRewards = useMemo(() => rewards ?
     rewards.reduce((total, next) => total.plus(next.total_reward), ZERO_DECIMAL) : ZERO_DECIMAL,
@@ -564,6 +564,7 @@ export const ValidatorsTable: React.FC<ValidatorsTableProps> = ({
       setTimeout(() => {
         apiPromise?.query?.session?.validators()
           .then(vs => {
+            console.log(vs.map(v => v.toString()));
             setAppchainValidators(vs.map(v => v.toString()));
           });
       }, 500);
