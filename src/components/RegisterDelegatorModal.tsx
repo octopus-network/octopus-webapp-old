@@ -51,7 +51,7 @@ export const RegisterDelegatorModal: React.FC<RegisterDelegatorModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!anchorContract) {
+    if (!anchorContract || !globalStore.accountId) {
       return;
     }
     
