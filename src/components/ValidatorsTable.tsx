@@ -158,7 +158,7 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
 
   useEffect(() => {
 
-    if (!anchorContract || !appchain || !currentEra || !globalStore.accountId) {
+    if (!anchorContract || !appchain || !currentEra) {
       return;
     }
 
@@ -178,22 +178,25 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
         );
         setIsLoadingRewards.off();
       });
-      
-    anchorContract
-      .get_delegator_rewards_of({
-        start_era: '0',
-        end_era: currentEra?.toString() || '0',
-        delegator_id: globalStore.accountId,
-        validator_id: validator.validatorId
-      }).then(rewards => {
-        setDelegatorRewards(
-          rewards.map(({ total_reward, unwithdrawn_reward, era_number }) => ({
-            total_reward: DecimalUtils.fromString(total_reward, appchain.appchainMetadata.fungibleTokenMetadata.decimals),
-            unwithdrawn_reward: DecimalUtils.fromString(unwithdrawn_reward, appchain.appchainMetadata.fungibleTokenMetadata.decimals),
-            eraNumber: (era_number as any) * 1
-          }))
-        );
-      });
+    
+    if (globalStore.accountId) {
+      anchorContract
+        .get_delegator_rewards_of({
+          start_era: '0',
+          end_era: currentEra?.toString() || '0',
+          delegator_id: globalStore.accountId,
+          validator_id: validator.validatorId
+        }).then(rewards => {
+          setDelegatorRewards(
+            rewards.map(({ total_reward, unwithdrawn_reward, era_number }) => ({
+              total_reward: DecimalUtils.fromString(total_reward, appchain.appchainMetadata.fungibleTokenMetadata.decimals),
+              unwithdrawn_reward: DecimalUtils.fromString(unwithdrawn_reward, appchain.appchainMetadata.fungibleTokenMetadata.decimals),
+              eraNumber: (era_number as any) * 1
+            }))
+          );
+        });
+    }
+    
   }, [anchorContract, currentEra, globalStore, appchain, validator]);
 
   const unwithdraedAmount = useMemo(() => {
@@ -405,10 +408,7 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
                         <Switch id="can-be-delegate" isChecked={validator.canBeDelegatedTo} onChange={toggleDelegation} />
                       </FormControl> :
                       <Button size="xs" colorScheme="octoColor" variant="outline" onClick={() => onRegisterDelegator(validator.validatorId)}
-                        isDisabled={
-                          octopusConfig.networkId === 'mainnet' || 
-                          !validator.canBeDelegatedTo
-                        }>Delegate</Button>
+                        isDisabled={!validator.canBeDelegatedTo}>Delegate</Button>
                     )
               }
             </Td> : false
@@ -533,14 +533,16 @@ export const ValidatorsTable: React.FC<ValidatorsTableProps> = ({
       );
 
       setWrappedAppchainTokenContractId(wrappedToken.contract_account);
-
-      wrappedTokencontract
-        .storage_balance_of({ account_id: globalStore.accountId })
-        .then(storage => {
-          setWrappedAppchainTokenStorageBalance(
-            storage?.total ? DecimalUtils.fromString(storage.total, 24) : ZERO_DECIMAL
-          );
-        });
+      
+      if (globalStore.accountId) {
+        wrappedTokencontract
+          .storage_balance_of({ account_id: globalStore.accountId })
+          .then(storage => {
+            setWrappedAppchainTokenStorageBalance(
+              storage?.total ? DecimalUtils.fromString(storage.total, 24) : ZERO_DECIMAL
+            );
+          });
+      }
 
       setValidatorList(
         res.map(v => ({

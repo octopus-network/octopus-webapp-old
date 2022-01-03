@@ -517,7 +517,7 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
                       </PopoverBody>
                     </PopoverContent>
                   </Popover> : 
-                  noEffectHistories?.length > 0 ?
+                  noEffectHistories?.length > 0 && currentEra ?
                   <Text fontSize="sm" color="gray">
                     {noEffectHistories.length} {noEffectHistories.length > 1 ? 'hisotries' : 'hisotry'} will be effected {dayjs.duration(Math.floor(nextEraTimeLeft / 1000), 'seconds').humanize(true)}
                   </Text> : null

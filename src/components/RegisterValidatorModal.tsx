@@ -57,7 +57,7 @@ export const RegisterValidatorModal: React.FC<RegisterValidatorModalProps> = ({
   const [email, setEmail] = useState('');
 
   useEffect(() => {
-    if (!anchorContract) {
+    if (!anchorContract || !globalStore.accountId) {
       return;
     }
 
