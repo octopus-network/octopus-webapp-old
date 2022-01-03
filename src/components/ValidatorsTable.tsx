@@ -442,10 +442,14 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
         <Portal containerRef={actionsRef}>
           <PopoverContent>
             <PopoverBody>
-              <Flex p={2}>
-                <Input placeholder="amount of OCT" ref={decreaseAmountInputRef}
-                  onChange={onDelegateAmountChange} />
-              </Flex>
+              <Box p={2}>
+                <Flex whiteSpace="break-spaces" textAlign="left">
+                  <Text fontSize="sm" color="gray">Your decreased stakes will be claimable after 28 days.</Text>
+                </Flex>
+                <Flex mt={2}>
+                  <Input placeholder="amount of OCT" ref={decreaseAmountInputRef} mt={2} onChange={onDelegateAmountChange} />
+                </Flex>
+              </Box>
             </PopoverBody>
             <PopoverFooter d="flex" justifyContent="space-between" alignItems="center">
               <Text color="gray" fontSize="xs">Delegated: {DecimalUtils.beautify(delegatedDeposits)} OCT</Text>

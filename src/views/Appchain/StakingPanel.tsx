@@ -591,7 +591,8 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
                     <PopoverContent>
                       <PopoverBody>
                         <Box p={2}>
-                          <Flex>
+                          <Text fontSize="sm" color="gray">Your decreased stakes will be claimable after 28 days.</Text>
+                          <Flex mt={2}>
                             <Input placeholder="amount of OCT" ref={decreaseStakeAmountInputRef}
                               onChange={onDecreaseAmountChange} type="number" />
                           </Flex>
@@ -617,9 +618,10 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
                     </PopoverTrigger>
                     <PopoverContent>
                       <PopoverBody>
-                        <Flex p={2}>
-                          <Heading fontSize="lg">Are you confirm to unbond stake?</Heading>
-                        </Flex>
+                        <Box p={2}>
+                          <Heading fontSize="lg">Are you confirm to unbond?</Heading>
+                          <Text color="gray" fontSize="sm" mt={2}>Your unbonded stakes will be claimable after 28 days.</Text>
+                        </Box>
                       </PopoverBody>
                       <PopoverFooter d="flex" justifyContent="space-between" alignItems="center">
                         <Text fontSize="sm" color="gray">
