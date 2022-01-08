@@ -467,8 +467,9 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
         <Portal containerRef={actionsRef}>
           <PopoverContent>
             <PopoverBody>
-              <Flex alignItems="flex-start" p={2}>
+              <Flex p={2} alignItems="flex-start" flexDirection="column" whiteSpace="break-spaces" textAlign="left">
                 <Heading fontSize="md" color="black">Are you sure to unbond?</Heading>
+                <Text color="gray" fontSize="sm" mt={2}>Your unbonded stakes will be claimable after 28 days.</Text>
               </Flex>
               <Flex p={2}>
                 <HStack>
