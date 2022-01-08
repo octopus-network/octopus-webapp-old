@@ -63,7 +63,6 @@ import { RegisterDelegatorModal } from 'components';
 import { FAILED_TO_REDIRECT_MESSAGE, Gas, OCT_TOKEN_DECIMALS } from 'primitives';
 import Decimal from 'decimal.js';
 import { DecimalUtils, ZERO_DECIMAL, toShortAddress } from 'utils';
-import { octopusConfig } from 'config';
 import { encodeAddress } from '@polkadot/util-crypto';
 import { useGlobalStore } from 'stores';
 import { BiCoinStack } from 'react-icons/bi';
@@ -640,7 +639,12 @@ export const ValidatorsTable: React.FC<ValidatorsTableProps> = ({
               <Tbody>
                 {
                   validatorList.map((v, idx) => {
-                    const base58Address = encodeAddress(v.validatorIdInAppchain);
+                    let base58Address;
+                    try {
+                      base58Address = encodeAddress(v.validatorIdInAppchain);
+                    } catch(err) {
+                      return null;
+                    }
 
                     return (
                       <ValidatorRow

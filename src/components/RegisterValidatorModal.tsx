@@ -23,7 +23,7 @@ import {
 
 import { AnchorContract } from 'types';
 
-import { decodeAddress } from '@polkadot/util-crypto';
+import { base58Decode } from '@polkadot/util-crypto';
 import { u8aToHex } from '@polkadot/util';
 import { useTranslation } from 'react-i18next';
 import { FAILED_TO_REDIRECT_MESSAGE, Gas, OCT_TOKEN_DECIMALS } from 'primitives';
@@ -90,7 +90,7 @@ export const RegisterValidatorModal: React.FC<RegisterValidatorModalProps> = ({
     
     let hexId = '';
     try {
-      const u8a = decodeAddress(validatorId);
+      const u8a = base58Decode(validatorId);
       hexId = u8aToHex(u8a);
     } catch(err) {
 
