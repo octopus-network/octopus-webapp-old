@@ -158,7 +158,7 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
 
   useEffect(() => {
 
-    if (!anchorContract || !appchain || !currentEra) {
+    if (!anchorContract || !appchain || currentEra === undefined) {
       return;
     }
 

@@ -22,7 +22,6 @@ import {
   AlertDialogFooter,
   Popover,
   Icon,
-  Progress,
   PopoverTrigger,
   PopoverContent,
   PopoverBody,
@@ -41,8 +40,7 @@ import { RegisterValidatorModal } from 'components';
 import { 
   OCT_TOKEN_DECIMALS, 
   Gas, 
-  FAILED_TO_REDIRECT_MESSAGE, 
-  EPOCH_DURATION_MS 
+  FAILED_TO_REDIRECT_MESSAGE
 } from 'primitives';
 
 import {
@@ -147,10 +145,10 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
       anchorContract.get_unbonded_stakes_of({ account_id: globalStore.accountId }),
 
       anchorContract.get_validator_list_of(),
-      // anchorContract.get_user_staking_histories_of({ account_id: globalStore.accountId })
-    ]).then(([deposit, wrappedToken, unbondStakes, validatorList]) => {
+      anchorContract.get_user_staking_histories_of({ account_id: globalStore.accountId })
+    ]).then(([deposit, wrappedToken, unbondStakes, validatorList, histories]) => {
 
-      // setStakingHistories(histories);
+      setStakingHistories(histories);
 
       setUnbondedStakes(unbondStakes.map(s => ({
         amount: DecimalUtils.fromString(s.amount, OCT_TOKEN_DECIMALS),
@@ -518,9 +516,11 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
                     </PopoverContent>
                   </Popover> : 
                   noEffectHistories?.length > 0 && currentEra ?
-                  <Text fontSize="sm" color="gray">
-                    {noEffectHistories.length} {noEffectHistories.length > 1 ? 'hisotries' : 'hisotry'} will be effected {dayjs.duration(Math.floor(nextEraTimeLeft / 1000), 'seconds').humanize(true)}
-                  </Text> : null
+                  <HStack>
+                    <Text fontSize="sm" color="gray">
+                      {noEffectHistories.length} {noEffectHistories.length > 1 ? 'hisotries' : 'hisotry'} will be effected {dayjs.duration(Math.floor(nextEraTimeLeft / 1000), 'seconds').humanize(true)}
+                    </Text>
+                  </HStack> : null
                   // <CircularProgress value={(EPOCH_DURATION_MS - nextEraTimeLeft) / (EPOCH_DURATION_MS/100)} size={6}>
                   //   <CircularProgressLabel>{noEffectHistories.length}</CircularProgressLabel>
                   // </CircularProgress> : null
