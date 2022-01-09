@@ -91,7 +91,7 @@ export const RegisterValidatorModal: React.FC<RegisterValidatorModalProps> = ({
     let hexId = '';
     try {
       if (isHex(validatorId)) {
-        throw new Error('Is Hex');
+        throw new Error('Invalid validator account');
       }
       const u8a = decodeAddress(validatorId);
       hexId = u8aToHex(u8a);

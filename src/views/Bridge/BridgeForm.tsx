@@ -342,7 +342,7 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
     let hexAddress = '';
     try {
       if (isHex(targetAddress)) {
-        throw new Error('Is Hex');
+        throw new Error('Invalid validator account');
       }
       const u8a = decodeAddress(targetAddress);
       hexAddress = u8aToHex(u8a);
