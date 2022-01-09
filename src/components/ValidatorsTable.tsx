@@ -527,6 +527,7 @@ export const ValidatorsTable: React.FC<ValidatorsTableProps> = ({
       anchorContract.get_validator_list_of(),
       anchorContract.get_wrapped_appchain_token()
     ]).then(([res, wrappedToken]) => {
+      console.log(res);
       const wrappedTokencontract = new TokenContract(
         globalStore.walletConnection.account(),
         wrappedToken.contract_account,

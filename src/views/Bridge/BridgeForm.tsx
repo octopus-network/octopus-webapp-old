@@ -44,7 +44,7 @@ import { ZERO_DECIMAL, DecimalUtils } from 'utils';
 import Decimal from 'decimal.js';
 import { decodeAddress } from '@polkadot/util-crypto';
 import { web3FromSource, web3Enable } from '@polkadot/extension-dapp';
-import { u8aToHex, stringToHex } from '@polkadot/util';
+import { u8aToHex, stringToHex, isHex } from '@polkadot/util';
 import { Gas } from 'primitives';
 
 type BridgeFormProps = {
@@ -341,6 +341,9 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
   const burn = async () => {
     let hexAddress = '';
     try {
+      if (isHex(targetAddress)) {
+        throw new Error('Is Hex');
+      }
       const u8a = decodeAddress(targetAddress);
       hexAddress = u8aToHex(u8a);
     } catch(err) {
@@ -350,6 +353,7 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
         status: 'error'
       });
     }
+
     setIsTransfering.on();
     const amount_U64 = DecimalUtils.toU64(new Decimal(amount), bridgeToken.decimals);
 
