@@ -338,7 +338,7 @@ export const Appchain: React.FC = () => {
                 </Button>
               </WrapItem>
               <WrapItem>
-                <Button size="sm" as={Link} isExternal href={`${octopusConfig.octExplorerUrl}/${id}`}>
+                <Button size="sm" as={Link} isExternal href={`${octopusConfig.octExplorerUrl}/?appchain=${id}`}>
                   <HStack>
                     <Icon as={AiOutlineSearch} />
                     <Text fontSize="xs">Explorer</Text>
