@@ -296,7 +296,7 @@ export const Appchains: React.FC = () => {
             <StatBox title={t('Auditing')} value={numAuditing} icon={AiOutlineAudit} href="#auditing" />
             <StatBox title={t('Voting')} value={numInQueue} icon={FiCheckCircle} href="#voting" />
             {/* <StatBox title={t('Staking')} value={numStaging} icon={AiOutlineInbox} href="#staking" /> */}
-            <StatBox title={t('Booting')} value={numBooting} icon={VscServerProcess} href="#booting" />
+            <StatBox title={t('Booting')} value={(numBooting as any) * 1 + (numStaging as any) * 1} icon={VscServerProcess} href="#booting" />
             <StatBox title={t('Running')} value={numActive} icon={AiOutlineDashboard} href="#active" />
           </SimpleGrid>
         </Box>
@@ -315,7 +315,8 @@ export const Appchains: React.FC = () => {
               <>
                 <SimpleGrid columns={{ base: 15, md: 19 }} color="gray" pl={4} pr={4} pb={2} fontSize="sm">
                   <GridItem colSpan={5}>{t('ID')}</GridItem>
-                  <GridItem colSpan={4}>{t('Validators')}</GridItem>
+                  <GridItem colSpan={2}>{t('Validators')}</GridItem>
+                  <GridItem colSpan={2}>{t('Delegators')}</GridItem>
                   <GridItem colSpan={4}>{t('Staked')}</GridItem>
                   <GridItem colSpan={4}>{t('APY')}</GridItem>
                   <GridItem colSpan={4} display={{ base: 'none', md: 'block' }} />

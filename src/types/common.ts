@@ -19,6 +19,7 @@ export type Transaction = {
   summary: string;
   addedTime: number;
   notificationIndex?: number;
+  sequenceId?: number;
   from: string;
   appchainId: string;
 }

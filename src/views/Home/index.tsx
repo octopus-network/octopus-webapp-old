@@ -26,7 +26,8 @@ import {
   AppchainState,
   AppchainSortingField,
   AppchainSortingOrder,
-  OriginAppchainInfo
+  OriginAppchainInfo,
+  AnchorContract
 } from 'types';
 
 import styled from 'styled-components';
@@ -69,6 +70,31 @@ const AppchainItem: React.FC<AppchainItemProps> = React.memo(({ appchain }) => {
 
   const { refData } = useRefDataStore();
 
+  const globalStore = useGlobalStore(state => state.globalStore);
+  const [delegatorCount, setDelegatorCount] = useState(0);
+
+  useEffect(() => {
+    globalStore
+      .registryContract
+      .get_appchain_status_of({ appchain_id: appchain.appchain_id })
+      .then(({ appchain_anchor }) => {
+        const contract = new AnchorContract(
+          globalStore.walletConnection.account(),
+          appchain_anchor,
+          {
+            viewMethods: [
+              'get_anchor_status'
+            ],
+            changeMethods: []
+          }
+        );
+
+        contract.get_anchor_status().then(status => {
+          setDelegatorCount(status.delegator_count_in_next_era || '0');
+        });
+      });
+  }, [appchain, globalStore]);
+
   const apy = useMemo(() => {
     if (!appchain || !refData) return 0;
     const tokenAsset = tokenAssets[appchain.appchain_id]?.[0];
@@ -110,8 +136,11 @@ const AppchainItem: React.FC<AppchainItemProps> = React.memo(({ appchain }) => {
           <Heading fontSize="xl">{appchain.appchain_id}</Heading>
         </HStack>
       </GridItem>
-      <GridItem colSpan={4}>
+      <GridItem colSpan={2}>
         <Text fontSize="xl">{appchain.validator_count}</Text>
+      </GridItem>
+      <GridItem colSpan={2}>
+        <Text fontSize="xl">{delegatorCount}</Text>
       </GridItem>
       <GridItem colSpan={4}>
         <Text fontSize="md">
@@ -249,7 +278,8 @@ export const Home: React.FC = () => {
         <Box mt="8" pb="4">
           <SimpleGrid columns={{ base: 15, md: 19 }} color="gray" pl="6" pr="6" fontSize="sm">
             <GridItem colSpan={5}>{t('ID')}</GridItem>
-            <GridItem colSpan={4}>{t('Validators')}</GridItem>
+            <GridItem colSpan={2}>{t('Validators')}</GridItem>
+            <GridItem colSpan={2}>{t('Delegators')}</GridItem>
             <GridItem colSpan={4}>{t('Staked')}</GridItem>
             <GridItem colSpan={2}>{t('APY')}</GridItem>
           </SimpleGrid>

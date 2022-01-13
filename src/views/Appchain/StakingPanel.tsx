@@ -28,7 +28,7 @@ import {
   PopoverFooter
 } from '@chakra-ui/react';
 
-import { MinusIcon, InfoIcon, AddIcon, CloseIcon } from '@chakra-ui/icons';
+import { MinusIcon, InfoIcon, AddIcon, CloseIcon, ChevronRightIcon } from '@chakra-ui/icons';
 import { RiMoneyDollarCircleLine } from 'react-icons/ri';
 import BN from 'bn.js';
 import dayjs from 'dayjs';
@@ -36,6 +36,8 @@ import Decimal from 'decimal.js';
 import { useGlobalStore } from 'stores';
 import { ZERO_DECIMAL, DecimalUtils } from 'utils';
 import { RegisterValidatorModal } from 'components';
+
+import { HistoriesModal } from './HistoriesModal';
 
 import { 
   OCT_TOKEN_DECIMALS, 
@@ -88,6 +90,7 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
 
   const [registerModalOpen, setRegisterModalOpen] = useBoolean(false);
   const [depositAlertOpen, setDepositAlertOpen] = useBoolean(false);
+  const [historiesModalOpen, setHistoriesModalOpen] = useBoolean(false);
 
   const toast = useToast();
 
@@ -430,6 +433,10 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
         <HStack>
           <Icon as={RiMoneyDollarCircleLine} boxSize={6} />
           <Heading fontSize="lg">My Staking</Heading>
+          <Text color="gray" fontSize="sm" onClick={setHistoriesModalOpen.toggle}
+            _hover={{ textDecoration: 'underline', cursor: 'pointer' }}>
+            History <ChevronRightIcon /> 
+          </Text>
         </HStack>
         {
           userUpvoteDeposit.gt(ZERO_DECIMAL) || userDownvoteDeposit.gt(ZERO_DECIMAL) ?
@@ -678,6 +685,7 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
       </AlertDialog>
 
       <RegisterValidatorModal isOpen={registerModalOpen} onClose={setRegisterModalOpen.off} anchorContract={anchorContract} />
+      <HistoriesModal isOpen={historiesModalOpen} onClose={setHistoriesModalOpen.off} anchorContract={anchorContract} />
     </>
   );
 }

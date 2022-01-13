@@ -147,7 +147,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ appchainId, isOpen, 
                         <Icon as={IoMdCheckmarkCircleOutline} w={4} h={4} /> :
                         <Icon as={IoMdCloseCircleOutline} w={4} h={4} />
                       }
-                      <Link ml={1} href={`https://explorer.${octopusConfig.networkId}.oct.network/${tx.appchainId}/tx/${tx.hash}`} isExternal>
+                      <Link ml={1} href={`https://explorer.${octopusConfig.networkId}.oct.network/?appchain=${tx.appchainId}#/extrinsics/${tx.hash}`} isExternal>
                         <HStack spacing={0}>
                           <Text fontSize="xs">View on Explorer</Text>
                           <ExternalLinkIcon w={3} h={3} />

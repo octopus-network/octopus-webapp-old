@@ -17,7 +17,13 @@ import {
   Input,
   Link,
   useToast,
-  Spinner
+  Spinner,
+  Table,
+  Thead,
+  Tr,
+  Th,
+  Td,
+  Tbody
 } from '@chakra-ui/react';
 
 import { Contract } from 'near-api-js';
@@ -26,7 +32,7 @@ import { CgProfile } from 'react-icons/cg';
 import { CheckIcon, CopyIcon, EditIcon, ExternalLinkIcon } from '@chakra-ui/icons';
 import { utils } from 'near-api-js';
 import { DecimalUtils, ZERO_DECIMAL, toShortAddress } from 'utils';
-import { ValidatorProfile } from 'types';
+import { ValidatorProfile, Delegator } from 'types';
 import { octopusConfig } from 'config';
 import { FAILED_TO_REDIRECT_MESSAGE, OCT_TOKEN_DECIMALS } from 'primitives';
 import { encodeAddress } from '@polkadot/util-crypto';
@@ -49,6 +55,7 @@ export const Profile: React.FC = () => {
   const [isSubmiting, setIsSubmiting] = useBoolean(false);
   const [validatorProfile, setValidatorProfile] = useState<ValidatorProfile>();
   const [anchor, setAnchor] = useState<any>();
+  const [delegators, setDelegators] = useState<Delegator[]>();
 
   const { hasCopied: hasCopiedValidatorId, onCopy: onCopyValidatorId } = useClipboard(validatorProfile ? encodeAddress(validatorProfile.validatorId) : '');
   const { hasCopied: hasCopiedEmail, onCopy: onCopyEmail } = useClipboard(validatorProfile?.email);
@@ -99,7 +106,8 @@ export const Profile: React.FC = () => {
         anchorContractId,
         {
           viewMethods: [
-            'get_validator_profile'
+            'get_validator_profile',
+            'get_delegators_of_validator_in_era'
           ],
           changeMethods: [
             'set_validator_profile'
@@ -128,6 +136,12 @@ export const Profile: React.FC = () => {
           email: profile?.email,
           socialMediaHandle: profile?.socialMediaHandle
         });
+      });
+    anchor
+      .get_delegators_of_validator_in_era({
+        validator_id: account
+      }).then(delegators => {
+        setDelegators(delegators);
       });
   }, [anchor, account]);
 
@@ -271,7 +285,35 @@ export const Profile: React.FC = () => {
             </Link> : null
           }
         </Flex>
+        <Divider mt={3} mb={3} />
+        <Heading fontSize="md">Delegators</Heading>
+        <Table variant='simple' size="sm" mt={3}>
+          <Thead>
+            <Tr>
+              <Th>Delegator</Th>
+              <Th textAlign="right">Delegation Amount</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {
+              delegators?.map((delegator, idx) => (
+                <Tr key={idx}>
+                  <Td>{delegator.delegator_id}</Td>
+                  <Td textAlign="right">
+                    {
+                      DecimalUtils.beautify(
+                        DecimalUtils.fromString(delegator.delegation_amount, OCT_TOKEN_DECIMALS)
+                      )
+                    } OCT
+                  </Td>
+                </Tr>
+              ))
+            }
+            
+          </Tbody>
+        </Table>
       </Box>
+      
     </Container>
   );
 }

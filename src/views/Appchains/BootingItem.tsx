@@ -45,7 +45,7 @@ const BootingItem: React.FC<BootingItemProps> = ({ appchain }) => {
           <Heading fontSize="lg">{appchain.appchain_id}</Heading>
         </HStack>
       </GridItem>
-      <GridItem colSpan={4}>
+      <GridItem colSpan={2}>
         <Text fontSize="xl">{appchain.validator_count}</Text>
       </GridItem>
       <GridItem colSpan={4}>
