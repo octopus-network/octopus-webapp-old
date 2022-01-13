@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useSpring, animated, config as SpringConfig } from 'react-spring';
 
 import { 
@@ -11,14 +11,14 @@ import {
   Button
 } from '@chakra-ui/react';
 
-import { OriginAppchainInfo } from 'types';
+import { OriginAppchainInfo, AnchorContract } from 'types';
 import { HiOutlineArrowNarrowRight } from 'react-icons/hi';
 import { useNavigate } from 'react-router-dom';
 import { DecimalUtils } from 'utils';
 import { OCT_TOKEN_DECIMALS } from 'primitives';
 import Decimal from 'decimal.js';
 import { AppchainListItem } from 'components';
-import { useRefDataStore } from 'stores';
+import { useRefDataStore, useGlobalStore } from 'stores';
 import { tokenAssets } from 'config';
 
 type RunningItemProps = {
@@ -29,6 +29,31 @@ const RunningItem: React.FC<RunningItemProps> = ({ appchain }) => {
   const navigate = useNavigate();
 
   const { refData } = useRefDataStore();
+
+  const globalStore = useGlobalStore(state => state.globalStore);
+  const [delegatorCount, setDelegatorCount] = useState(0);
+
+  useEffect(() => {
+    globalStore
+      .registryContract
+      .get_appchain_status_of({ appchain_id: appchain.appchain_id })
+      .then(({ appchain_anchor }) => {
+        const contract = new AnchorContract(
+          globalStore.walletConnection.account(),
+          appchain_anchor,
+          {
+            viewMethods: [
+              'get_anchor_status'
+            ],
+            changeMethods: []
+          }
+        );
+
+        contract.get_anchor_status().then(status => {
+          setDelegatorCount(status.delegator_count_in_next_era || '0');
+        });
+      });
+  }, [appchain, globalStore]);
 
   const apy = useMemo(() => {
     if (!appchain || !refData) return 0;
@@ -76,8 +101,11 @@ const RunningItem: React.FC<RunningItemProps> = ({ appchain }) => {
           <Heading fontSize="lg">{appchain.appchain_id}</Heading>
         </HStack>
       </GridItem>
-      <GridItem colSpan={4}>
+      <GridItem colSpan={2}>
         <Text fontSize="xl">{appchain.validator_count}</Text>
+      </GridItem>
+      <GridItem colSpan={2}>
+        <Text fontSize="xl">{delegatorCount}</Text>
       </GridItem>
       <GridItem colSpan={4}>
         <Text fontSize="md">

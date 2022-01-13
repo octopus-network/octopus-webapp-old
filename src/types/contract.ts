@@ -15,7 +15,8 @@ import {
   StorageDeposit,
   OriginUnbondedHistory,
   OriginStakingHistory,
-  OriginAppchainValidator
+  OriginAppchainValidator,
+  Delegator
 } from 'types';
 
 type FtBalanceOfArgs = {
@@ -149,6 +150,15 @@ type GetUserStakingHistoriesOfArgs = {
   account_id: string; 
 }
 
+type GetAppchainNotificationHistoryArgs = {
+  index: string;
+}
+
+type GetDelegatorsOfValidatorInEra = {
+  era_number: string;
+  validator_id: string;
+}
+
 export class TokenContract extends Contract {
  
   ft_balance_of(args: FtBalanceOfArgs): Promise<string> {
@@ -240,6 +250,10 @@ export class AnchorContract extends Contract {
     return this.get_appchain_settings();
   }
 
+  get_anchor_status(): Promise<any> {
+    return this.get_anchor_status();
+  }
+
   get_index_range_of_staking_history(): Promise<OriginIndexRange> {
     return this.get_index_range_of_staking_history();
   }
@@ -284,6 +298,10 @@ export class AnchorContract extends Contract {
     return this.get_validator_list_of();
   }
 
+  get_delegators_of_validator_in_era(args: GetDelegatorsOfValidatorInEra): Promise<Delegator[]> {
+    return this.get_delegators_of_validator_in_era(args);
+  }
+
   get_delegator_deposit_of(args: GetDelegatorDepositOfArgs): Promise<string> {
     return this.get_delegator_deposit_of(args);
   }
@@ -326,6 +344,10 @@ export class AnchorContract extends Contract {
 
   get_user_staking_histories_of(args: GetUserStakingHistoriesOfArgs): Promise<OriginStakingHistory[]> {
     return this.get_user_staking_histories_of(args);
+  }
+
+  get_appchain_notification_history(args: GetAppchainNotificationHistoryArgs): Promise<any> {
+    return this.get_appchain_notification_history(args);
   }
 
   decrease_delegation(args: DecreaseDelegationArgs, gas: string) {

@@ -152,6 +152,12 @@ export type OriginStakingHistory = {
   staking_fact: StakingFact;
 }
 
+export type Delegator = {
+  delegator_id: string;
+  delegation_amount: string;
+  validator_id: string;
+}
+
 export type RewardHistory = {
   eraNumber: number;
   total_reward: Decimal;

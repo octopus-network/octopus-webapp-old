@@ -141,7 +141,8 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
         {
           viewMethods: [
             'get_wrapped_appchain_token',
-            'get_appchain_settings'
+            'get_appchain_settings',
+            'get_appchain_notification_history'
           ],
           changeMethods: [
             'burn_wrapped_appchain_token'
@@ -214,7 +215,7 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
 
   useEffect(() => {
     
-    if (!sortedTxns?.length) {
+    if (!sortedTxns?.length || !anchorContract) {
       toast.closeAll();
       return;
     }
@@ -222,7 +223,7 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
     sortedTxns.forEach(txn => {
     
       if (txn.status === 'loading') {
-    
+     
         if (!toast.isActive(txn.hash)) {
           toast({
             id: txn.hash,
@@ -232,6 +233,10 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
             status: 'info',
             duration: null,
             isClosable: true,
+            render: (e) => ToastRender(txn, e.onClose)
+          });
+        } else {
+          toast.update(txn.hash, {
             render: (e) => ToastRender(txn, e.onClose)
           });
         }
@@ -264,6 +269,18 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
               });
             });
         }
+
+        if (txn.sequenceId) {
+          anchorContract
+            .get_appchain_notification_history({ index: txn.sequenceId.toString() })
+            .then(res => {
+              if (res) {
+                updateTxn(txn.hash, {
+                  status: 'success'
+                });
+              }
+            });
+        }
        
       } else if (txn.status === 'error') {
         if (toast.isActive(txn.hash)) {
@@ -282,7 +299,7 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
         }
       }
     });
-  }, [sortedTxns, toast, globalStore]);
+  }, [sortedTxns, toast, globalStore, anchorContract]);
 
   const checkTargetBalance = useCallback(() => {
     if (!targetAddress) {
@@ -382,13 +399,15 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
       apiPromise.tx.octopusAppchain.burnAsset(bridgeToken.assetId, hexAddress, amount_U64.toString()) :
       apiPromise.tx.octopusAppchain.lock(hexAddress, amount_U64.toString());
     
+    const txHash = tx.hash.toString();
+
     appendTxn({
       from: appchainAccount,
       message: 'Transfer Asset',
       summary: `Transfer ${amount} ${bridgeToken.symbol} to ${targetAddress}`,
       addedTime: new Date().getTime(),
       status: 'loading',
-      hash: tx.hash.toString(),
+      hash: txHash,
       appchainId: appchain.appchain_id
     });
 
@@ -397,11 +416,17 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
         setIsTransfering.off();
       }
       events.forEach(({ phase, event: { data, method, section } }) => {
-        console.log(phase.toString() + ' : ' + section + '.' + method + ' ' + data.toString());
+        
+        if (section === 'octopusAppchain' && method === 'Locked') {
+          updateTxn(txHash, {
+            message: 'Confirming',
+            sequenceId: data[3].toNumber()
+          });
+        }
       });
     }).catch(err => {
       
-      updateTxn(tx.hash.toString(), {
+      updateTxn(txHash, {
         status: 'error',
         message: err.toString()
       });
