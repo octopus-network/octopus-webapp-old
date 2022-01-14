@@ -433,10 +433,13 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
         <HStack>
           <Icon as={RiMoneyDollarCircleLine} boxSize={6} />
           <Heading fontSize="lg">My Staking</Heading>
-          <Text color="gray" fontSize="sm" onClick={setHistoriesModalOpen.toggle}
-            _hover={{ textDecoration: 'underline', cursor: 'pointer' }}>
-            History <ChevronRightIcon /> 
-          </Text>
+          {
+            globalStore.accountId ?
+            <Text color="gray" fontSize="sm" onClick={setHistoriesModalOpen.toggle}
+              _hover={{ textDecoration: 'underline', cursor: 'pointer' }}>
+              History <ChevronRightIcon /> 
+            </Text> : null
+          }
         </HStack>
         {
           userUpvoteDeposit.gt(ZERO_DECIMAL) || userDownvoteDeposit.gt(ZERO_DECIMAL) ?
