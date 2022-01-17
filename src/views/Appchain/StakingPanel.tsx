@@ -88,6 +88,7 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
   const [withdrawingDownvotes, setWithdrawingDownvotes] = useState(false);
   const [stakingHistories, setStakingHistories] = useState<OriginStakingHistory[]>();
 
+  const [claimRewardsPaused, setClaimRewardsPaused] = useState(false);
   const [registerModalOpen, setRegisterModalOpen] = useBoolean(false);
   const [depositAlertOpen, setDepositAlertOpen] = useBoolean(false);
   const [historiesModalOpen, setHistoriesModalOpen] = useBoolean(false);
@@ -148,8 +149,12 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
       anchorContract.get_unbonded_stakes_of({ account_id: globalStore.accountId }),
 
       anchorContract.get_validator_list_of(),
-      anchorContract.get_user_staking_histories_of({ account_id: globalStore.accountId })
-    ]).then(([deposit, wrappedToken, unbondStakes, validatorList, histories]) => {
+      anchorContract.get_user_staking_histories_of({ account_id: globalStore.accountId }),
+
+      anchorContract.get_anchor_status()
+    ]).then(([deposit, wrappedToken, unbondStakes, validatorList, histories, anchorStatus]) => {
+
+      setClaimRewardsPaused(anchorStatus.rewards_withdrawal_is_paused);
 
       setStakingHistories(histories);
 
@@ -486,7 +491,8 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
             <HStack>
               {
                 unwithdrawedAmount.gt(ZERO_DECIMAL) ?
-                <Button colorScheme="octoColor" size="sm" variant="ghost" onClick={onClaimRewards} isLoading={isClaiming} isDisabled={isClaiming}>
+                <Button colorScheme="octoColor" size="sm" variant="ghost" onClick={onClaimRewards} isLoading={isClaiming} 
+                  isDisabled={isClaiming || claimRewardsPaused}>
                   Claim {DecimalUtils.beautify(unwithdrawedAmount)} {appchain?.appchainMetadata.fungibleTokenMetadata.symbol}
                 </Button> : null
               }

@@ -75,7 +75,7 @@ const ToastRender = (txn: Transaction, onClose) => {
             </IconButton>
           </Flex>
           <Text fontSize="sm" mt={1}>{txn.summary}</Text>
-          <Link href={`https://explorer.${octopusConfig.networkId}.oct.network/${txn.appchainId}/tx/${txn.hash}`} isExternal>
+          <Link href={`https://explorer.${octopusConfig.networkId}.oct.network/?appchain=${txn.appchainId}#/extrinsics/${txn.hash}`} isExternal>
             <HStack fontSize="xs" color="gray" mt={1}>
               <Text>View on Explorer</Text>
               <ExternalLinkIcon />
@@ -123,6 +123,7 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
 
   const sortedTxns = useMemo(() => {
     let tmpArr = [];
+    
     Object.keys(transactions).forEach(hash => {
       let txn = transactions[hash];
       if (txn.from === account && txn.appchainId === appchain.appchain_id) {
@@ -271,9 +272,11 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
         }
 
         if (txn.sequenceId) {
+          console.log('haha', txn.sequenceId);
           anchorContract
             .get_appchain_notification_history({ index: txn.sequenceId.toString() })
             .then(res => {
+              console.log(res);
               if (res) {
                 updateTxn(txn.hash, {
                   status: 'success'
@@ -465,12 +468,9 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
             <Text fontSize="sm" opacity={.6}>
               {isReverse ? 'Near' : appchain?.appchain_id} to {isReverse ? appchain?.appchain_id : 'Near'}
             </Text>
-            {
-              octopusConfig.networkId === 'mainnet' ? null :
-              <IconButton aria-label="switch" size="xs" borderWidth={0} variant="outline" onClick={onToggleReverse} isRound>
-                <Icon as={AiOutlineSwap} />
-              </IconButton>
-            }
+            <IconButton aria-label="switch" size="xs" borderWidth={0} variant="outline" onClick={onToggleReverse} isRound>
+              <Icon as={AiOutlineSwap} />
+            </IconButton>
           </HStack>
         </Flex>
         <Box p={2} mt={6}>

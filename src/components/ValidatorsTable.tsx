@@ -122,6 +122,8 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
   const [rewards, setRewards] = useState<RewardHistory[]>();
   const [delegatorRewards, setDelegatorRewards] = useState<RewardHistory[]>();
 
+  const [claimRewardsPaused, setClaimRewardsPaused] = useState(false);
+
   useEffect(() => {
     if (delegateMorePopoverOpen) {
       setTimeout(() => {
@@ -151,6 +153,10 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
       setDelegatedDeposits(
         DecimalUtils.fromString(amount, OCT_TOKEN_DECIMALS)
       );
+    });
+
+    anchorContract.get_anchor_status().then(status => {
+      setClaimRewardsPaused(status.rewards_withdrawal_is_paused);
     });
 
   }, [anchorContract, globalStore, validator]);
@@ -386,7 +392,7 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
                         </MenuGroup>
                         <MenuDivider />
                         {
-                          unwithdrawedDelegatorRewards.gt(ZERO_DECIMAL) ?
+                          unwithdrawedDelegatorRewards.gt(ZERO_DECIMAL) && !claimRewardsPaused ?
                           <MenuItem onClick={() => onClaimDelegatorRewards(validator.validatorId)}>
                             <HStack fontSize="sm" color="blue"><Icon as={BiCoinStack} boxSize={3} />
                             <Text>Claim {DecimalUtils.beautify(unwithdrawedDelegatorRewards)} {appchain?.appchainMetadata.fungibleTokenMetadata.symbol}</Text>
