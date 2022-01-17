@@ -148,7 +148,7 @@ const AppchainItem: React.FC<AppchainItemProps> = React.memo(({ appchain }) => {
         <Text fontSize="xl">{appchain.validator_count}</Text>
       </GridItem>
       <GridItem colSpan={2}>
-        <Text fontSize="xl">{delegatorCount}</Text>
+        <Text fontSize="xl">{delegatorCount || '-'}</Text>
       </GridItem>
       <GridItem colSpan={4}>
         <Text fontSize="md">
