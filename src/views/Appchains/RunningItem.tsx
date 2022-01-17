@@ -43,14 +43,21 @@ const RunningItem: React.FC<RunningItemProps> = ({ appchain }) => {
           appchain_anchor,
           {
             viewMethods: [
-              'get_anchor_status'
+              'get_anchor_status',
+              'get_validator_list_of',
+              'get_delegators_of_validator_in_era'
             ],
             changeMethods: []
           }
         );
 
-        contract.get_anchor_status().then(status => {
-          setDelegatorCount(status.delegator_count_in_next_era || '0');
+        contract.get_validator_list_of().then(list => {
+          Promise.all(list.map(item => contract.get_delegators_of_validator_in_era({
+            validator_id: item.validator_id
+          }))).then(res => {
+            const total = res.reduce((total, delegators) => total + delegators.length, 0);
+            setDelegatorCount(total);
+          });
         });
       });
   }, [appchain, globalStore]);

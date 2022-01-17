@@ -155,7 +155,7 @@ type GetAppchainNotificationHistoryArgs = {
 }
 
 type GetDelegatorsOfValidatorInEra = {
-  era_number: string;
+  era_number?: string;
   validator_id: string;
 }
 
