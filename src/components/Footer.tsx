@@ -24,9 +24,9 @@ export const Footer = () => {
         <Box p="4" bg="rgba(120, 120, 155, .06)" borderRadius="5">
           <Center whiteSpace="nowrap" overflow="hidden">
             <HStack spacing={4}>
-              <Link href="#">Term of service</Link>
+              <Link href="#">Terms of Service</Link>
               <Text color="gray.300">|</Text>
-              <Link href="#">Privacy policy</Link>
+              <Link href="#">Privacy Policy</Link>
               <Text color="gray.300">|</Text>
               <Link target="_blank"
                 href={`${octopusConfig.nearExplorerUrl}/accounts/${octopusConfig.registryContractId}`}>Registry Contract</Link>
