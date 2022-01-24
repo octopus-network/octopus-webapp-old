@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import dayjs from 'dayjs';
 
 import {
   Modal,
@@ -46,6 +46,7 @@ export const HistoriesModal: React.FC<HistoriesModalProps> = ({
     anchorContract.get_user_staking_histories_of({
       account_id: globalStore.accountId
     }).then(histories => {
+     
       setHistories(histories);
     });
     
@@ -64,13 +65,14 @@ export const HistoriesModal: React.FC<HistoriesModalProps> = ({
                 <Th>Action</Th>
                 <Th>Amount</Th>
                 <Th>Effected</Th>
-                <Th>Block</Th>
+                <Th>Time</Th>
               </Tr>
             </Thead>
             <Tbody>
               {
                 histories?.map((history, idx) => {
                   let label = 'Unknown', amount = '0';
+
                   if (history.staking_fact.DelegationDecreased) {
                     label = 'Decrease Delegation';
                     amount = history.staking_fact.DelegationDecreased.amount;
@@ -86,10 +88,13 @@ export const HistoriesModal: React.FC<HistoriesModalProps> = ({
                   } else if (history.staking_fact.StakeIncreased) {
                     label = 'Increase Stake';
                     amount = history.staking_fact.StakeIncreased.amount;
-                  } else if (history.staking_fact.StakeIncreased) {
+                  } else if (history.staking_fact.ValidatorRegistered) {
                     label = 'Register Validator';
                     amount = history.staking_fact.ValidatorRegistered.amount;
+                  } else if (history.staking_fact.ValidatorDelegationEnabled) {
+                    label = 'Enable Delegation';
                   }
+
                   return (
                     <Tr key={idx}>
                       <Td>
@@ -103,7 +108,7 @@ export const HistoriesModal: React.FC<HistoriesModalProps> = ({
                           history.has_taken_effect ? 'Yes' : 'No'
                         }
                       </Td>
-                      <Td>{history.block_height}</Td>
+                      <Td>{dayjs(Math.floor(history.timestamp/1e6)).format('YYYY-MM-DD HH:mm:ss')}</Td>
                     </Tr>
                   );
                 })

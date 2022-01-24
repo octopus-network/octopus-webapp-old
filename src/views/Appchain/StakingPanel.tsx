@@ -79,6 +79,9 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
   const [depositAmount, setDepositAmount] = useState(ZERO_DECIMAL);
   const [inputAmount, setInputAmount] = useState(ZERO_DECIMAL);
   const [decreaseAmount, setDecreaseAmount] = useState(ZERO_DECIMAL);
+  const [maximumStakeAmount, setMaximumStakeAmount] = useState(ZERO_DECIMAL);
+  const [minimumStakeAmount, setMinimumStakeAmount] = useState(ZERO_DECIMAL);
+  const [minimumStakeChangingAmount, setMinimumStakeChangingAmount] = useState(ZERO_DECIMAL);
 
   const [userUpvoteDeposit, setUserUpvoteDeposit] = useState(ZERO_DECIMAL);
   const [userDownvoteDeposit, setUserDownvoteDeposit] = useState(ZERO_DECIMAL);
@@ -105,7 +108,7 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
   const [unbondPopoverOpen, setUnbondPopoverOpen] = useBoolean(false);
 
   useEffect(() => {
-    if (!anchorContract || !globalStore.accountId) {
+    if (!anchorContract || !globalStore.accountId || !appchain) {
       if (!globalStore.accountId) {
         setIsLoading(false);
       }
@@ -151,13 +154,41 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
       anchorContract.get_validator_list_of(),
       anchorContract.get_user_staking_histories_of({ account_id: globalStore.accountId }),
 
-      anchorContract.get_anchor_status()
-    ]).then(([deposit, wrappedToken, unbondStakes, validatorList, histories, anchorStatus]) => {
+      anchorContract.get_anchor_status(),
+      anchorContract.get_protocol_settings()
+    ]).then(([deposit, wrappedToken, unbondStakes, validatorList, histories, anchorStatus, protocolSettings]) => {
 
       setClaimRewardsPaused(anchorStatus.rewards_withdrawal_is_paused);
 
       setStakingHistories(histories);
 
+      console.log(protocolSettings);
+      if (protocolSettings?.maximum_validator_stake_percent) {
+        setMaximumStakeAmount(
+          appchain.totalStake
+            .mul(protocolSettings.maximum_validator_stake_percent)
+            .div(100)
+        );
+      }
+
+      if (protocolSettings?.minimum_validator_deposit) {
+        setMinimumStakeAmount(
+          DecimalUtils.fromString(
+            protocolSettings.minimum_validator_deposit,
+            OCT_TOKEN_DECIMALS
+          )
+        );
+      }
+
+      if (protocolSettings?.minimum_validator_deposit_changing_amount) {
+        setMinimumStakeChangingAmount(
+          DecimalUtils.fromString(
+            protocolSettings.minimum_validator_deposit_changing_amount,
+            OCT_TOKEN_DECIMALS
+          )
+        );
+      }
+     
       setUnbondedStakes(unbondStakes.map(s => ({
         amount: DecimalUtils.fromString(s.amount, OCT_TOKEN_DECIMALS),
         eraNumber: (s.era_number as any) * 1,
@@ -198,7 +229,7 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
 
       });
     });
-  }, [anchorContract, globalStore]);
+  }, [anchorContract, globalStore, appchain]);
 
   useEffect(() => {
     if (!globalStore.accountId || !anchorContract || !currentEra || !appchain) {
@@ -265,7 +296,12 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
           },
           Gas.COMPLEX_CALL_GAS
         );
-    } catch (err) {
+    } catch (err: any) {
+
+      if (err.message === FAILED_TO_REDIRECT_MESSAGE) {
+        return;
+      }
+
       toast({
         position: 'top-right',
         title: 'Error',
@@ -585,8 +621,19 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
                             DecimalUtils.beautify(depositAmount)
                           } OCT
                         </Text>
-                        <Button size="sm" onClick={onIncreaseStake} colorScheme="octoColor"
-                          isLoading={isStaking} isDisabled={isStaking || inputAmount.lte(ZERO_DECIMAL)}>Increase Stake</Button>
+                        <Button size="sm" onClick={onIncreaseStake} colorScheme="octoColor" isLoading={isStaking} 
+                          isDisabled={isStaking || inputAmount.lte(ZERO_DECIMAL) || 
+                          inputAmount.add(depositAmount).gt(maximumStakeAmount) ||
+                          inputAmount.lt(minimumStakeChangingAmount)
+                        }>
+                          {
+                            inputAmount.lt(minimumStakeChangingAmount) ?
+                            'Minimum Input' :
+                            inputAmount.add(depositAmount).gt(maximumStakeAmount) ?
+                            'Maximum Limit' :
+                            'Increase Stake'
+                          }
+                        </Button>
                       </PopoverFooter>
                     </PopoverContent>
                   </Popover>
@@ -613,8 +660,20 @@ export const StakingPanel: React.FC<StakingPanelProps> = ({ anchorContract, appc
                               onChange={onDecreaseAmountChange} type="number" />
                           </Flex>
                           <Flex mt={2}>
-                            <Button onClick={onDecreaseStake} colorScheme="octoColor" isFullWidth
-                              isLoading={isStaking} isDisabled={isStaking || decreaseAmount.lte(ZERO_DECIMAL)}>Decrease Stake</Button>
+                            <Button onClick={onDecreaseStake} colorScheme="octoColor" isFullWidth isLoading={isStaking} 
+                              isDisabled={
+                                isStaking || decreaseAmount.lte(ZERO_DECIMAL) || 
+                                depositAmount.sub(decreaseAmount).lt(minimumStakeAmount) ||
+                                decreaseAmount.lt(minimumStakeChangingAmount)
+                              }>
+                              { 
+                                decreaseAmount.lt(minimumStakeChangingAmount) ?
+                                'Minimum Input' :
+                                depositAmount.sub(decreaseAmount).lt(minimumStakeAmount) ?
+                                'Minimum Limit' :
+                                'Decrease Stake'
+                              }
+                            </Button>
                           </Flex>
                         </Box>
                       </PopoverBody>

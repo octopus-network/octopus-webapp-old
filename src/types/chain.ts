@@ -143,6 +143,9 @@ export type StakingFact = {
     can_be_delegated_to: boolean;
     validator_id: string;
     validator_id_in_appchain: string;
+  },
+  'ValidatorDelegationEnabled'?: {
+    validator_id: string;
   }
 }
 
@@ -150,6 +153,7 @@ export type OriginStakingHistory = {
   block_height: number;
   has_taken_effect: boolean;
   staking_fact: StakingFact;
+  timestamp: number;
 }
 
 export type Delegator = {

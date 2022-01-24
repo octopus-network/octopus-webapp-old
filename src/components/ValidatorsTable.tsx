@@ -392,11 +392,12 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
                         </MenuGroup>
                         <MenuDivider />
                         {
-                          unwithdrawedDelegatorRewards.gt(ZERO_DECIMAL) && !claimRewardsPaused ?
-                          <MenuItem onClick={() => onClaimDelegatorRewards(validator.validatorId)}>
-                            <HStack fontSize="sm" color="blue"><Icon as={BiCoinStack} boxSize={3} />
-                            <Text>Claim {DecimalUtils.beautify(unwithdrawedDelegatorRewards)} {appchain?.appchainMetadata.fungibleTokenMetadata.symbol}</Text>
-                          </HStack>
+                          unwithdrawedDelegatorRewards.gt(ZERO_DECIMAL) ?
+                          <MenuItem onClick={() => claimRewardsPaused ? null : onClaimDelegatorRewards(validator.validatorId)}>
+                            <HStack fontSize="sm" color={claimRewardsPaused ? 'gray' : 'blue'}>
+                              <Icon as={BiCoinStack} boxSize={3} />
+                              <Text>Claim {DecimalUtils.beautify(unwithdrawedDelegatorRewards)} {appchain?.appchainMetadata.fungibleTokenMetadata.symbol}</Text>
+                            </HStack>
                           </MenuItem> : 
                           <MenuItem onClick={setUnbondDelegationPopoverOpen.on}>
                             <HStack fontSize="sm" color="red"><CloseIcon boxSize={3} /> <Text>Unbond Delegation</Text></HStack>
@@ -604,7 +605,12 @@ export const ValidatorsTable: React.FC<ValidatorsTableProps> = ({
           },
           Gas.COMPLEX_CALL_GAS
         );
-    } catch (err) {
+    } catch (err: any) {
+
+      if (err.message === FAILED_TO_REDIRECT_MESSAGE) {
+        return;
+      }
+
       toast({
         position: 'top-right',
         title: 'Error',
