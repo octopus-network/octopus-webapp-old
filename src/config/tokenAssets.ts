@@ -21,5 +21,19 @@ export const tokenAssets: Record<string, TokenAsset[]> = {
       logoUri: 'https://2dverse.org/myriad/Logo_Solid.svg',
       decimals: 18
     }
+  ],
+  'tchain': [
+    {
+      symbol: 'TCH',
+      logoUri: 'https://2dverse.org/myriad/Logo_Solid.svg',
+      decimals: 18
+    },
+    {
+      symbol: 'USDC',
+      logoUri: 'https://s2.coinmarketcap.com/static/img/coins/64x64/3408.png',
+      decimals: 6,
+      assetId: 0,
+      contractId: 'usdc.testnet'
+    }
   ]
 }

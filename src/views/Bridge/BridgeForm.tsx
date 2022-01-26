@@ -38,6 +38,7 @@ import {
 import { useGlobalStore, useTransactionStore } from 'stores';
 import { Account } from './Account';
 import { AmountInput } from 'components';
+import { SelectTokenModal } from './SelectTokenModal';
 import { tokenAssets, octopusConfig } from 'config';
 import { ChevronDownIcon, RepeatIcon } from '@chakra-ui/icons';
 import { ZERO_DECIMAL, DecimalUtils } from 'utils';
@@ -96,9 +97,11 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
     , []);
 
   const [appchainTokenContract, setAppchainTokenContract] = useState<TokenContract>();
+  const [bridgeTokenContract, setBridgeTokenContract] = useState<TokenContract>();
   const [anchorContract, setAnchorContract] = useState<AnchorContract>();
   const isReverse = useMemo(() => !!!((urlParams.get('reverse') || '0') as any * 1), [urlParams]);
   const [apiPromise, setApiPromise] = useState<ApiPromise>();
+  const [selectTokenModalOpen, setSelectTokenModalOpen] = useBoolean(false);
 
   const toast = useToast();
   const tokens = useMemo(() => tokenAssets[appchain?.appchain_id] || null, [appchain]);
@@ -188,25 +191,36 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
       return;
     }
     setIsLoadingBalance.on();
-    if (isReverse && appchainTokenContract && nearAccount) {
-      appchainTokenContract
+    if (isReverse && (bridgeTokenContract || appchainTokenContract) && nearAccount) {
+      (bridgeTokenContract || appchainTokenContract)
         .ft_balance_of({ account_id: nearAccount })
         .then(balance => {
           setIsLoadingBalance.off();
           setBalance(DecimalUtils.fromString(balance, bridgeToken.decimals));
         });
     } else if (!isReverse && apiPromise && appchainAccount) {
-      apiPromise.derive.balances.all(appchainAccount, (balance) => {
-        setBalance(
-          DecimalUtils.fromString(balance.freeBalance.toString(), bridgeToken.decimals)
-        );
-        setIsLoadingBalance.off();
-      });
+      if (bridgeToken.assetId) {
+        apiPromise.query.assets.account(bridgeToken.assetId, appchainAccount, (res) => {
+          const { balance } = res.toJSON();
+          setBalance(
+            DecimalUtils.fromString(balance.toString(), bridgeToken.decimals)
+          );
+          setIsLoadingBalance.off();
+        });
+      } else {
+        apiPromise.derive.balances.all(appchainAccount, (balance) => {
+          setBalance(
+            DecimalUtils.fromString(balance.freeBalance.toString(), bridgeToken.decimals)
+          );
+          setIsLoadingBalance.off();
+        });
+      }
+      
     } else {
       setIsLoadingBalance.off();
       setBalance(ZERO_DECIMAL);
     }
-  }, [apiPromise, nearAccount, appchainAccount, isReverse, bridgeToken, appchainTokenContract]);
+  }, [apiPromise, nearAccount, appchainAccount, isReverse, bridgeToken, appchainTokenContract, bridgeTokenContract]);
 
   useEffect(() => {
     if (tokens?.length) {
@@ -272,9 +286,9 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
         }
 
         if (txn.sequenceId) {
-          console.log('haha', txn.sequenceId);
+       
           anchorContract
-            .get_appchain_notification_history({ index: txn.sequenceId.toString() })
+            .get_appchain_message_processing_result_of({ nonce: txn.sequenceId })
             .then(res => {
               console.log(res);
               if (res) {
@@ -309,8 +323,8 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
       return;
     }
     setIsLoadingTargetBalance.on();
-    if (!isReverse && appchainTokenContract) {
-      appchainTokenContract
+    if (!isReverse && (bridgeTokenContract || appchainTokenContract)) {
+      (bridgeTokenContract || appchainTokenContract)
         .ft_balance_of({ account_id: targetAddress })
         .then(balance => {
           setIsLoadingTargetBalance.off();
@@ -326,17 +340,28 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
         setIsLoadingTargetBalance.off();
         return;
       }
-      apiPromise.derive.balances.all(validAddress, (balance) => {
-        setIsLoadingTargetBalance.off();
-        setTargetBalance(
-          DecimalUtils.fromString(balance.freeBalance.toString(), bridgeToken.decimals)
-        );
-      });
+
+      if (bridgeToken.assetId) {
+        apiPromise.query.assets.account(bridgeToken.assetId, appchainAccount, (res) => {
+          const { balance } = res.toJSON();
+          setBalance(
+            DecimalUtils.fromString(balance.toString(), bridgeToken.decimals)
+          );
+          setIsLoadingBalance.off();
+        });
+      } else {
+        apiPromise.derive.balances.all(validAddress, (balance) => {
+          setIsLoadingTargetBalance.off();
+          setTargetBalance(
+            DecimalUtils.fromString(balance.freeBalance.toString(), bridgeToken.decimals)
+          );
+        });
+      }
     } else {
       setTargetBalance(ZERO_DECIMAL);
     }
     
-  }, [targetAddress, isReverse, appchainTokenContract, apiPromise]);
+  }, [targetAddress, bridgeToken, isReverse, appchainTokenContract, bridgeTokenContract, apiPromise]);
   
   useInterval(checkTargetBalance, 1000);
 
@@ -377,14 +402,32 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
     setIsTransfering.on();
     const amount_U64 = DecimalUtils.toU64(new Decimal(amount), bridgeToken.decimals);
 
-    if (!bridgeToken.assetId) {
-      const tx = anchorContract
-        .burn_wrapped_appchain_token(
-          { receiver_id: hexAddress, amount: amount_U64.toString() },
-          Gas.COMPLEX_CALL_GAS
-        );
-      window.localStorage.setItem('BurnTx', JSON.stringify(tx));
+    let tx;
+    if (bridgeToken.assetId === undefined) {
+      tx = 
+        anchorContract
+          .burn_wrapped_appchain_token(
+            { receiver_id: hexAddress, amount: amount_U64.toString() },
+            Gas.COMPLEX_CALL_GAS
+          );
+    } else {
+      tx = 
+        bridgeTokenContract
+          .ft_transfer_call(
+            { 
+              receiver_id: anchorContract.contractId, 
+              amount: amount_U64.toString(),
+              msg: JSON.stringify({
+                BridgeToAppchain: {
+                  receiver_id_in_appchain: hexAddress
+                }
+              })
+            },
+            Gas.COMPLEX_CALL_GAS,
+            1
+          );
     }
+    window.localStorage.setItem('BurnTx', JSON.stringify(tx));
   }
 
   const redeem = async () => {
@@ -446,6 +489,22 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
     }
   }
 
+  const onChooseToken = (token: TokenAsset) => {
+    setBridgeToken(token);
+    setSelectTokenModalOpen.off();
+    if (token.contractId) {
+      const tokenContract = new TokenContract(
+        globalStore.walletConnection.account(),
+        token.contractId,
+        {
+          viewMethods: ['ft_balance_of'],
+          changeMethods: ['ft_transfer_call']
+        }
+      );
+      setBridgeTokenContract(tokenContract);
+    }
+  }
+
   return (
     <>
       <Box p={5} borderRadius="lg" boxShadow="lg" bg="white">
@@ -496,7 +555,7 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
             </Skeleton>
           </Flex>
           <Flex justifyContent="space-between" alignItems="center" mt={3} p={2} borderRadius="lg" bg="gray.100">
-            <Button p={2} variant="ghost" _hover={{ background: '#f9fafc' }}>
+            <Button p={2} variant="ghost" _hover={{ background: '#f9fafc' }} onClick={setSelectTokenModalOpen.on}>
               <HStack>
                 <Box borderRadius="full" overflow="hidden" boxSize={6}>
                   <Image src={bridgeToken?.logoUri} boxSize="100%" />
@@ -581,6 +640,8 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
           }
         </Button>
       </Box>
+      <SelectTokenModal tokens={tokens} isOpen={selectTokenModalOpen} onClose={setSelectTokenModalOpen.off}
+        onChoose={onChooseToken} />
     </>
   );
 }

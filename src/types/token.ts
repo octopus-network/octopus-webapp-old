@@ -27,5 +27,6 @@ export type TokenAsset = {
   symbol: string;
   logoUri: string;
   assetId?: number;
+  contractId?: string;
   decimals: number;
 }

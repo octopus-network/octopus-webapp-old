@@ -159,6 +159,10 @@ type GetDelegatorsOfValidatorInEra = {
   validator_id: string;
 }
 
+type GetAppchainMessageProcessingResultOf = {
+  nonce: number;
+}
+
 export class TokenContract extends Contract {
  
   ft_balance_of(args: FtBalanceOfArgs): Promise<string> {
@@ -360,5 +364,9 @@ export class AnchorContract extends Contract {
 
   burn_wrapped_appchain_token(args: BurnWrappedAppchainTokenArgs, gas: string) {
     return this.burn_wrapped_appchain_token(args, gas);
+  }
+
+  get_appchain_message_processing_result_of(args: GetAppchainMessageProcessingResultOf) {
+    return this.get_appchain_message_processing_result_of(args);
   }
 }
