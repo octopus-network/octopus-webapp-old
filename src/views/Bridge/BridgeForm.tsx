@@ -200,7 +200,7 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
         });
     } else if (!isReverse && apiPromise && appchainAccount) {
       if (bridgeToken.assetId) {
-        apiPromise.query.assets.account(bridgeToken.assetId, appchainAccount, (res) => {
+        apiPromise.query.octopusAssets.account(bridgeToken.assetId, appchainAccount, (res) => {
           const { balance } = res.toJSON();
           setBalance(
             DecimalUtils.fromString(balance.toString(), bridgeToken.decimals)
