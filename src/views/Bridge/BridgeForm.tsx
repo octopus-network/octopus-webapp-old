@@ -146,7 +146,8 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
           viewMethods: [
             'get_wrapped_appchain_token',
             'get_appchain_settings',
-            'get_appchain_notification_history'
+            'get_appchain_notification_history',
+            'get_appchain_message_processing_result_of'
           ],
           changeMethods: [
             'burn_wrapped_appchain_token'
@@ -187,19 +188,22 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
   }, [appchain, globalStore]);
 
   useEffect(() => {
-    if (!bridgeToken || !apiPromise) {
+    if (!apiPromise) {
       return;
     }
     setIsLoadingBalance.on();
     if (isReverse && (bridgeTokenContract || appchainTokenContract) && nearAccount) {
+
       (bridgeTokenContract || appchainTokenContract)
         .ft_balance_of({ account_id: nearAccount })
         .then(balance => {
+       
           setIsLoadingBalance.off();
           setBalance(DecimalUtils.fromString(balance, bridgeToken.decimals));
         });
     } else if (!isReverse && apiPromise && appchainAccount) {
-      if (bridgeToken.assetId) {
+
+      if (bridgeToken.assetId !== undefined) {
         apiPromise.query.octopusAssets.account(bridgeToken.assetId, appchainAccount, (res) => {
           const { balance } = res.toJSON();
           setBalance(
@@ -217,6 +221,7 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
       }
       
     } else {
+
       setIsLoadingBalance.off();
       setBalance(ZERO_DECIMAL);
     }
@@ -290,7 +295,7 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
           anchorContract
             .get_appchain_message_processing_result_of({ nonce: txn.sequenceId })
             .then(res => {
-              console.log(res);
+        
               if (res) {
                 updateTxn(txn.hash, {
                   status: 'success'
@@ -341,10 +346,10 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
         return;
       }
 
-      if (bridgeToken.assetId) {
-        apiPromise.query.assets.account(bridgeToken.assetId, appchainAccount, (res) => {
+      if (bridgeToken.assetId !== undefined) {
+        apiPromise.query.octopusAssets.account(bridgeToken.assetId, appchainAccount, (res) => {
           const { balance } = res.toJSON();
-          setBalance(
+          setTargetBalance(
             DecimalUtils.fromString(balance.toString(), bridgeToken.decimals)
           );
           setIsLoadingBalance.off();
@@ -441,7 +446,7 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
     apiPromise.setSigner(injected.signer);
 
     const tx = 
-      bridgeToken.assetId ?
+      bridgeToken.assetId !== undefined ?
       apiPromise.tx.octopusAppchain.burnAsset(bridgeToken.assetId, hexAddress, amount_U64.toString()) :
       apiPromise.tx.octopusAppchain.lock(hexAddress, amount_U64.toString());
     
@@ -502,6 +507,8 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
         }
       );
       setBridgeTokenContract(tokenContract);
+    } else {
+      setBridgeTokenContract(null);
     }
   }
 
