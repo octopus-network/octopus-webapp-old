@@ -191,7 +191,9 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
     if (!apiPromise) {
       return;
     }
+
     setIsLoadingBalance.on();
+
     if (isReverse && (bridgeTokenContract || appchainTokenContract) && nearAccount) {
 
       (bridgeTokenContract || appchainTokenContract)
@@ -201,7 +203,8 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
           setIsLoadingBalance.off();
           setBalance(DecimalUtils.fromString(balance, bridgeToken.decimals));
         });
-    } else if (!isReverse && apiPromise && appchainAccount) {
+
+    } else if (!isReverse && appchainAccount) {
 
       if (bridgeToken.assetId !== undefined) {
         apiPromise.query.octopusAssets.account(bridgeToken.assetId, appchainAccount, (res) => {
@@ -224,7 +227,9 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
 
       setIsLoadingBalance.off();
       setBalance(ZERO_DECIMAL);
+
     }
+
   }, [apiPromise, nearAccount, appchainAccount, isReverse, bridgeToken, appchainTokenContract, bridgeTokenContract]);
 
   useEffect(() => {
@@ -245,16 +250,16 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
       if (txn.status === 'loading') {
      
         if (!toast.isActive(txn.hash)) {
-          toast({
-            id: txn.hash,
-            position: 'top-right',
-            title: txn.message,
-            description: txn.summary,
-            status: 'info',
-            duration: null,
-            isClosable: true,
-            render: (e) => ToastRender(txn, e.onClose)
-          });
+          // toast({
+          //   id: txn.hash,
+          //   position: 'top-right',
+          //   title: txn.message,
+          //   description: txn.summary,
+          //   status: 'info',
+          //   duration: null,
+          //   isClosable: true,
+          //   render: (e) => ToastRender(txn, e.onClose)
+          // });
         } else {
           toast.update(txn.hash, {
             render: (e) => ToastRender(txn, e.onClose)
@@ -553,7 +558,7 @@ export const BridgeForm: React.FC<BridgeFormProps> = ({ appchain }) => {
                 {
                   balance.gt(ZERO_DECIMAL) ?
                   <Button size="xs" variant="outline" colorScheme="blue" borderWidth={0} onClick={_ => {
-                    setAmount(balance.toString());
+                    setAmount(balance.sub(new Decimal(0.1)).toString());
                   }}>
                     Max
                   </Button> : null

@@ -93,6 +93,14 @@ export const HistoriesModal: React.FC<HistoriesModalProps> = ({
                     amount = history.staking_fact.ValidatorRegistered.amount;
                   } else if (history.staking_fact.ValidatorDelegationEnabled) {
                     label = 'Enable Delegation';
+                  } else if (history.staking_fact.ValidatorDelegationDisabled) {
+                    label = 'Disable Delegation';
+                  } else if (history.staking_fact.ValidatorUnbonded) {
+                    label = 'Unbond Validator';
+                    amount = history.staking_fact.ValidatorUnbonded.amount;
+                  } else if (history.staking_fact.DelegatorUnbonded) {
+                    label = 'Unbond Delegator';
+                    amount = history.staking_fact.DelegatorUnbonded.amount;
                   }
 
                   return (

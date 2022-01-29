@@ -146,6 +146,18 @@ export type StakingFact = {
   },
   'ValidatorDelegationEnabled'?: {
     validator_id: string;
+  },
+  'ValidatorDelegationDisabled'?: {
+    validator_id: string;
+  },
+  'ValidatorUnbonded'?: {
+    validator_id: string;
+    amount: string;
+  },
+  'DelegatorUnbonded'?: {
+    validator_id: string;
+    delegator_id: string;
+    amount: string;
   }
 }
 
