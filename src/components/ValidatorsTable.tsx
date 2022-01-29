@@ -344,11 +344,23 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
                       <Badge colorScheme="blue" variant="outline" borderRadius="xl">Validating</Badge>
                     </Tooltip>
                   </Box> :
-                  <Box transform="scale(.8)" transformOrigin="left">
-                    <Tooltip label="You are not in appchain validator list yet, you may have to wait until the next era.">
-                      <Badge colorScheme="yellow" variant="outline" borderRadius="xl">Staker</Badge>
-                    </Tooltip>
-                  </Box>
+                  <HStack spacing={0}>
+                    <Box transform="scale(.8)" transformOrigin="left">
+                      <Tooltip label="You are not in appchain validator list yet, you may have to wait until the next era.">
+                        <Badge colorScheme="yellow" variant="outline" borderRadius="xl">Staker</Badge>
+                      </Tooltip>
+                    </Box>
+                    {
+                      currentEra > 0 && (
+                        !rewards.length || rewards[rewards.length - 1]?.eraNumber !== currentEra - 1
+                      ) ?
+                      <Box transform="scale(.8)" transformOrigin="left">
+                        <Tooltip label="It seems that this validator have no rewards in last era, maybe he didn't run the node successfully?">
+                          <Badge colorScheme="red" variant="outline" borderRadius="xl">No Rewards</Badge>
+                        </Tooltip>
+                      </Box> : null
+                    }
+                  </HStack>
               }
             </HStack>
             <Skeleton isLoaded={!isLoadingRewards}>
