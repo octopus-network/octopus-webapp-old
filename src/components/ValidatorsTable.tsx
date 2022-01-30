@@ -351,7 +351,7 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
                       </Tooltip>
                     </Box>
                     {
-                      currentEra > 0 && (
+                      currentEra > 0 && rewards && (
                         !rewards.length || rewards[rewards.length - 1]?.eraNumber !== currentEra - 1
                       ) ?
                       <Box transform="scale(.8)" transformOrigin="left">
@@ -546,7 +546,6 @@ export const ValidatorsTable: React.FC<ValidatorsTableProps> = ({
       anchorContract.get_validator_list_of(),
       anchorContract.get_wrapped_appchain_token()
     ]).then(([res, wrappedToken]) => {
-      console.log(res);
       const wrappedTokencontract = new TokenContract(
         globalStore.walletConnection.account(),
         wrappedToken.contract_account,
@@ -588,7 +587,6 @@ export const ValidatorsTable: React.FC<ValidatorsTableProps> = ({
       setTimeout(() => {
         apiPromise?.query?.session?.validators()
           .then(vs => {
-            console.log(vs.map(v => v.toString()));
             setAppchainValidators(vs.map(v => v.toString()));
           });
       }, 500);
